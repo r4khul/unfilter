@@ -9,16 +9,31 @@ class DeviceAppsRepository {
       final List<Object?> result = await platform.invokeMethod(
         'getInstalledApps',
       );
-      // Filter logic can be done here or UI, but let's return all
-      // The native side sends List<Map>
       return result
           .cast<Map<Object?, Object?>>()
           .map((e) => DeviceApp.fromMap(e))
           .toList();
     } on PlatformException catch (e) {
-      // In production, use a logger
       print("Failed to get apps: '${e.message}'");
       return [];
+    }
+  }
+
+  Future<bool> checkUsagePermission() async {
+    try {
+      final bool result = await platform.invokeMethod('checkUsagePermission');
+      return result;
+    } on PlatformException catch (e) {
+      print("Failed to check permission: '${e.message}'");
+      return false;
+    }
+  }
+
+  Future<void> requestUsagePermission() async {
+    try {
+      await platform.invokeMethod('requestUsagePermission');
+    } on PlatformException catch (e) {
+      print("Failed to request permission: '${e.message}'");
     }
   }
 }

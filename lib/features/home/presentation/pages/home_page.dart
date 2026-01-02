@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/device_apps_repository.dart';
 import '../providers/home_provider.dart';
 import '../widgets/app_card.dart';
 
@@ -9,6 +10,7 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appsAsync = ref.watch(installedAppsProvider);
+    final usagePermissionAsync = ref.watch(usagePermissionProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -25,18 +27,6 @@ class HomePage extends ConsumerWidget {
       ),
       body: appsAsync.when(
         data: (apps) {
-          if (apps.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.apps_outage, size: 64, color: theme.disabledColor),
-                  const SizedBox(height: 16),
-                  Text("No user apps found.", style: theme.textTheme.bodyLarge),
-                ],
-              ),
-            );
-          }
           return CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -46,6 +36,64 @@ class HomePage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      usagePermissionAsync.when(
+                        data: (hasPermission) {
+                          if (!hasPermission) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.errorContainer.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.security, size: 20),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      "Grant Usage Access to see time stats.",
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      ref
+                                          .read(deviceAppsRepositoryProvider)
+                                          .requestUsagePermission()
+                                          .then((_) {
+                                            // Wait a bit for user to come back
+                                            Future.delayed(
+                                              const Duration(seconds: 2),
+                                              () {
+                                                ref.refresh(
+                                                  usagePermissionProvider,
+                                                );
+                                                ref.refresh(
+                                                  installedAppsProvider,
+                                                );
+                                              },
+                                            );
+                                          });
+                                    },
+                                    child: const Text("GRANT"),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                        error: (_, __) => const SizedBox.shrink(),
+                        loading: () => const SizedBox.shrink(),
+                      ),
                       Text(
                         "Your Digital Arsenal",
                         style: theme.textTheme.labelLarge?.copyWith(
@@ -77,7 +125,7 @@ class HomePage extends ConsumerWidget {
               const CircularProgressIndicator(),
               const SizedBox(height: 24),
               Text(
-                "Scanning your universe...",
+                "Deep scanning system...",
                 style: theme.textTheme.titleMedium,
               ),
             ],

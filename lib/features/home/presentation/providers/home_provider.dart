@@ -8,3 +8,8 @@ final installedAppsProvider = FutureProvider<List<DeviceApp>>((ref) async {
   final repository = ref.watch(deviceAppsRepositoryProvider);
   return await repository.getInstalledApps();
 });
+
+final usagePermissionProvider = FutureProvider<bool>((ref) async {
+  final repository = ref.watch(deviceAppsRepositoryProvider);
+  return await repository.checkUsagePermission();
+});
