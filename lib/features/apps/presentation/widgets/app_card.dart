@@ -150,14 +150,15 @@ class AppCard extends StatelessWidget {
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
+                                horizontal: 12,
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: stackColor.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(12),
+                                color: stackColor.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                   color: stackColor.withOpacity(0.2),
+                                  width: 0.8,
                                 ),
                               ),
                               child: Row(
@@ -173,8 +174,9 @@ class AppCard extends StatelessWidget {
                                     app.stack,
                                     style: TextStyle(
                                       color: stackColor,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                 ],

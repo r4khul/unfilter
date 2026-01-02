@@ -154,11 +154,11 @@ class AppDetailsPage extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: stackColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: stackColor.withOpacity(0.3)),
+            color: stackColor.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: stackColor.withOpacity(0.2), width: 0.8),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -173,8 +173,9 @@ class AppDetailsPage extends ConsumerWidget {
                 app.stack,
                 style: TextStyle(
                   color: stackColor,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.bold,
                   fontSize: 14,
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
