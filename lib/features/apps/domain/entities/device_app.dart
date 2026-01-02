@@ -38,6 +38,10 @@ class DeviceApp extends Equatable {
 
   final AppCategory category; // New field
 
+  final int size;
+  final String apkPath;
+  final String dataDir;
+
   const DeviceApp({
     required this.appName,
     required this.packageName,
@@ -58,6 +62,9 @@ class DeviceApp extends Equatable {
     this.totalTimeInForeground = 0,
     this.lastTimeUsed = 0,
     this.category = AppCategory.unknown,
+    this.size = 0,
+    this.apkPath = '',
+    this.dataDir = '',
   });
 
   factory DeviceApp.fromMap(Map<Object?, Object?> map) {
@@ -105,6 +112,9 @@ class DeviceApp extends Equatable {
       totalTimeInForeground: map['totalTimeInForeground'] as int? ?? 0,
       lastTimeUsed: map['lastTimeUsed'] as int? ?? 0,
       category: _parseCategory(map['category'] as String?),
+      size: map['size'] as int? ?? 0,
+      apkPath: map['apkPath'] as String? ?? '',
+      dataDir: map['dataDir'] as String? ?? '',
     );
   }
 
@@ -147,6 +157,9 @@ class DeviceApp extends Equatable {
       'totalTimeInForeground': totalTimeInForeground,
       'lastTimeUsed': lastTimeUsed,
       'category': category.name,
+      'size': size,
+      'apkPath': apkPath,
+      'dataDir': dataDir,
     };
   }
 
@@ -164,5 +177,8 @@ class DeviceApp extends Equatable {
     lastTimeUsed,
     category,
     icon,
+    size,
+    apkPath,
+    dataDir,
   ];
 }

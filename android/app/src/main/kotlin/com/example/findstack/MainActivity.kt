@@ -186,7 +186,10 @@ class MainActivity : FlutterActivity() {
                             -1 -> "unknown" // Undefined
                             else -> "tools" // Fallback for other defined categories
                         }
-                    } else "unknown")
+                    } else "unknown"),
+                    "size" to (if (File(appInfo.sourceDir).exists()) File(appInfo.sourceDir).length() else 0L),
+                    "apkPath" to appInfo.sourceDir,
+                    "dataDir" to appInfo.dataDir
                 ))
             }
         }

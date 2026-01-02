@@ -1,4 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -44,12 +46,16 @@ class AppDetailsPage extends ConsumerWidget {
                   const SizedBox(height: 32),
                   _buildUsageSection(theme, usageHistoryAsync, isDark),
                   const SizedBox(height: 32),
-                  _buildInfoSection(theme, isDark),
+                  _buildInfoSection(context, theme, isDark),
+                  const SizedBox(height: 32),
+                  _buildDeepInsights(context, theme, isDark),
                   const SizedBox(height: 32),
                   if (app.nativeLibraries.isNotEmpty) ...[
                     _buildNativeLibsSection(theme, isDark),
                     const SizedBox(height: 32),
                   ],
+                  _buildDeveloperSection(context, theme, isDark),
+                  const SizedBox(height: 32),
                   if (app.permissions.isNotEmpty) ...[
                     _buildPermissionsSection(theme, isDark),
                     const SizedBox(height: 40),
@@ -394,7 +400,7 @@ class AppDetailsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoSection(ThemeData theme, bool isDark) {
+  Widget _buildInfoSection(BuildContext context, ThemeData theme, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -412,18 +418,21 @@ class AppDetailsPage extends ConsumerWidget {
           child: Column(
             children: [
               _buildDetailItem(
+                context,
                 theme,
                 "Package",
                 app.packageName,
                 showDivider: true,
               ),
               _buildDetailItem(
+                context,
                 theme,
                 "UID",
                 app.uid.toString(),
                 showDivider: true,
               ),
               _buildDetailItem(
+                context,
                 theme,
                 "Install Date",
                 DateFormat.yMMMd().format(app.installDate),
@@ -436,40 +445,56 @@ class AppDetailsPage extends ConsumerWidget {
   }
 
   Widget _buildDetailItem(
+    BuildContext context,
     ThemeData theme,
     String label,
     String value, {
     bool showDivider = false,
   }) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Flexible(
-                child: Text(
-                  value,
-                  textAlign: TextAlign.end,
+    return InkWell(
+      onLongPress: () {
+        Clipboard.setData(ClipboardData(text: value));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Copied $label'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  label,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-            ],
+                Flexible(
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        if (showDivider)
-          Divider(height: 1, color: theme.colorScheme.outline.withOpacity(0.1)),
-      ],
+          if (showDivider)
+            Divider(
+              height: 1,
+              color: theme.colorScheme.outline.withOpacity(0.1),
+            ),
+        ],
+      ),
     );
   }
 
@@ -588,5 +613,169 @@ class AppDetailsPage extends ConsumerWidget {
       default:
         return 'assets/vectors/icon_android.svg';
     }
+  }
+
+  Widget _buildDeepInsights(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(theme, "Storage & Paths"),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: theme.colorScheme.outline.withOpacity(0.2),
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildDetailItem(
+                context,
+                theme,
+                "App Size",
+                _formatBytes(app.size),
+                showDivider: true,
+              ),
+              _buildDetailItem(
+                context,
+                theme,
+                "APK Path",
+                app.apkPath,
+                showDivider: true,
+              ),
+              _buildDetailItem(context, theme, "Data Dir", app.dataDir),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDeveloperSection(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    final packages = _detectPackages();
+    if (packages.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(theme, "Detected Packages"),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: packages.values.map((pkg) {
+            return Material(
+              color: isDark
+                  ? theme.colorScheme.surfaceContainerHighest
+                  : theme.colorScheme.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                  color: theme.colorScheme.primary.withOpacity(0.3),
+                ),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('$pkg Detected using heuristics'),
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.extension,
+                        size: 14,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        pkg,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Map<String, String> _detectPackages() {
+    final Map<String, String> detected = {};
+
+    void check(String text, String keyword, String pkgName) {
+      if (text.toLowerCase().contains(keyword.toLowerCase()))
+        detected[pkgName] = pkgName;
+    }
+
+    final allComponents = [...app.services, ...app.receivers, ...app.providers];
+
+    for (var s in allComponents) {
+      check(s, 'com.google.firebase', 'Firebase Core');
+      check(s, 'com.google.android.gms.ads', 'Google Mobile Ads');
+      check(s, 'com.google.android.gms.maps', 'Google Maps');
+      check(s, 'com.facebook', 'Facebook SDK');
+      check(s, 'com.amazonaws', 'AWS Amplify');
+      check(s, 'androidx.work', 'WorkManager');
+      check(s, 'androidx.room', 'Room Database');
+      check(s, 'com.squareup.picasso', 'Picasso');
+      check(s, 'com.bumptech.glide', 'Glide');
+      check(s, 'retrofit', 'Retrofit');
+      check(s, 'okhttp', 'OkHttp');
+      check(s, 'coil', 'Coil');
+      check(s, 'sentry', 'Sentry');
+      check(s, 'crashlytics', 'Crashlytics');
+      check(s, 'onesignal', 'OneSignal');
+      check(s, 'stripe', 'Stripe');
+      check(s, 'razorpay', 'Razorpay');
+      check(s, 'zoom', 'Zoom SDK');
+      check(s, 'twilio', 'Twilio');
+    }
+
+    for (var lib in app.nativeLibraries) {
+      check(lib, 'mapbox', 'Mapbox');
+      check(lib, 'realm', 'Realm');
+      check(lib, 'reanimated', 'Reanimated');
+      check(lib, 'hermes', 'Hermes Engine');
+      check(lib, 'skia', 'Skia');
+      check(lib, 'flipper', 'Flipper');
+    }
+
+    return detected;
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB"];
+    var i = (log(bytes) / log(1024)).floor();
+    return ((bytes / pow(1024, i)).toStringAsFixed(1)) + ' ' + suffixes[i];
   }
 }
