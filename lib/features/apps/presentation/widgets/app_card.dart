@@ -83,7 +83,7 @@ class AppCard extends StatelessWidget {
     final stackColor = _getStackColor(app.stack, isDark);
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.zero,
       elevation: 0,
       color: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(

@@ -24,7 +24,10 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
     final theme = Theme.of(context);
     final progress = shrinkOffset / (maxExtent - minExtent);
     final percent = progress.clamp(0.0, 1.0);
-    final isCollapsed = percent > 0.8; // Threshold for switching states
+    final isCollapsed = percent > 0.6; // Switch earlier for smoothness
+
+    // Fade out stats quickly so they don't overlap with sliding up content
+    final statsOpacity = (1.0 - (percent * 3)).clamp(0.0, 1.0);
 
     return Container(
       decoration: BoxDecoration(
@@ -32,23 +35,22 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
         border: Border(
           bottom: BorderSide(
             color: theme.colorScheme.outline.withOpacity(
-              percent > 0.9 ? 0.1 : 0.0,
+              percent > 0.95 ? 0.1 : 0.0,
             ),
           ),
         ),
       ),
       child: Stack(
+        clipBehavior: Clip.none,
+        fit: StackFit.expand,
         children: [
-          // 1. Background / Safe Area handling
-          Positioned.fill(child: SafeArea(bottom: false, child: Container())),
-
-          // 2. Stats Section (Expanded Only)
-          // Fades out and moves up as we scroll
+          // 1. Stats Section (Expanded Only)
+          // Fades out very quickly
           Positioned(
-            top: 60 - (shrinkOffset * 0.5), // Parallax-ish
+            top: MediaQuery.of(context).padding.top + 60 - (shrinkOffset * 0.8),
             left: 20,
             child: Opacity(
-              opacity: (1 - percent * 2).clamp(0.0, 1.0),
+              opacity: statsOpacity,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -70,176 +72,200 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
 
-          // 3. Search Bar & Categories (Sticky Bottom)
-          // These move up to fill the space left by the shrinking Stats Section
+          // 2. Search Bar & Categories (Sticky)
+          // Always pinned to the bottom of the header
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              PageRouteBuilder(
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) =>
-                                        const SearchPage(),
-                                transitionsBuilder:
-                                    (
-                                      context,
-                                      animation,
-                                      secondaryAnimation,
-                                      child,
-                                    ) {
-                                      const begin = Offset(0.0, 0.1);
-                                      const end = Offset.zero;
-                                      const curve = Curves.easeOutCubic;
-                                      var tween = Tween(
-                                        begin: begin,
-                                        end: end,
-                                      ).chain(CurveTween(curve: curve));
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: SlideTransition(
-                                          position: animation.drive(tween),
-                                          child: child,
-                                        ),
-                                      );
-                                    },
-                                transitionDuration: const Duration(
-                                  milliseconds: 300,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            height: 50,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: theme.colorScheme.outline.withOpacity(
-                                  0.4,
-                                ),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.search,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  "Search installed apps...",
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant
-                                        .withOpacity(0.8),
+            child: Container(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  pageBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                      ) => const SearchPage(),
+                                  transitionsBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                        child,
+                                      ) {
+                                        const begin = Offset(0.0, 0.1);
+                                        const end = Offset.zero;
+                                        const curve = Curves.easeOutCubic;
+                                        var tween = Tween(
+                                          begin: begin,
+                                          end: end,
+                                        ).chain(CurveTween(curve: curve));
+                                        return FadeTransition(
+                                          opacity: animation,
+                                          child: SlideTransition(
+                                            position: animation.drive(tween),
+                                            child: child,
+                                          ),
+                                        );
+                                      },
+                                  transitionDuration: const Duration(
+                                    milliseconds: 300,
                                   ),
                                 ),
-                              ],
+                              );
+                            },
+                            child: Container(
+                              height: 50,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: theme.colorScheme.outline.withOpacity(
+                                    0.2, // Subtle border
+                                  ),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(
+                                      0.03,
+                                    ), // Lighter shadow
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.search,
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    "Search installed apps...",
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant
+                                          .withOpacity(0.8),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      const TechStackFilter(),
-                    ],
+                        const SizedBox(width: 12),
+                        const TechStackFilter(),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                const CategorySlider(
-                  isCompact: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                const SizedBox(height: 12), // Bottom spacing
-              ],
+                  const SizedBox(height: 12),
+                  const CategorySlider(
+                    isCompact: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
             ),
           ),
 
-          // 4. Top App Bar (Sticky Top)
+          // 3. Top App Bar (Sticky Top)
+          // Contains Logo/Title and Scan Button
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: SafeArea(
-              child: Container(
-                height: 56,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    // Logo / Title Transition
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: isCollapsed
-                          ? Row(
-                              key: const ValueKey('collapsed'),
-                              children: [
-                                Image.asset(
-                                  'assets/icons/findstack-nobg.png',
-                                  height: 28,
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary
-                                        .withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
+            child: Container(
+              color: theme.scaffoldBackgroundColor.withOpacity(
+                percent > 0.8 ? 0.9 : 0.0, // Fade in background if needed
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Container(
+                  height: 56, // Standard Toolbar height
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      // Logo / Title Transition
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: isCollapsed
+                                ? Row(
+                                    key: const ValueKey('collapsed'),
                                     children: [
-                                      Icon(
-                                        Icons.install_mobile,
-                                        size: 14,
-                                        color: theme.colorScheme.primary,
+                                      Image.asset(
+                                        'assets/icons/findstack-nobg.png',
+                                        height: 28,
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        "$appCount",
-                                        style: theme.textTheme.labelMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.bold,
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary
+                                              .withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.install_mobile,
+                                              size: 14,
                                               color: theme.colorScheme.primary,
                                             ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              "$appCount",
+                                              style: theme.textTheme.labelMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: theme
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ],
+                                  )
+                                : Text(
+                                    "FindStack",
+                                    key: const ValueKey('expanded'),
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            )
-                          : Text(
-                              "FindStack",
-                              key: const ValueKey('expanded'),
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                    const Spacer(),
-                    const ScanButton(),
-                  ],
+                          ),
+                        ),
+                      ),
+                      const ScanButton(),
+                    ],
+                  ),
                 ),
               ),
             ),
