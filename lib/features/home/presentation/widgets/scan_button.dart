@@ -11,35 +11,7 @@ class ScanButton extends ConsumerStatefulWidget {
   ConsumerState<ScanButton> createState() => _ScanButtonState();
 }
 
-class _ScanButtonState extends ConsumerState<ScanButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  bool _showTooltip = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
-
-    // Auto-hide tooltip after 5 seconds? Or keep it?
-    // "default shown" implies it's there. User said "it basically detects changes... and will say".
-    // I'll keep it visible until interaction.
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleScanTap() {
-    setState(() => _showTooltip = false);
-    _showScanDialog();
-  }
-
+class _ScanButtonState extends ConsumerState<ScanButton> {
   void _showScanDialog() {
     showGeneralDialog(
       context: context,
@@ -116,111 +88,46 @@ class _ScanButtonState extends ConsumerState<ScanButton>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.center,
-      children: [
-        // Tooltip
-        if (_showTooltip)
-          Positioned(
-            bottom: -45, // Position below the button
-            right: 0,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: 1),
-              duration: const Duration(milliseconds: 400),
-              builder: (context, value, child) {
-                return Opacity(
-                  opacity: value,
-                  child: Transform.translate(
-                    offset: Offset(0, 10 * (1 - value)),
-                    child: child,
-                  ),
-                );
-              },
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 200),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      size: 14,
-                      color: theme.colorScheme.onPrimaryContainer,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        "App changes detected. Time to scan.",
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+    return GestureDetector(
+      onTap: _showScanDialog,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.grey[800]!.withOpacity(0.8)
+              : Colors.grey[200]!.withOpacity(0.8),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: theme.colorScheme.primary.withOpacity(0.3),
+            width: 1,
           ),
-
-        // Button
-        GestureDetector(
-          onTap: _handleScanTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.grey[800]!.withOpacity(0.8)
-                  : Colors.grey[200]!.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: theme.colorScheme.primary.withOpacity(0.3),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.radar_rounded, // Intriguing icon
-                  size: 18,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "Scan",
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         ),
-      ],
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.radar_rounded, // Intriguing icon
+              size: 18,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              "Scan",
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
