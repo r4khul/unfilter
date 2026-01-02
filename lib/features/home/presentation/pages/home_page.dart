@@ -247,12 +247,35 @@ class HomePage extends ConsumerWidget {
                     ),
                   ),
                 ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => AppCard(app: filteredApps[index]),
-                    childCount: filteredApps.length,
-                  ),
-                ),
+                filteredApps.isEmpty
+                    ? SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.app_blocking_outlined,
+                                size: 64,
+                                color: theme.disabledColor,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "No apps found matching criteria",
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: theme.disabledColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => AppCard(app: filteredApps[index]),
+                          childCount: filteredApps.length,
+                        ),
+                      ),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
             );
