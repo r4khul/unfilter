@@ -26,7 +26,10 @@ class HomePage extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: "Refresh Scanning",
-            onPressed: () => ref.refresh(installedAppsProvider),
+            onPressed: () {
+              // ignore: unused_result
+              ref.refresh(installedAppsProvider);
+            },
           ),
         ],
       ),
@@ -103,9 +106,11 @@ class HomePage extends ConsumerWidget {
                                               Future.delayed(
                                                 const Duration(seconds: 2),
                                                 () {
+                                                  // ignore: unused_result
                                                   ref.refresh(
                                                     usagePermissionProvider,
                                                   );
+                                                  // ignore: unused_result
                                                   ref.refresh(
                                                     installedAppsProvider,
                                                   );

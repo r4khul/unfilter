@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../../core/widgets/premium_app_bar.dart';
+import '../../../home/presentation/widgets/premium_sliver_app_bar.dart';
 import '../../domain/entities/app_usage_point.dart';
 import '../../domain/entities/device_app.dart';
 import '../providers/app_detail_provider.dart';
@@ -24,20 +24,20 @@ class AppDetailsPage extends ConsumerWidget {
     );
 
     return Scaffold(
-      extendBodyBehindAppBar: true, // For blur effect
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: const PremiumAppBar(title: "App Details"),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
+          PremiumSliverAppBar(
+            title: "App Details",
+            onResync: () {
+              // ignore: unused_result
+              ref.refresh(appUsageHistoryProvider(app.packageName));
+            },
+          ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(
-                top: 120, // Space for transparent/blur AppBar
-                left: 20,
-                right: 20,
-                bottom: 20,
-              ),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

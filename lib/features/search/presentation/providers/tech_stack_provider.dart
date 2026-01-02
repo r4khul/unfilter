@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
-
 final techStackFilterProvider = StateProvider<String?>((ref) => null);
 
 // Constants for tech stacks matching SVG names or logic
