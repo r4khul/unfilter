@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/search_provider.dart';
 import '../../../apps/presentation/widgets/category_slider.dart';
 import '../../../apps/presentation/widgets/app_card.dart';
+import '../widgets/tech_stack_filter.dart';
 
 class SearchPage extends ConsumerWidget {
   const SearchPage({super.key});
@@ -41,30 +42,52 @@ class SearchPage extends ConsumerWidget {
                           icon: const Icon(Icons.arrow_back),
                           onPressed: () => Navigator.pop(context),
                         ),
+                        const SizedBox(width: 8),
                         Expanded(
-                          child: TextField(
-                            autofocus: true,
-                            decoration: InputDecoration(
-                              hintText: "Search apps, packages...",
-                              border: InputBorder.none,
-                              hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                                color: theme.hintColor.withOpacity(0.5),
-                              ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerHighest
+                                  .withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            style: theme.textTheme.bodyLarge,
-                            onChanged: (val) =>
-                                ref.read(searchFilterProvider.notifier).state =
-                                    val,
+                            child: TextField(
+                              autofocus: true,
+                              decoration: InputDecoration(
+                                hintText: "Search apps...",
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                                hintStyle: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.hintColor.withOpacity(0.5),
+                                ),
+                                suffixIcon: searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.close, size: 20),
+                                        onPressed: () {
+                                          ref
+                                                  .read(
+                                                    searchFilterProvider
+                                                        .notifier,
+                                                  )
+                                                  .state =
+                                              '';
+                                        },
+                                      )
+                                    : null,
+                              ),
+                              style: theme.textTheme.bodyLarge,
+                              onChanged: (val) =>
+                                  ref
+                                          .read(searchFilterProvider.notifier)
+                                          .state =
+                                      val,
+                            ),
                           ),
                         ),
-                        if (searchQuery.isNotEmpty)
-                          IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              ref.read(searchFilterProvider.notifier).state =
-                                  '';
-                            },
-                          ),
+                        const SizedBox(width: 12),
+                        const TechStackFilter(),
                       ],
                     ),
                   ),

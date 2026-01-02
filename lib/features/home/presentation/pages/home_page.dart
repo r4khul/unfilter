@@ -6,6 +6,8 @@ import '../../../apps/presentation/widgets/app_card.dart';
 import '../../../apps/presentation/widgets/category_slider.dart';
 import '../../../apps/presentation/widgets/apps_list_skeleton.dart';
 import '../../../search/presentation/pages/search_page.dart';
+import '../../../search/presentation/widgets/tech_stack_filter.dart';
+import '../../../search/presentation/providers/tech_stack_provider.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -33,8 +35,25 @@ class HomePage extends ConsumerWidget {
         child: appsAsync.when(
           data: (apps) {
             final category = ref.watch(categoryFilterProvider);
+            final techStack = ref.watch(techStackFilterProvider);
+
             final filteredApps = apps.where((app) {
-              return category == null || app.category == category;
+              final matchesCategory =
+                  category == null || app.category == category;
+              bool matchesStack = true;
+              if (techStack != null && techStack != 'All') {
+                if (techStack == 'Android') {
+                  matchesStack = [
+                    'Java',
+                    'Kotlin',
+                    'Android',
+                  ].contains(app.stack);
+                } else {
+                  matchesStack =
+                      app.stack.toLowerCase() == techStack.toLowerCase();
+                }
+              }
+              return matchesCategory && matchesStack;
             }).toList();
 
             return CustomScrollView(
@@ -116,80 +135,107 @@ class HomePage extends ConsumerWidget {
                           style: theme.textTheme.headlineMedium,
                         ),
                         const SizedBox(height: 24),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              PageRouteBuilder(
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) =>
-                                        const SearchPage(),
-                                transitionsBuilder:
-                                    (
-                                      context,
-                                      animation,
-                                      secondaryAnimation,
-                                      child,
-                                    ) {
-                                      const begin = Offset(0.0, 0.1);
-                                      const end = Offset.zero;
-                                      const curve = Curves.easeOutCubic;
-                                      var tween = Tween(
-                                        begin: begin,
-                                        end: end,
-                                      ).chain(CurveTween(curve: curve));
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: SlideTransition(
-                                          position: animation.drive(tween),
-                                          child: child,
-                                        ),
-                                      );
-                                    },
-                                transitionDuration: const Duration(
-                                  milliseconds: 300,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: theme.colorScheme.outline.withOpacity(
-                                  0.4,
-                                ),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.search,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  "Search installed apps...",
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant
-                                        .withOpacity(0.8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    PageRouteBuilder(
+                                      pageBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                          ) => const SearchPage(),
+                                      transitionsBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                            child,
+                                          ) {
+                                            const begin = Offset(0.0, 0.1);
+                                            const end = Offset.zero;
+                                            const curve = Curves.easeOutCubic;
+                                            var tween = Tween(
+                                              begin: begin,
+                                              end: end,
+                                            ).chain(CurveTween(curve: curve));
+                                            return FadeTransition(
+                                              opacity: animation,
+                                              child: SlideTransition(
+                                                position: animation.drive(
+                                                  tween,
+                                                ),
+                                                child: child,
+                                              ),
+                                            );
+                                          },
+                                      transitionDuration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: theme.colorScheme.outline
+                                          .withOpacity(0.4),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.search,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        "Search installed apps...",
+                                        style: theme.textTheme.bodyLarge
+                                            ?.copyWith(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant
+                                                  .withOpacity(0.8),
+                                            ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            // We can use the TechStackFilter here too, but since the filtering logic resides in SearchPage provider which depends on search scope...
+                            // Actually filteredAppsProvider is global/shared in search_provider.
+                            // But HomePage uses `filteredApps` variable locally computed from `apps.where((app) => category...)`.
+                            // The HomePage DOES NOT use `filteredAppsProvider`.
+                            // So adding the filter here won't affect the list unless we update HomePage logic too.
+                            // The prompt says "and this same thing can also be replicated to the search page also".
+                            // This implies it should be on HomePage first.
+                            // However, HomePage currently only filters by Category.
+                            // Let's assume we should just navigate to SearchPage when this is clicked for now to avoid major refactor of HomePage provider logic, OR we refactor HomePage to observe the tech stack filter too.
+                            // The prompt says "near the search bar add a kind of a icon button... this same thing can also be replicated to the search page".
+                            // Let's add the button. For now let it open the filter.
+                            const TechStackFilter(),
+                          ],
                         ),
                         const SizedBox(height: 16),
                         // Compact Category Slider
