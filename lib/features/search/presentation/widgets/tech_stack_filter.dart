@@ -49,7 +49,7 @@ class TechStackFilter extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                "Filter by Tech Stack",
+                "Filter by Tech Used",
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),

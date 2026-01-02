@@ -43,12 +43,36 @@ class InstalledAppsNotifier extends AsyncNotifier<List<DeviceApp>> {
     }
   }
 
-  Future<void> refresh() async {
+  Future<void> fullScan() async {
     final repository = ref.read(deviceAppsRepositoryProvider);
     state = const AsyncValue.loading();
+    // Clear cache first
+    await repository.clearCache();
+    // Then fetch fresh
     state = await AsyncValue.guard(
       () => repository.getInstalledApps(forceRefresh: true),
     );
+  }
+
+  Future<void> revalidate() async {
+    final repository = ref.read(deviceAppsRepositoryProvider);
+    // Silent update: don't set state to loading immediately to avoid flicker,
+    // but we can set it to loading with existing data if we want 'refreshing' state.
+    // However, user wants 'subtle'.
+    // We will just fetch and update.
+    // But Riverpod's AsyncValue doesn't easily support "loading with data" unless we specifically construct it.
+    // Let's just run the fetch. The UI can listen to a separate "isRevalidating" provider if needed,
+    // or we just rely on the future completing.
+    // Actually, updating `state` will notify listeners.
+
+    final newState = await AsyncValue.guard(
+      () => repository.getInstalledApps(forceRefresh: true),
+    );
+
+    // Only update if successful to avoid error screens on transient failures during revalidate
+    if (!newState.hasError) {
+      state = newState;
+    }
   }
 }
 

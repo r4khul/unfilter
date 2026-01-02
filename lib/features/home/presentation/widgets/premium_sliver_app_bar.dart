@@ -166,7 +166,7 @@ class _PremiumSliverAppBarState extends State<PremiumSliverAppBar> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 // Greyish tint with transparency for legibility
                 color: isDark

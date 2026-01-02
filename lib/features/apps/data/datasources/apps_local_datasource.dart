@@ -59,4 +59,15 @@ class AppsLocalDataSource {
       return [];
     }
   }
+
+  Future<void> clearCache() async {
+    try {
+      final file = await _localFile;
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (e) {
+      print('Error clearing cache: $e');
+    }
+  }
 }

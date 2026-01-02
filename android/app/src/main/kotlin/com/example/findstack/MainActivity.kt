@@ -32,6 +32,7 @@ class MainActivity : FlutterActivity() {
     private val executor = Executors.newFixedThreadPool(4) 
     private val handler = Handler(Looper.getMainLooper())
     private var eventSink: EventChannel.EventSink? = null
+    @Volatile private var currentScanId = 0L
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -39,9 +40,14 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "getInstalledApps" -> {
+                    currentScanId++
+                    val myScanId = currentScanId
                     executor.execute {
-                        val apps = getInstalledApps()
-                        handler.post { result.success(apps) }
+                        val apps = getInstalledApps(myScanId)
+                        // Only return result if this is still the latest scan (optional, but good)
+                        if (myScanId == currentScanId) {
+                             handler.post { result.success(apps) }
+                        }
                     }
                 }
                 "getAppUsageHistory" -> {
@@ -88,7 +94,7 @@ class MainActivity : FlutterActivity() {
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-    private fun getInstalledApps(): List<Map<String, Any?>> {
+    private fun getInstalledApps(scanId: Long): List<Map<String, Any?>> {
         val pm = packageManager
         
         val flags = PackageManager.GET_META_DATA or 
@@ -98,8 +104,10 @@ class MainActivity : FlutterActivity() {
                    PackageManager.GET_PROVIDERS
 
         // Emit start
-        handler.post { 
-            eventSink?.success(mapOf("status" to "Fetching app list...", "percent" to 0)) 
+        if (scanId == currentScanId) {
+            handler.post { 
+                eventSink?.success(mapOf("status" to "Fetching app list...", "percent" to 0)) 
+            }
         }
 
         val packages = pm.getInstalledPackages(flags)
@@ -121,18 +129,24 @@ class MainActivity : FlutterActivity() {
         val appList = mutableListOf<Map<String, Any?>>()
 
         for ((index, pkg) in packages.withIndex()) {
+            // Check if superseded
+            if (scanId != currentScanId) break
+
             val appInfo = pkg.applicationInfo ?: continue
             val packageName = pkg.packageName
 
-            // Updates every 5 apps or so to not flood channel, but specific enough
-            if (index % 1 == 0) { // actually let's do every 1 for "True" feel
+            // Updates every 1 app
+            if (index % 1 == 0 && scanId == currentScanId) { 
                  handler.post { 
-                    eventSink?.success(mapOf(
-                        "status" to "Scanning $packageName", 
-                        "percent" to ((index.toDouble() / total) * 100).toInt(),
-                        "current" to index + 1,
-                        "total" to total
-                    )) 
+                    // Verify again before sending in case new scan came in
+                    if (scanId == currentScanId) {
+                        eventSink?.success(mapOf(
+                            "status" to "Scanning $packageName", 
+                            "percent" to ((index.toDouble() / total) * 100).toInt(),
+                            "current" to index + 1,
+                            "total" to total
+                        )) 
+                    }
                 }
             }
             
@@ -194,8 +208,10 @@ class MainActivity : FlutterActivity() {
         }
         
         // Done
-        handler.post { 
-            eventSink?.success(mapOf("status" to "Complete", "percent" to 100)) 
+        if (scanId == currentScanId) {
+            handler.post { 
+                eventSink?.success(mapOf("status" to "Complete", "percent" to 100)) 
+            }
         }
 
         return appList

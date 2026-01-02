@@ -8,6 +8,7 @@ import '../../../apps/presentation/widgets/apps_list_skeleton.dart';
 import '../../../search/presentation/pages/search_page.dart';
 import '../../../search/presentation/widgets/tech_stack_filter.dart';
 import '../../../search/presentation/providers/tech_stack_provider.dart';
+import '../widgets/scan_button.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -23,13 +24,9 @@ class HomePage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text("FindStack"),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: "Refresh Scanning",
-            onPressed: () {
-              // ignore: unused_result
-              ref.refresh(installedAppsProvider);
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: const ScanButton(),
           ),
         ],
       ),

@@ -94,4 +94,8 @@ class DeviceAppsRepository {
       return [];
     }
   }
+
+  Future<void> clearCache() async {
+    await _localDataSource.clearCache();
+  }
 }
