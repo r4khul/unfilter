@@ -19,31 +19,38 @@ class ScanProgressWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Smooth Progress Circle
+          // Smooth Progress Circle
           SizedBox(
-            width: 140,
-            height: 140,
+            width: 220,
+            height: 220,
             child: TweenAnimationBuilder<double>(
               tween: Tween<double>(begin: 0, end: progress.percent / 100),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutQuart,
               builder: (context, value, _) {
                 return Stack(
                   alignment: Alignment.center,
                   children: [
                     // Background ring
-                    CircularProgressIndicator(
-                      value: 1,
-                      strokeWidth: 8,
-                      color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                    SizedBox.expand(
+                      child: CircularProgressIndicator(
+                        value: 1,
+                        strokeWidth: 6,
+                        color: theme.colorScheme.surfaceVariant.withOpacity(
+                          0.2,
+                        ),
+                      ),
                     ),
                     // Foreground value
-                    CircularProgressIndicator(
-                      value: value,
-                      strokeWidth: 8,
-                      strokeCap: StrokeCap.round,
-                      backgroundColor: Colors.transparent,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        theme.colorScheme.primary,
+                    SizedBox.expand(
+                      child: CircularProgressIndicator(
+                        value: value,
+                        strokeWidth: 6,
+                        strokeCap: StrokeCap.round,
+                        backgroundColor: Colors.transparent,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          theme.colorScheme.primary,
+                        ),
                       ),
                     ),
                     Column(
@@ -51,17 +58,20 @@ class ScanProgressWidget extends StatelessWidget {
                       children: [
                         Text(
                           "${(value * 100).toInt()}%",
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 32,
                             color: theme.colorScheme.primary,
-                            letterSpacing: -1,
+                            letterSpacing: -0.5,
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
-                          "COMPLETED",
+                          "SCANNED",
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontSize: 10,
-                            letterSpacing: 1.5,
+                            letterSpacing: 2.0,
+                            fontWeight: FontWeight.w600,
                             color: theme.colorScheme.outline,
                           ),
                         ),
@@ -129,7 +139,7 @@ class ScanProgressWidget extends StatelessWidget {
                             opacity: animation,
                             child: SlideTransition(
                               position: Tween<Offset>(
-                                begin: const Offset(0.0, 0.5),
+                                begin: Offset.zero,
                                 end: Offset.zero,
                               ).animate(animation),
                               child: child,
