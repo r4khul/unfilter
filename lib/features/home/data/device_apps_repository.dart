@@ -30,7 +30,7 @@ class DeviceAppsRepository {
       );
       return result
           .cast<Map<Object?, Object?>>()
-          .map((e) => DeviceApp.fromMap(e))
+          .map((e) => DeviceApp.fromMap(Map<String, dynamic>.from(e)))
           .toList();
     } on PlatformException catch (e) {
       print("Failed to get apps: '${e.message}'");
