@@ -9,76 +9,153 @@ class ScanProgressWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // Extract package name safely
+    final packageName = progress.status.startsWith("Scanning")
+        ? progress.status.replaceFirst("Scanning ", "")
+        : "";
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: 120,
-                height: 120,
-                child: CircularProgressIndicator(
-                  value: progress.percent / 100,
-                  strokeWidth: 8,
-                  backgroundColor: theme.colorScheme.surfaceVariant,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "${progress.percent}%",
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+          // Smooth Progress Circle
+          SizedBox(
+            width: 140,
+            height: 140,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0, end: progress.percent / 100),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Background ring
+                    CircularProgressIndicator(
+                      value: 1,
+                      strokeWidth: 8,
+                      color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    // Foreground value
+                    CircularProgressIndicator(
+                      value: value,
+                      strokeWidth: 8,
+                      strokeCap: StrokeCap.round,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        theme.colorScheme.primary,
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "${(value * 100).toInt()}%",
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                            letterSpacing: -1,
+                          ),
+                        ),
+                        Text(
+                          "COMPLETED",
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 10,
+                            letterSpacing: 1.5,
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
-          const SizedBox(height: 32),
+
+          const SizedBox(height: 48),
+
+          // Status & Count
           Text(
-            progress.status,
+            progress.status.startsWith("Scanning")
+                ? "Deep System Scan"
+                : progress.status,
             textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onBackground,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
             ),
           ),
           const SizedBox(height: 8),
           if (progress.totalCount > 0)
             Text(
-              "Analyzed ${progress.processedCount} of ${progress.totalCount} packages",
+              "Analyzing package ${progress.processedCount} of ${progress.totalCount}",
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.outline,
               ),
             ),
 
-          const SizedBox(height: 24),
-          // Terminal like effect for current package
-          if (progress.status.startsWith("Scanning"))
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black87,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                "> ${progress.status.replaceFirst("Scanning ", "")}...",
-                style: const TextStyle(
-                  fontFamily: 'Courier',
-                  color: Colors.greenAccent,
-                  fontSize: 12,
-                ),
+          const SizedBox(height: 32),
+
+          // Terminal / Log View
+          // Fixed height container to prevent layout jumping
+          Container(
+            height: 48,
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: theme.brightness == Brightness.dark
+                  ? const Color(0xFF1E1E1E)
+                  : const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.outline.withOpacity(0.2),
               ),
             ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.terminal,
+                  size: 16,
+                  color: theme.colorScheme.primary.withOpacity(0.7),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.0, 0.5),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+                    // Use Key to force consistency even if text is empty
+                    child: Text(
+                      packageName.isNotEmpty ? packageName : "Initializing...",
+                      key: ValueKey<String>(
+                        packageName,
+                      ), // Crucial for AnimatedSwitcher
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Courier', // Monospace for tech feel
+                        color: theme.colorScheme.onSurface.withOpacity(0.8),
+                        fontSize: 13,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
