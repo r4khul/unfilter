@@ -9,12 +9,42 @@ class AppCard extends StatelessWidget {
   const AppCard({super.key, required this.app});
 
   Color _getStackColor(String stack, bool isDark) {
-    if (stack == "Flutter")
-      return isDark ? const Color(0xFF42A5F5) : const Color(0xFF02569B);
-    if (stack == "React Native")
-      return isDark ? const Color(0xFF61DAFB) : const Color(0xFF0D47A1);
-    // ... same as before
-    return Colors.grey;
+    switch (stack.toLowerCase()) {
+      case 'flutter':
+        return isDark ? const Color(0xFF42A5F5) : const Color(0xFF02569B);
+      case 'react native':
+        return isDark ? const Color(0xFF61DAFB) : const Color(0xFF0D47A1);
+      case 'kotlin':
+        return isDark
+            ? const Color(0xFF7F52FF)
+            : const Color(0xFF4800D6); // Purple
+      case 'java':
+        return isDark
+            ? const Color(0xFFF44336)
+            : const Color(0xFFB71C1C); // Red/Orange
+      case 'swift':
+        return isDark
+            ? const Color(0xFFFF9800)
+            : const Color(0xFFE65100); // Orange
+      case 'ionic':
+        return isDark
+            ? const Color(0xFF3880FF)
+            : const Color(0xFF3880FF); // Ionic Blue
+      case 'xamarin':
+        return isDark
+            ? const Color(0xFF3498DB)
+            : const Color(0xFF2980B9); // Xamarin Blue
+      case 'unity':
+        return isDark
+            ? const Color(0xFFE0E0E0)
+            : const Color(0xFF212121); // White/Black
+      case 'godot':
+        return isDark
+            ? const Color(0xFF478CBF)
+            : const Color(0xFF336699); // Godot Blue
+      default:
+        return const Color(0xFF3DDC84); // Android Green for others
+    }
   }
 
   String _getStackIconPath(String stack) {
@@ -167,6 +197,35 @@ class AppCard extends StatelessWidget {
                                 ),
                               ),
                             ],
+                            Spacer(),
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: theme.colorScheme.outline.withOpacity(
+                                    0.1,
+                                  ),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.60),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 20,
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.6),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -175,39 +234,6 @@ class AppCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(width: 8),
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: theme.colorScheme.outline.withOpacity(0.1),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.chevron_right_rounded,
-                    size: 20,
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ),
-              ),
-              // The content that was previously in ExpansionTile's children
-              // This part will now always be visible or can be moved to AppDetailsPage
-              // For now, let's keep it here as a summary, but the primary action is navigation.
-              // If the goal is to make the card a summary and navigate to details,
-              // then this detailed section should probably be removed from the card itself.
-              // For this change, I'll remove the detailed section from the card
-              // as the instruction implies the card itself navigates to a details page.
-              // The original ExpansionTile children content is now implicitly part of AppDetailsPage.
             ],
           ),
         ),

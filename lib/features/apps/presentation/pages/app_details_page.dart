@@ -64,11 +64,38 @@ class AppDetailsPage extends ConsumerWidget {
   }
 
   Widget _buildAppHeader(BuildContext context, ThemeData theme, bool isDark) {
-    final stackColor = app.stack == "Flutter"
-        ? (isDark ? const Color(0xFF42A5F5) : const Color(0xFF02569B))
-        : app.stack == "React Native"
-        ? (isDark ? const Color(0xFF61DAFB) : const Color(0xFF0D47A1))
-        : Colors.grey;
+    Color stackColor;
+    switch (app.stack.toLowerCase()) {
+      case 'flutter':
+        stackColor = isDark ? const Color(0xFF42A5F5) : const Color(0xFF02569B);
+        break;
+      case 'react native':
+        stackColor = isDark ? const Color(0xFF61DAFB) : const Color(0xFF0D47A1);
+        break;
+      case 'kotlin':
+        stackColor = isDark ? const Color(0xFF7F52FF) : const Color(0xFF4800D6);
+        break;
+      case 'java':
+        stackColor = isDark ? const Color(0xFFF44336) : const Color(0xFFB71C1C);
+        break;
+      case 'swift':
+        stackColor = isDark ? const Color(0xFFFF9800) : const Color(0xFFE65100);
+        break;
+      case 'ionic':
+        stackColor = isDark ? const Color(0xFF3880FF) : const Color(0xFF3880FF);
+        break;
+      case 'xamarin':
+        stackColor = isDark ? const Color(0xFF3498DB) : const Color(0xFF2980B9);
+        break;
+      case 'unity':
+        stackColor = isDark ? const Color(0xFFE0E0E0) : const Color(0xFF212121);
+        break;
+      case 'godot':
+        stackColor = isDark ? const Color(0xFF478CBF) : const Color(0xFF336699);
+        break;
+      default:
+        stackColor = const Color(0xFF3DDC84); // Android Green
+    }
 
     return Column(
       children: [

@@ -278,6 +278,7 @@ class MainActivity : FlutterActivity() {
     private fun detectStackAndLibs(apkPath: String): Pair<String, List<String>> {
         val libs = mutableListOf<String>()
         var stack = "Native" 
+        var isKotlin = false
         
         try {
             val file = File(apkPath)
@@ -288,6 +289,10 @@ class MainActivity : FlutterActivity() {
                 while (entries.hasMoreElements()) {
                     val entry = entries.nextElement()
                     val name = entry.name
+                    
+                    if (name.endsWith(".kotlin_module") || name.startsWith("kotlin/")) {
+                        isKotlin = true
+                    }
                     
                     if (name.startsWith("lib/") && name.endsWith(".so")) {
                         val parts = name.split("/")
@@ -316,6 +321,10 @@ class MainActivity : FlutterActivity() {
         if (libs.contains("flutter")) stack = "Flutter"
         if (libs.contains("reactnativejni") || libs.contains("hermes")) stack = "React Native"
         if (libs.contains("unity")) stack = "Unity"
+        
+        if (stack == "Native") {
+            stack = if (isKotlin) "Kotlin" else "Java"
+        }
         
         return Pair(stack, libs)
     }
