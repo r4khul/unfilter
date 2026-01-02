@@ -1,6 +1,6 @@
 name: findstack
 description: "An app that shows what other apps are built with"
-publish_to: 'none' 
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
@@ -20,12 +20,20 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.2
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/findstack-bg.png" # Standard icon
+  adaptive_icon_background: "#000000" # Pure black layer
+  adaptive_icon_foreground: "assets/icons/findstack-nobg.png" # Floating logo layer
 
 flutter:
-
   uses-material-design: true
   assets:
     - assets/fonts/
+    - assets/icons/
   fonts:
     - family: UncutSans
       fonts:
