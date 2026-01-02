@@ -229,20 +229,19 @@ class MainActivity : FlutterActivity() {
         val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val calendar = Calendar.getInstance()
         val endTime = calendar.timeInMillis
-        calendar.add(Calendar.DAY_OF_YEAR, -7) // Last 7 days
+        calendar.add(Calendar.YEAR, -1) // Last 1 year
         val startTime = calendar.timeInMillis
 
-        // Query daily intervals
+        // Query daily intervals for granular "stock-like" data
         val usageStatsList = usageStatsManager.queryUsageStats(
             UsageStatsManager.INTERVAL_DAILY,
             startTime,
             endTime
         )
 
-        // Group by day to handle multiple entries per day (common in INTERVAL_DAILY)
+        // Group by day
         val dailyUsage = mutableMapOf<Long, Long>()
         
-        // Normalize to start of day for grouping
         val cal = Calendar.getInstance()
 
         for (stats in usageStatsList) {
@@ -259,9 +258,14 @@ class MainActivity : FlutterActivity() {
         }
 
         // Fill in missing days with 0
+        // We iterate 365 days back
         val result = mutableListOf<Map<String, Any>>()
-        for (i in 0 until 7) {
+        val todayCal = Calendar.getInstance()
+        
+        // Ensure we cover the full year nicely
+        for (i in 0 until 365) {
             val dateCal = Calendar.getInstance()
+            dateCal.timeInMillis = todayCal.timeInMillis
             dateCal.add(Calendar.DAY_OF_YEAR, -i)
             dateCal.set(Calendar.HOUR_OF_DAY, 0)
             dateCal.set(Calendar.MINUTE, 0)

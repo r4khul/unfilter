@@ -304,100 +304,149 @@ class AppDetailsPage extends ConsumerWidget {
     if (history.every((h) => h.usage.inMinutes == 0)) {
       return Center(
         child: Text(
-          "No usage recorded in last 7 days",
+          "No usage recorded in last year",
           style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
         ),
       );
     }
 
-    return BarChart(
-      BarChartData(
-        alignment: BarChartAlignment.spaceAround,
-        maxY:
-            history
-                    .map((e) => e.usage.inMinutes.toDouble())
-                    .reduce((a, b) => a > b ? a : b) *
-                1.2 +
-            10, // Add buffer
-        barTouchData: BarTouchData(
-          touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (group) =>
-                theme.colorScheme.inverseSurface, // Modern tooltip color
-            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              final minutes = rod.toY.toInt();
-              // Format duration nicely
-              String time = "${minutes}m";
-              if (minutes > 60) {
-                time = "${minutes ~/ 60}h ${minutes % 60}m";
-              }
+    final maxY =
+        history
+            .map((e) => e.usage.inMinutes.toDouble())
+            .reduce((a, b) => a > b ? a : b) *
+        1.2;
+    // Ensure at least some height
+    final effectiveMaxY = maxY > 10 ? maxY : 60.0;
 
-              return BarTooltipItem(
-                time,
-                TextStyle(
-                  color: theme.colorScheme.onInverseSurface,
-                  fontWeight: FontWeight.bold,
-                ),
-              );
-            },
-          ),
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: effectiveMaxY / 4,
+          getDrawingHorizontalLine: (value) {
+            return FlLine(
+              color: theme.colorScheme.outline.withOpacity(0.1),
+              strokeWidth: 1,
+            );
+          },
         ),
         titlesData: FlTitlesData(
           show: true,
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              reservedSize: 30,
+              interval: 30, // Approx every month
               getTitlesWidget: (value, meta) {
-                if (value.toInt() >= 0 && value.toInt() < history.length) {
+                final index = value.toInt();
+                if (index >= 0 && index < history.length) {
+                  // Show Month name (e.g. "Jan")
                   return Padding(
-                    padding: const EdgeInsets.only(top: 10.0),
+                    padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
-                      DateFormat.E()
-                          .format(history[value.toInt()].date)
-                          .substring(0, 1),
-                      style: theme.textTheme.labelMedium?.copyWith(
+                      DateFormat.MMM().format(history[index].date),
+                      style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   );
                 }
-                return const Text('');
+                return const SizedBox.shrink();
               },
             ),
           ),
-          leftTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (value, meta) {
+                if (value == 0) return const SizedBox.shrink();
+                // condensed format: 1h, 30m
+                final mins = value.toInt();
+                if (mins >= 60) {
+                  return Text(
+                    "${mins ~/ 60}h",
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.4),
+                      fontSize: 10,
+                    ),
+                  );
+                }
+                return Text(
+                  "${mins}m",
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.4),
+                    fontSize: 10,
+                  ),
+                );
+              },
+            ),
           ),
         ),
-        gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
-        barGroups: history.asMap().entries.map((entry) {
-          final index = entry.key;
-          final point = entry.value;
-          return BarChartGroupData(
-            x: index,
-            barRods: [
-              BarChartRodData(
-                toY: point.usage.inMinutes.toDouble(),
-                color: theme.colorScheme.primary, // Use primary color
-                width: 12,
-                borderRadius: BorderRadius.circular(6),
-                backDrawRodData: BackgroundBarChartRodData(
-                  show: true,
-                  toY:
-                      1440, // Should be relative to max Y really, but keeping simplified
-                  color: theme.colorScheme.onSurface.withOpacity(0.05),
-                ),
+        minX: 0,
+        maxX: history.length.toDouble() - 1,
+        minY: 0,
+        maxY: effectiveMaxY,
+        lineBarsData: [
+          LineChartBarData(
+            spots: history.asMap().entries.map((e) {
+              return FlSpot(
+                e.key.toDouble(),
+                e.value.usage.inMinutes.toDouble(),
+              );
+            }).toList(),
+            isCurved: true,
+            color: theme.colorScheme.primary,
+            barWidth: 2,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.3),
+                  theme.colorScheme.primary.withOpacity(0.0),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
-            ],
-          );
-        }).toList(),
+            ),
+          ),
+        ],
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (touchedSpot) => theme.colorScheme.inverseSurface,
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((spot) {
+                final index = spot.x.toInt();
+                final point = history[index];
+                final minutes = point.usage.inMinutes;
+                String time = "${minutes}m";
+                if (minutes > 60) {
+                  time = "${minutes ~/ 60}h ${minutes % 60}m";
+                }
+                final date = DateFormat.MMMd().format(point.date);
+
+                return LineTooltipItem(
+                  "$date\n$time",
+                  TextStyle(
+                    color: theme.colorScheme.onInverseSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ),
       ),
     );
   }
@@ -663,10 +712,7 @@ class AppDetailsPage extends ConsumerWidget {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    Text(
-                      "Permissions",
-                      style: theme.textTheme.headlineSmall,
-                    ),
+                    Text("Permissions", style: theme.textTheme.headlineSmall),
                     const Spacer(),
                     IconButton(
                       icon: const Icon(Icons.keyboard_arrow_down),
