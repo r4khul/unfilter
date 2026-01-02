@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import '../../../../core/widgets/premium_app_bar.dart';
 import '../../domain/entities/app_usage_point.dart';
 import '../../domain/entities/device_app.dart';
 import '../providers/app_detail_provider.dart';
+import '../widgets/usage_chart.dart';
 
 class AppDetailsPage extends ConsumerWidget {
   final DeviceApp app;
@@ -265,7 +265,7 @@ class AppDetailsPage extends ConsumerWidget {
         _buildSectionHeader(theme, "Activity"),
         const SizedBox(height: 16),
         Container(
-          height: 240,
+          height: 320, // Increased height for UsageChart
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: isDark
@@ -309,146 +309,9 @@ class AppDetailsPage extends ConsumerWidget {
         ),
       );
     }
-
-    final maxY =
-        history
-            .map((e) => e.usage.inMinutes.toDouble())
-            .reduce((a, b) => a > b ? a : b) *
-        1.2;
-    // Ensure at least some height
-    final effectiveMaxY = maxY > 10 ? maxY : 60.0;
-
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: effectiveMaxY / 4,
-          getDrawingHorizontalLine: (value) {
-            return FlLine(
-              color: theme.colorScheme.outline.withOpacity(0.1),
-              strokeWidth: 1,
-            );
-          },
-        ),
-        titlesData: FlTitlesData(
-          show: true,
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 30,
-              interval: 30, // Approx every month
-              getTitlesWidget: (value, meta) {
-                final index = value.toInt();
-                if (index >= 0 && index < history.length) {
-                  // Show Month name (e.g. "Jan")
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      DateFormat.MMM().format(history[index].date),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 40,
-              getTitlesWidget: (value, meta) {
-                if (value == 0) return const SizedBox.shrink();
-                // condensed format: 1h, 30m
-                final mins = value.toInt();
-                if (mins >= 60) {
-                  return Text(
-                    "${mins ~/ 60}h",
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.4),
-                      fontSize: 10,
-                    ),
-                  );
-                }
-                return Text(
-                  "${mins}m",
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.4),
-                    fontSize: 10,
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        borderData: FlBorderData(show: false),
-        minX: 0,
-        maxX: history.length.toDouble() - 1,
-        minY: 0,
-        maxY: effectiveMaxY,
-        lineBarsData: [
-          LineChartBarData(
-            spots: history.asMap().entries.map((e) {
-              return FlSpot(
-                e.key.toDouble(),
-                e.value.usage.inMinutes.toDouble(),
-              );
-            }).toList(),
-            isCurved: true,
-            color: theme.colorScheme.primary,
-            barWidth: 2,
-            isStrokeCapRound: true,
-            dotData: const FlDotData(show: false),
-            belowBarData: BarAreaData(
-              show: true,
-              gradient: LinearGradient(
-                colors: [
-                  theme.colorScheme.primary.withOpacity(0.3),
-                  theme.colorScheme.primary.withOpacity(0.0),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-        ],
-        lineTouchData: LineTouchData(
-          touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (touchedSpot) => theme.colorScheme.inverseSurface,
-            getTooltipItems: (touchedSpots) {
-              return touchedSpots.map((spot) {
-                final index = spot.x.toInt();
-                final point = history[index];
-                final minutes = point.usage.inMinutes;
-                String time = "${minutes}m";
-                if (minutes > 60) {
-                  time = "${minutes ~/ 60}h ${minutes % 60}m";
-                }
-                final date = DateFormat.MMMd().format(point.date);
-
-                return LineTooltipItem(
-                  "$date\n$time",
-                  TextStyle(
-                    color: theme.colorScheme.onInverseSurface,
-                    fontWeight: FontWeight.bold,
-                  ),
-                );
-              }).toList();
-            },
-          ),
-        ),
-      ),
-    );
+    // High-performance interactive chart
+    final isDark = theme.brightness == Brightness.dark;
+    return UsageChart(history: history, theme: theme, isDark: isDark);
   }
 
   Widget _buildInfoSection(BuildContext context, ThemeData theme, bool isDark) {
