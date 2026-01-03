@@ -47,7 +47,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildSectionHeader(context, "APPEARANCE"),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     _buildThemeSwitcher(context, ref),
 
                     const SizedBox(height: 32),
@@ -69,7 +69,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       },
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     _buildSectionHeader(context, "INFORMATION"),
                     const SizedBox(height: 12),
                     _buildNavTile(
@@ -112,7 +112,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   Widget _buildHeader(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -123,7 +123,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                 "Menu",
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
-                  fontSize: 28,
+                  fontSize: 24,
                   height: 1.1,
                 ),
               ),
@@ -173,108 +173,121 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final theme = Theme.of(context);
     final currentTheme = ref.watch(themeProvider);
 
+    // Calculate alignment for the sliding indicator
+    // -1.0 (Left/Light), 0.0 (Center/Auto), 1.0 (Right/Dark)
+    double alignmentX = 0.0;
+    if (currentTheme == ThemeMode.light) alignmentX = -1.0;
+    if (currentTheme == ThemeMode.dark) alignmentX = 1.0;
+
     return Container(
-      padding: const EdgeInsets.all(5),
+      height: 46,
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
+        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: theme.colorScheme.outlineVariant.withOpacity(0.2),
         ),
       ),
-      child: Row(
+      child: Stack(
         children: [
-          _buildThemeOption(
-            context,
-            ref,
-            ThemeMode.light,
-            Icons.wb_sunny_rounded,
-            "Light",
-            currentTheme,
+          // The sliding high-performance indicator
+          AnimatedAlign(
+            alignment: Alignment(alignmentX, 0),
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.fastOutSlowIn,
+            child: FractionallySizedBox(
+              widthFactor: 0.333,
+              heightFactor: 1.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          _buildThemeOption(
-            context,
-            ref,
-            ThemeMode.system,
-            Icons.hdr_auto_rounded,
-            "Auto",
-            currentTheme,
-          ),
-          _buildThemeOption(
-            context,
-            ref,
-            ThemeMode.dark,
-            Icons.nightlight_round,
-            "Dark",
-            currentTheme,
+          // The clickable icons
+          Row(
+            children: [
+              _buildStaticThemeOption(
+                context,
+                ref,
+                ThemeMode.light,
+                Icons.wb_sunny_rounded,
+                "Light",
+                currentTheme == ThemeMode.light,
+              ),
+              _buildStaticThemeOption(
+                context,
+                ref,
+                ThemeMode.system,
+                Icons.hdr_auto_rounded,
+                "Auto",
+                currentTheme == ThemeMode.system,
+              ),
+              _buildStaticThemeOption(
+                context,
+                ref,
+                ThemeMode.dark,
+                Icons.nightlight_round,
+                "Dark",
+                currentTheme == ThemeMode.dark,
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildThemeOption(
+  Widget _buildStaticThemeOption(
     BuildContext context,
     WidgetRef ref,
     ThemeMode mode,
     IconData icon,
     String label,
-    ThemeMode currentMode,
+    bool isSelected,
   ) {
     final theme = Theme.of(context);
-    final isSelected = mode == currentMode;
+
+    // Color transition only - cheap paint operation
+    final color = isSelected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurfaceVariant.withOpacity(0.6);
 
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () {
-          HapticFeedback.lightImpact();
+          HapticFeedback.selectionClick();
           ref.read(themeProvider.notifier).setTheme(mode);
         },
-        child: AnimatedContainer(
+        child: AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 200),
-          curve: Curves.fastOutSlowIn,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? theme.colorScheme.surface : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-            border: isSelected
-                ? Border.all(
-                    color: theme.colorScheme.outlineVariant.withOpacity(0.1),
-                    width: 1,
-                  )
-                : Border.all(color: Colors.transparent),
+          style: theme.textTheme.labelSmall!.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 11,
+            color: color,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+          child: Center(
+            child: TweenAnimationBuilder<Color?>(
+              duration: const Duration(milliseconds: 200),
+              tween: ColorTween(
+                begin: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+                end: color,
               ),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  fontSize: 11,
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
-                ),
-              ),
-            ],
+              builder: (context, color, child) {
+                return Icon(icon, size: 20, color: color);
+              },
+            ),
           ),
         ),
       ),
@@ -293,7 +306,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -303,7 +316,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
             theme.colorScheme.primary.withOpacity(0.05),
           ),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
@@ -380,15 +393,10 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final starsAsync = ref.watch(githubStarsProvider);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Optimized asset selection
-    final appLogoAsset = isDark
-        ? 'assets/icons/white-findstack-nobg.png'
-        : 'assets/icons/black-findstack-nobg.png';
-
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: theme.colorScheme.outlineVariant.withOpacity(0.4),
           width: 1,
@@ -396,12 +404,11 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -411,150 +418,92 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               await launchUrl(url, mode: LaunchMode.externalApplication);
             }
           },
-          child: Stack(
-            children: [
-              // Decorative background element
-              Positioned(
-                right: -20,
-                top: -20,
-                child: Opacity(
-                  opacity: 0.05,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest
+                        .withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: SvgPicture.asset(
                     'assets/vectors/icon_github.svg',
-                    height: 120,
-                    width: 120,
+                    height: 20,
+                    width: 20,
                     colorFilter: ColorFilter.mode(
                       theme.colorScheme.onSurface,
                       BlendMode.srcIn,
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceContainerHighest
-                                .withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Image.asset(
-                            appLogoAsset,
-                            height: 32,
-                            color: theme.colorScheme.onSurface,
-                          ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Open Source",
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "FindStack is Open Source",
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.onSurface,
-                                  height: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "Join the community and contribute on GitHub",
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
+                      ),
+                      Text(
+                        "Star us on GitHub",
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 11,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Divider(
-                      color: theme.colorScheme.outlineVariant.withOpacity(0.4),
-                      height: 1,
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              color: Color(0xFFFFD700),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "Give a Star",
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceContainerHighest
-                                .withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            children: [
-                              SvgPicture.asset(
-                                'assets/vectors/icon_github.svg',
-                                height: 14,
-                                colorFilter: ColorFilter.mode(
-                                  theme.colorScheme.onSurface,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              starsAsync.when(
-                                data: (stars) => Text(
-                                  "$stars",
-                                  style: theme.textTheme.labelMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                ),
-                                loading: () => SizedBox(
-                                  width: 10,
-                                  height: 10,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                ),
-                                error: (_, __) => Text(
-                                  "-",
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest
+                        .withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.colorScheme.outlineVariant.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Color(0xFFFFD700),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      starsAsync.when(
+                        data: (stars) => Text(
+                          "$stars",
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                        loading: () => const SizedBox(
+                          width: 8,
+                          height: 8,
+                          child: CircularProgressIndicator(strokeWidth: 1.5),
+                        ),
+                        error: (_, __) => const Text("-"),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
