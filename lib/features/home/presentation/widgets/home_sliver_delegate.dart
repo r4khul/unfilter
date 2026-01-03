@@ -1,4 +1,5 @@
 import 'settings_menu.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import 'package:flutter/material.dart';
 import '../../../apps/presentation/widgets/category_slider.dart';
@@ -10,11 +11,13 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
   final int appCount;
   final double expandedHeight;
   final double collapsedHeight;
+  final bool isLoading;
 
   HomeSliverDelegate({
     required this.appCount,
     required this.expandedHeight,
     required this.collapsedHeight,
+    this.isLoading = false,
   });
 
   @override
@@ -31,6 +34,8 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
 
     // Fade out stats quickly so they don't overlap with sliding up content
     final statsOpacity = (1.0 - (percent * 3)).clamp(0.0, 1.0);
+
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       decoration: BoxDecoration(
@@ -54,23 +59,41 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
             left: 20,
             child: Opacity(
               opacity: statsOpacity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Your Device has",
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: theme.colorScheme.primary.withOpacity(0.6),
+              child: Skeletonizer(
+                enabled: isLoading,
+                effect: ShimmerEffect(
+                  baseColor: isDark
+                      ? const Color(0xFF303030)
+                      : const Color(0xFFE0E0E0),
+                  highlightColor: isDark
+                      ? const Color(0xFF424242)
+                      : const Color(0xFFFAFAFA),
+                  duration: const Duration(milliseconds: 1500),
+                ),
+                textBoneBorderRadius: TextBoneBorderRadius(
+                  BorderRadius.circular(4),
+                ),
+                justifyMultiLineText: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Your Device has",
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: theme.colorScheme.primary.withOpacity(0.6),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "$appCount Installed Apps",
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 4),
+                    Text(
+                      isLoading
+                          ? "000 Installed Apps"
+                          : "$appCount Installed Apps",
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

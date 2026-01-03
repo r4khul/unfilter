@@ -208,61 +208,66 @@ class _HomePageState extends ConsumerState<HomePage>
 
       final isDark = theme.brightness == Brightness.dark;
 
-      return Skeletonizer(
-        enabled: isLoading,
-        // Use opaque colors for a cleaner, premium look
-        effect: ShimmerEffect(
-          baseColor: isDark ? const Color(0xFF303030) : const Color(0xFFE0E0E0),
-          highlightColor: isDark
-              ? const Color(0xFF424242)
-              : const Color(0xFFFAFAFA),
-          duration: const Duration(milliseconds: 1500),
-        ),
-        textBoneBorderRadius: TextBoneBorderRadius(BorderRadius.circular(4)),
-        justifyMultiLineText: true,
-        containersColor: theme.colorScheme.surface,
-        child: AppCountOverlay(
-          count: filteredApps.length,
-          child: CustomScrollView(
-            controller: _scrollController,
-            key: const ValueKey('data'),
-            physics: isLoading
-                ? const NeverScrollableScrollPhysics()
-                : const BouncingScrollPhysics(),
-            slivers: [
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: HomeSliverDelegate(
-                  appCount: apps.length,
-                  expandedHeight: maxHeight,
-                  collapsedHeight: minHeight,
-                ),
+      return AppCountOverlay(
+        count: filteredApps.length,
+        child: CustomScrollView(
+          controller: _scrollController,
+          key: const ValueKey('data'),
+          physics: isLoading
+              ? const NeverScrollableScrollPhysics()
+              : const BouncingScrollPhysics(),
+          slivers: [
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: HomeSliverDelegate(
+                appCount: apps.length,
+                expandedHeight: maxHeight,
+                collapsedHeight: minHeight,
+                isLoading: isLoading, // Pass loading state
               ),
-              if (!isLoading && filteredApps.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.app_blocking_outlined,
-                          size: 64,
+            ),
+            if (!isLoading && filteredApps.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.app_blocking_outlined,
+                        size: 64,
+                        color: theme.disabledColor,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "No apps found matching criteria",
+                        style: theme.textTheme.titleMedium?.copyWith(
                           color: theme.disabledColor,
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          "No apps found matching criteria",
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.disabledColor,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                )
-              else
-                SliverPadding(
+                ),
+              )
+            else
+              // Wrap ONLY the list in Skeletonizer
+              Skeletonizer.sliver(
+                enabled: isLoading,
+                effect: ShimmerEffect(
+                  baseColor: isDark
+                      ? const Color(0xFF303030)
+                      : const Color(0xFFE0E0E0),
+                  highlightColor: isDark
+                      ? const Color(0xFF424242)
+                      : const Color(0xFFFAFAFA),
+                  duration: const Duration(milliseconds: 1500),
+                ),
+                textBoneBorderRadius: TextBoneBorderRadius(
+                  BorderRadius.circular(4),
+                ),
+                justifyMultiLineText: true,
+                containersColor: theme.colorScheme.surface,
+                child: SliverPadding(
                   padding: EdgeInsets.fromLTRB(
                     20,
                     10,
@@ -279,8 +284,8 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       );
     }

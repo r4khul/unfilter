@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../domain/entities/device_app.dart';
 import '../pages/app_details_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -168,10 +169,14 @@ class AppCard extends StatelessWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  SvgPicture.asset(
-                                    _getStackIconPath(app.stack),
+                                  Skeleton.replace(
                                     width: 14,
                                     height: 14,
+                                    child: SvgPicture.asset(
+                                      _getStackIconPath(app.stack),
+                                      width: 14,
+                                      height: 14,
+                                    ),
                                   ),
                                   const SizedBox(width: 6),
                                   Flexible(
