@@ -18,15 +18,15 @@ class _PremiumSliverAppBarState extends State<PremiumSliverAppBar> {
 
   @override
   void dispose() {
-    _removeOverlay();
+    _removeOverlay(fromDispose: true);
     super.dispose();
   }
 
-  void _removeOverlay() {
+  void _removeOverlay({bool fromDispose = false}) {
     _overlayEntry?.remove();
     _overlayEntry = null;
     _isMenuOpen = false;
-    if (mounted) setState(() {});
+    if (!fromDispose && mounted) setState(() {});
   }
 
   void _toggleMenu() {

@@ -135,7 +135,9 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             letterSpacing: 2.0,
-                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.4,
+                            ),
                           ),
                         ),
                       );
@@ -179,9 +181,13 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.5,
+          ),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -229,7 +235,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(32),
           border: Border.all(
-            color: theme.colorScheme.primary.withOpacity(0.08),
+            color: theme.colorScheme.primary.withValues(alpha: 0.08),
             width: 1.5,
           ),
           gradient: LinearGradient(
@@ -237,19 +243,19 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
             end: Alignment.bottomRight,
             colors: [
               theme.colorScheme.surface,
-              theme.colorScheme.primary.withOpacity(0.02),
-              theme.colorScheme.primary.withOpacity(0.05),
+              theme.colorScheme.primary.withValues(alpha: 0.02),
+              theme.colorScheme.primary.withValues(alpha: 0.05),
             ],
           ),
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.primary.withOpacity(0.05),
+              color: theme.colorScheme.primary.withValues(alpha: 0.05),
               blurRadius: 20,
               spreadRadius: 0,
               offset: const Offset(0, 8),
             ),
             BoxShadow(
-              color: theme.colorScheme.surface.withOpacity(0.5),
+              color: theme.colorScheme.surface.withValues(alpha: 0.5),
               blurRadius: 20,
               spreadRadius: -5,
               offset: const Offset(-5, -5),
@@ -271,7 +277,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: theme.colorScheme.error.withOpacity(0.1),
+                color: theme.colorScheme.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -288,7 +294,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
               roast,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontStyle: FontStyle.italic,
                 height: 1.4,
               ),
@@ -400,7 +406,9 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.labelLarge?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -432,10 +440,10 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
       // Monochrome Palette (Strictly no colors)
       // Smooth gradient of opacity for professional look
       final double normalizedIndex =
-          i / (displayApps.length > 0 ? displayApps.length : 1);
+          i / (displayApps.isNotEmpty ? displayApps.length : 1);
       final double opacity = 0.9 - (normalizedIndex * 0.7);
-      final Color color = theme.colorScheme.primary.withOpacity(
-        opacity.clamp(0.15, 0.9),
+      final Color color = theme.colorScheme.primary.withValues(
+        alpha: opacity.clamp(0.15, 0.9),
       );
 
       sections.add(
@@ -450,7 +458,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
           badgePositionPercentageOffset: 0.98,
           borderSide: isTouched
               ? BorderSide(color: theme.colorScheme.surface, width: 2)
-              : BorderSide(color: Colors.transparent),
+              : const BorderSide(color: Colors.transparent),
         ),
       );
     }
@@ -502,13 +510,13 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isTouched
-                  ? theme.colorScheme.primary.withOpacity(0.1)
-                  : theme.colorScheme.outline.withOpacity(0.05),
+                  ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                  : theme.colorScheme.outline.withValues(alpha: 0.05),
             ),
             boxShadow: isTouched
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -531,29 +539,11 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
                       fromHeroContext,
                       toHeroContext,
                     ) {
-                      return AnimatedBuilder(
-                        animation: animation,
-                        builder: (context, child) {
-                          return Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: theme.colorScheme.primary
-                                          .withValues(alpha: 0.3),
-                                      blurRadius: 15 * animation.value,
-                                      spreadRadius: 2 * animation.value,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              toHeroContext.widget,
-                            ],
-                          );
-                        },
+                      // Optimization: Remove expensive blur/shadow animations.
+                      // Just use a clean, static lifted state to prevent jitter.
+                      return Material(
+                        type: MaterialType.transparency,
+                        child: toHeroContext.widget,
                       );
                     },
                 child: _AppIcon(app: app, size: 48),
@@ -580,13 +570,16 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
                           "${(percent * 100).toStringAsFixed(1)}%",
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary.withOpacity(0.8),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.8,
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
 
+                    // Monochrome Progress Bar
                     Stack(
                       children: [
                         Container(
@@ -597,8 +590,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
                           ),
                         ),
                         AnimatedFractionallySizedBox(
-                          duration: const Duration(milliseconds: 800),
-                          curve: Curves.easeOutQuart,
+                          duration: const Duration(milliseconds: 500),
                           widthFactor: percent,
                           child: Container(
                             height: 6,
@@ -607,8 +599,8 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
                               borderRadius: BorderRadius.circular(3),
                               boxShadow: [
                                 BoxShadow(
-                                  color: theme.colorScheme.primary.withOpacity(
-                                    0.3,
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.3,
                                   ),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
@@ -654,12 +646,13 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
   void _navigateToApp(BuildContext context, DeviceApp app) {
     Navigator.of(context).push(
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 600),
-        reverseTransitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: const Duration(milliseconds: 450), // Snappier
+        reverseTransitionDuration: const Duration(milliseconds: 350),
         pageBuilder: (context, animation, secondaryAnimation) => FadeTransition(
           opacity: CurvedAnimation(
             parent: animation,
-            curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+            // Start fading in earlier (0.1) for a faster feel. FastOutSlowIn for snap.
+            curve: const Interval(0.1, 1.0, curve: Curves.fastOutSlowIn),
           ),
           child: AppDetailsPage(app: app),
         ),
@@ -694,7 +687,7 @@ class _AppIcon extends StatelessWidget {
         boxShadow: addBorder
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
