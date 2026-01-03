@@ -520,6 +520,42 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
               Hero(
                 tag: app.packageName,
                 transitionOnUserGestures: true,
+                createRectTween: (begin, end) {
+                  return MaterialRectCenterArcTween(begin: begin, end: end);
+                },
+                flightShuttleBuilder:
+                    (
+                      flightContext,
+                      animation,
+                      flightDirection,
+                      fromHeroContext,
+                      toHeroContext,
+                    ) {
+                      return AnimatedBuilder(
+                        animation: animation,
+                        builder: (context, child) {
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.3),
+                                      blurRadius: 15 * animation.value,
+                                      spreadRadius: 2 * animation.value,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              toHeroContext.widget,
+                            ],
+                          );
+                        },
+                      );
+                    },
                 child: _AppIcon(app: app, size: 48),
               ),
               const SizedBox(width: 16),
@@ -618,10 +654,13 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage> {
   void _navigateToApp(BuildContext context, DeviceApp app) {
     Navigator.of(context).push(
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 400),
-        reverseTransitionDuration: const Duration(milliseconds: 300),
+        transitionDuration: const Duration(milliseconds: 600),
+        reverseTransitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (context, animation, secondaryAnimation) => FadeTransition(
-          opacity: animation,
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+          ),
           child: AppDetailsPage(app: app),
         ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
