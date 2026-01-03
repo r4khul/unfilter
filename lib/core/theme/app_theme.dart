@@ -27,7 +27,12 @@ class AppTheme {
       foregroundColor: AppColors.lightTextPrimary,
       elevation: 0,
       centerTitle: false,
-      systemOverlayStyle: SystemUiOverlayStyle.dark,
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness:
+            Brightness.dark, // Dark icons for light background
+        statusBarBrightness: Brightness.light,
+      ),
       titleTextStyle: TextStyle(
         color: AppColors.lightTextPrimary,
         fontSize: 20,
@@ -145,7 +150,12 @@ class AppTheme {
       foregroundColor: AppColors.darkTextPrimary,
       elevation: 0,
       centerTitle: false,
-      systemOverlayStyle: SystemUiOverlayStyle.light,
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness:
+            Brightness.light, // Light icons for dark background
+        statusBarBrightness: Brightness.dark,
+      ),
       titleTextStyle: TextStyle(
         color: AppColors.darkTextPrimary,
         fontSize: 20,

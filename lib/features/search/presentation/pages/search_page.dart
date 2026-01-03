@@ -67,6 +67,7 @@ class SearchPage extends ConsumerWidget {
                                 .withOpacity(0.8),
                           ),
                           contentPadding: EdgeInsets.zero,
+                          fillColor: theme.colorScheme.surface,
                           isDense: true,
                         ),
                         style: theme.textTheme.bodyLarge?.copyWith(

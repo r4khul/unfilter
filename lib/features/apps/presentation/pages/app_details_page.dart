@@ -52,7 +52,7 @@ class AppDetailsPage extends ConsumerWidget {
                   _buildDeepInsights(context, theme, isDark),
                   const SizedBox(height: 32),
                   if (app.nativeLibraries.isNotEmpty) ...[
-                    _buildNativeLibsSection(theme, isDark),
+                    _buildNativeLibsSection(context, theme, isDark),
                     const SizedBox(height: 32),
                   ],
                   _buildDeveloperSection(context, theme, isDark),
@@ -280,31 +280,74 @@ class AppDetailsPage extends ConsumerWidget {
       children: [
         _buildSectionHeader(theme, "Activity"),
         const SizedBox(height: 16),
-        Container(
-          height: 320, // Increased height for UsageChart
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withOpacity(0.05)
-                : Colors.black.withOpacity(0.03),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.1),
-            ),
-          ),
-          child: historyAsync.when(
-            data: (history) => history.isEmpty
-                ? Center(
-                    child: Text(
-                      "No recent activity",
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.5),
+        historyAsync.when(
+          data: (history) {
+            final hasUsage =
+                history.isNotEmpty && history.any((h) => h.usage.inSeconds > 0);
+
+            // "when you cannot get activity then dont waste too much of soace just say info in a small container"
+            // If no usage, use a smaller container height.
+            final containerHeight = hasUsage ? 320.0 : 100.0;
+
+            return Container(
+              height: containerHeight,
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.black.withOpacity(0.03),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: theme.colorScheme.outline.withOpacity(0.1),
+                ),
+              ),
+              child: hasUsage
+                  ? UsageChart(history: history, theme: theme, isDark: isDark)
+                  : Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 20,
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            history.isEmpty
+                                ? "No recent activity"
+                                : "No usage recorded in last year",
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.5,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  )
-                : _buildChart(theme, history),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => Center(
+            );
+          },
+          loading: () => Container(
+            height: 320,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+          error: (_, __) => Container(
+            height: 100,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Center(
               child: Text(
                 "Unable to load activity",
                 style: theme.textTheme.bodySmall,
@@ -314,20 +357,6 @@ class AppDetailsPage extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  Widget _buildChart(ThemeData theme, List<AppUsagePoint> history) {
-    if (history.every((h) => h.usage.inMinutes == 0)) {
-      return Center(
-        child: Text(
-          "No usage recorded in last year",
-          style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
-        ),
-      );
-    }
-    // High-performance interactive chart
-    final isDark = theme.brightness == Brightness.dark;
-    return UsageChart(history: history, theme: theme, isDark: isDark);
   }
 
   Widget _buildInfoSection(BuildContext context, ThemeData theme, bool isDark) {
@@ -436,7 +465,63 @@ class AppDetailsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildNativeLibsSection(ThemeData theme, bool isDark) {
+  Widget _buildNativeLibsSection(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    // "when they excedd a a certain amount then just put them in same way like you have doen for permissions"
+    if (app.nativeLibraries.length > 6) {
+      const int maxVisible = 5;
+      final displayedLibs = app.nativeLibraries.take(maxVisible).toList();
+      final remainingCount = app.nativeLibraries.length - maxVisible;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(theme, "Native Libraries"),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border.all(
+                color: theme.colorScheme.outline.withOpacity(0.2),
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...displayedLibs.map((lib) => _buildNativeLibRow(theme, lib)),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => _showAllNativeLibs(context, theme),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: BorderSide(
+                        color: theme.colorScheme.primary.withOpacity(0.5),
+                      ),
+                    ),
+                    child: Text(
+                      "View $remainingCount More",
+                      style: TextStyle(color: theme.colorScheme.primary),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -486,6 +571,99 @@ class AppDetailsPage extends ConsumerWidget {
               .toList(),
         ),
       ],
+    );
+  }
+
+  Widget _buildNativeLibRow(ThemeData theme, String lib) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        children: [
+          Icon(
+            Icons.settings_system_daydream_rounded,
+            size: 18,
+            color: theme.colorScheme.primary.withOpacity(0.8),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              lib,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAllNativeLibs(BuildContext context, ThemeData theme) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Text(
+                      "Native Libraries",
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  controller: controller,
+                  itemCount: app.nativeLibraries.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: Icon(
+                        Icons.settings_system_daydream_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
+                      title: Text(
+                        app.nativeLibraries[index],
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -725,6 +903,62 @@ class AppDetailsPage extends ConsumerWidget {
     final packages = _detectPackages();
     if (packages.isEmpty) return const SizedBox.shrink();
 
+    // "when they excedd a a certain amount then just put them in same way like you have doen for permissions"
+    if (packages.length > 6) {
+      const int maxVisible = 5;
+      final displayedPackages = packages.values.take(maxVisible).toList();
+      final remainingCount = packages.length - maxVisible;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(theme, "Detected Packages"),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border.all(
+                color: theme.colorScheme.outline.withOpacity(0.2),
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...displayedPackages.map((pkg) => _buildPackageRow(theme, pkg)),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => _showAllPackages(
+                      context,
+                      theme,
+                      packages.values.toList(),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: BorderSide(
+                        color: theme.colorScheme.primary.withOpacity(0.5),
+                      ),
+                    ),
+                    child: Text(
+                      "View $remainingCount More",
+                      style: TextStyle(color: theme.colorScheme.primary),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -787,6 +1021,103 @@ class AppDetailsPage extends ConsumerWidget {
           }).toList(),
         ),
       ],
+    );
+  }
+
+  Widget _buildPackageRow(ThemeData theme, String pkg) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        children: [
+          Icon(
+            Icons.extension,
+            size: 18,
+            color: theme.colorScheme.primary.withOpacity(0.8),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              pkg,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAllPackages(
+    BuildContext context,
+    ThemeData theme,
+    List<String> packages,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Text(
+                      "Detected Packages",
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  controller: controller,
+                  itemCount: packages.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: Icon(
+                        Icons.extension,
+                        color: theme.colorScheme.primary,
+                      ),
+                      title: Text(
+                        packages[index],
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
