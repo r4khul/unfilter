@@ -122,13 +122,10 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                   padding: const EdgeInsets.all(24),
                   child: Image.asset(
-                    'assets/icons/white-findstack-nobg.png',
+                    isDark
+                        ? 'assets/icons/white-findstack-nobg.png'
+                        : 'assets/icons/black-findstack-nobg.png',
                     fit: BoxFit.contain,
-                    // Optionally add color filter if needed, but 'nobg' implies original colors might be desired.
-                    // If the icon is black/white, we might want to invert it for dark mode?
-                    // Assuming the png is colored or works on both, or we might need a color filter.
-                    // Given previous conversations about "Modern" and "Black and White",
-                    // let's assume the logo matches the theme or needs simple rendering.
                   ),
                 ),
               ),

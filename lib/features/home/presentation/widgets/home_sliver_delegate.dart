@@ -1,4 +1,5 @@
-import 'package:findstack/core/theme/app_colors.dart';
+import 'settings_menu.dart';
+
 import 'package:flutter/material.dart';
 import '../../../apps/presentation/widgets/category_slider.dart';
 import '../../../search/presentation/pages/search_page.dart';
@@ -245,7 +246,9 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Image.asset(
-                                        'assets/icons/white-findstack-nobg.png',
+                                        _getHeadlineLogo(
+                                          theme.brightness == Brightness.dark,
+                                        ),
                                         height: 20,
                                       ),
                                     ),
@@ -289,6 +292,8 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
                         ),
                       ),
                       const ScanButton(),
+                      const SizedBox(width: 4),
+                      const SettingsMenu(),
                     ],
                   ),
                 ),
@@ -298,6 +303,17 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
         ],
       ),
     );
+  }
+
+  String _getHeadlineLogo(bool isDark) {
+    // According to requirements:
+    // White logo for dark background (Dark Mode)
+    // Black logo for light background (Light Mode)
+    if (isDark) {
+      return 'assets/icons/white-findstack-nobg.png';
+    } else {
+      return 'assets/icons/black-findstack-nobg.png';
+    }
   }
 
   @override
