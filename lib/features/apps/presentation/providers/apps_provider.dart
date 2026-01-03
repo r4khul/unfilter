@@ -58,19 +58,19 @@ class InstalledAppsNotifier extends AsyncNotifier<List<DeviceApp>> {
     final repository = ref.read(deviceAppsRepositoryProvider);
 
     try {
-      print("[FindStack] Revalidate: Start");
+      print("[Unfilter] Revalidate: Start");
       // 1. Get cached apps
       final cachedApps = await repository.getInstalledApps(forceRefresh: false);
       final cachedMap = {for (var app in cachedApps) app.packageName: app};
-      print("[FindStack] Revalidate: Cached apps count: ${cachedApps.length}");
+      print("[Unfilter] Revalidate: Cached apps count: ${cachedApps.length}");
 
       // 2. Get fresh "lite" list (fast)
-      print("[FindStack] Revalidate: Fetching lite apps...");
+      print("[Unfilter] Revalidate: Fetching lite apps...");
       final liteApps = await repository.getInstalledApps(
         forceRefresh: true,
         includeDetails: false,
       );
-      print("[FindStack] Revalidate: Lite apps count: ${liteApps.length}");
+      print("[Unfilter] Revalidate: Lite apps count: ${liteApps.length}");
 
       final finalApps = <DeviceApp>[];
       final appsToResolve = <String>[];
@@ -88,7 +88,7 @@ class InstalledAppsNotifier extends AsyncNotifier<List<DeviceApp>> {
 
       // 3. Resolve missing details
       print(
-        "[FindStack] Revalidate: Need to resolve ${appsToResolve.length} apps",
+        "[Unfilter] Revalidate: Need to resolve ${appsToResolve.length} apps",
       );
       if (appsToResolve.isNotEmpty) {
         // Fetch details for new/updated apps
@@ -96,7 +96,7 @@ class InstalledAppsNotifier extends AsyncNotifier<List<DeviceApp>> {
         // Ideally we batch this if too large, but for now just one call.
         final details = await repository.getAppsDetails(appsToResolve);
         finalApps.addAll(details);
-        print("[FindStack] Revalidate: Resolved details");
+        print("[Unfilter] Revalidate: Resolved details");
       }
 
       // 4. Update Cache & State
@@ -110,11 +110,11 @@ class InstalledAppsNotifier extends AsyncNotifier<List<DeviceApp>> {
       // Let's just assume for now we don't save to file?
       // No, we MUST save to file otherwise next load is empty.
       // I will add `updateCache` to repository in next step.
-      print("[FindStack] Revalidate: Updating cache and state");
+      print("[Unfilter] Revalidate: Updating cache and state");
       await repository.updateCache(finalApps);
 
       state = AsyncValue.data(finalApps);
-      print("[FindStack] Revalidate: Done");
+      print("[Unfilter] Revalidate: Done");
     } catch (e) {
       print("Revalidate failed: $e");
       // Fallback to full refresh if smart revalidate fails?

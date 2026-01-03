@@ -1,4 +1,4 @@
-name: findstack
+name: unfilter
 description: "An app that shows what other apps are built with"
 publish_to: "none"
 version: 1.0.0+1
@@ -29,9 +29,9 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icons/white-findstack-bg-black.png" # Standard icon
+  image_path: "assets/icons/white-unfilter-bg-black.png" # Standard icon
   adaptive_icon_background: "#000000" # Pure black layer
-  adaptive_icon_foreground: "assets/icons/white-findstack-nobg.png" # Floating logo layer
+  adaptive_icon_foreground: "assets/icons/white-unfilter-nobg.png" # Floating logo layer
 
 flutter:
   uses-material-design: true

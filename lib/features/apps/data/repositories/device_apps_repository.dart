@@ -5,10 +5,8 @@ import '../datasources/apps_local_datasource.dart';
 import '../../domain/entities/app_usage_point.dart';
 
 class DeviceAppsRepository {
-  static const platform = MethodChannel('com.rakhul.findstack/apps');
-  static const eventChannel = EventChannel(
-    'com.rakhul.findstack/scan_progress',
-  );
+  static const platform = MethodChannel('com.rakhul.unfilter/apps');
+  static const eventChannel = EventChannel('com.rakhul.unfilter/scan_progress');
 
   Stream<ScanProgress> get scanProgressStream {
     return eventChannel.receiveBroadcastStream().map((event) {

@@ -1,6 +1,6 @@
-import 'package:findstack/features/apps/data/repositories/device_apps_repository.dart';
-import 'package:findstack/features/apps/domain/entities/device_app.dart';
-import 'package:findstack/features/scan/domain/entities/scan_progress.dart';
+import 'package:unfilter/features/apps/data/repositories/device_apps_repository.dart';
+import 'package:unfilter/features/apps/domain/entities/device_app.dart';
+import 'package:unfilter/features/scan/domain/entities/scan_progress.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 

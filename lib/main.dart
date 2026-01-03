@@ -6,18 +6,18 @@ import 'core/widgets/theme_transition_wrapper.dart';
 import 'features/splash/presentation/pages/splash_screen.dart';
 
 void main() {
-  runApp(const ProviderScope(child: FindStackApp()));
+  runApp(const ProviderScope(child: UnfilterApp()));
 }
 
-class FindStackApp extends ConsumerWidget {
-  const FindStackApp({super.key});
+class UnfilterApp extends ConsumerWidget {
+  const UnfilterApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp(
-      title: 'FindStack',
+      title: 'Unfilter',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

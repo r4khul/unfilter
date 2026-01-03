@@ -1,4 +1,4 @@
-import 'package:findstack/core/theme/app_colors.dart';
+import 'package:unfilter/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -149,10 +149,7 @@ class TechStackFilter extends ConsumerWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.8),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.darkTextSecondary,
-            width: 1,
-          ),
+          border: Border.all(color: AppColors.darkTextSecondary, width: 1),
         ),
         child: SvgPicture.asset(currentIcon, width: 24, height: 24),
       ),

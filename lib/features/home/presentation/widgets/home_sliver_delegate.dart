@@ -222,7 +222,7 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
                               child: Opacity(
                                 opacity: (1 - t).clamp(0.0, 1.0),
                                 child: Text(
-                                  "FindStack",
+                                  "UnFilter",
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -310,9 +310,9 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
     // White logo for dark background (Dark Mode)
     // Black logo for light background (Light Mode)
     if (isDark) {
-      return 'assets/icons/white-findstack-nobg.png';
+      return 'assets/icons/white-unfilter-nobg.png';
     } else {
-      return 'assets/icons/black-findstack-nobg.png';
+      return 'assets/icons/black-unfilter-nobg.png';
     }
   }
 

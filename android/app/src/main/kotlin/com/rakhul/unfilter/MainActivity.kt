@@ -1,4 +1,4 @@
-package com.example.findstack
+package com.rakhul.unfilter
 
 import android.content.Intent
 import android.os.Handler
@@ -11,8 +11,8 @@ import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.rakhul.findstack/apps"
-    private val EVENT_CHANNEL = "com.rakhul.findstack/scan_progress"
+    private val CHANNEL = "com.rakhul.unfilter/apps"
+    private val EVENT_CHANNEL = "com.rakhul.unfilter/scan_progress"
     
     private val executor = Executors.newFixedThreadPool(4) 
     private val handler = Handler(Looper.getMainLooper())

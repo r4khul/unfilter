@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 final githubStarsProvider = FutureProvider<int>((ref) async {
   try {
     final response = await http.get(
-      Uri.parse('https://api.github.com/repos/r4khul/findstack'),
+      Uri.parse('https://api.github.com/repos/r4khul/unfilter'),
     );
 
     if (response.statusCode == 200) {

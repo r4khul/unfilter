@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:findstack/features/home/presentation/pages/home_page.dart';
+import 'package:unfilter/features/home/presentation/pages/home_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -123,8 +123,8 @@ class _SplashScreenState extends State<SplashScreen>
                   padding: const EdgeInsets.all(24),
                   child: Image.asset(
                     isDark
-                        ? 'assets/icons/white-findstack-nobg.png'
-                        : 'assets/icons/black-findstack-nobg.png',
+                        ? 'assets/icons/white-unfilter-nobg.png'
+                        : 'assets/icons/black-unfilter-nobg.png',
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -139,7 +139,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   children: [
                     Text(
-                      'FindStack',
+                      'Unfilter',
                       style: theme.textTheme.displaySmall?.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: -1.0,
