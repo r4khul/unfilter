@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -36,20 +37,19 @@ class ThemeTransitionWrapperState extends State<ThemeTransitionWrapper>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(
-        milliseconds: 650,
-      ), // Standard "pro" feel duration
+      // Standard "pro" feel duration and curve
+      duration: const Duration(milliseconds: 650),
     );
     _controller.addListener(() {
-      setState(() {}); // Rebuild to animate the clipper
+      if (mounted) setState(() {});
     });
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        // Cleanup after animation
-        setState(() {
-          _screenshot = null;
-          _center = null;
-        });
+        // Explicitly dispose of the old screenshot to free GPU memory immediately
+        _screenshot?.dispose();
+        _screenshot = null;
+        _center = null;
+        if (mounted) setState(() {});
       }
     });
   }
@@ -57,6 +57,7 @@ class ThemeTransitionWrapperState extends State<ThemeTransitionWrapper>
   @override
   void dispose() {
     _controller.dispose();
+    _screenshot?.dispose();
     super.dispose();
   }
 
@@ -72,16 +73,20 @@ class ThemeTransitionWrapperState extends State<ThemeTransitionWrapper>
     final boundary =
         _repaintKey.currentContext?.findRenderObject()
             as RenderRepaintBoundary?;
+
     if (boundary != null && boundary.debugNeedsPaint == false) {
-      // pixelRatio 1.0 is usually enough for transition and faster
-      final image = await boundary.toImage(
-        pixelRatio: ui.window.devicePixelRatio,
-      );
+      // MICRO-OPTIMIZATION:
+      // Cap the pixel ratio to max 1.5. On high-res screens (3.0+), capturing
+      // full resolution is unnecessary for a sub-second animation and causes frame drops.
+      // 1.5 provides crisp enough visuals without the heavy GPU/Memory cost.
+      final deviceRatio = View.of(context).devicePixelRatio;
+      final pixelRatio = deviceRatio > 1.5 ? 1.5 : deviceRatio;
+
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
 
       setState(() {
         _screenshot = image;
         _center = center;
-        // _themeSwitchCallback = onThemeSwitch; // Not needed as we call it immediately
       });
 
       // 2. Perform the actual theme switch logic (rebuilds the widget tree)
@@ -97,39 +102,16 @@ class ThemeTransitionWrapperState extends State<ThemeTransitionWrapper>
 
   @override
   Widget build(BuildContext context) {
-    // If we have a screenshot and are animating, we show:
-    // Bottom: New Theme (the normal child)
-    // Top: Screenshot of Old Theme (clipped)
-
-    // We want the NEW theme to "expand" from the center.
-    // This means the NEW theme is visible inside the expanding circle,
-    // and the OLD theme (screenshot) is visible outside.
-
-    // So:
-    // Layer 1 (Bottom): The Screenshot (Old Theme).
-    // Layer 2 (Top): The Child (New Theme).
-    // Clip: We clip the Top layer (New Theme) to a growing circle.
-
-    // OR:
-    // Layer 1 (Bottom): The Child (New Theme).
-    // Layer 2 (Top): The Screenshot (Old Theme).
-    // Clip: We clip the Top layer (Old Theme) to have a growing HOLE.
-    // This is equivalent to `PathFillType.evenOdd`.
-
-    // We will use the second approach:
-    // The App (New Theme) runs underneath.
-    // The Screenshot (Old Theme) sits on top, covering it.
-    // We "erase" the Screenshot with an expanding circle.
-
     final child = RepaintBoundary(key: _repaintKey, child: widget.child);
 
+    // If we have a screenshot and are animating, overlay it
     if (_screenshot == null || _center == null || !_controller.isAnimating) {
       return child;
     }
 
     return Stack(
       children: [
-        // 1. The NEW theme (Active App)
+        // 1. The NEW theme (Active App) running underneath
         child,
 
         // 2. The OLD theme (Screenshot) with a growing hole
@@ -152,6 +134,9 @@ class _ClipRevealPainter extends CustomPainter {
   final Offset center;
   final double percent;
 
+  // Reusable paint object to avoid allocation on every frame
+  static final Paint _paint = Paint();
+
   _ClipRevealPainter({
     required this.image,
     required this.center,
@@ -160,24 +145,26 @@ class _ClipRevealPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Draw the old screenshot
-    // But we need to "punch a hole" in it.
+    // MICRO-OPTIMIZATION: Use basic math, avoid extra object creations where possible
 
     // Calculate max radius to cover the screen
-    final distanceToHzCorner = center.dx > size.width / 2
-        ? center.dx
-        : size.width - center.dx;
-    final distanceToVtCorner = center.dy > size.height / 2
-        ? center.dy
-        : size.height - center.dy;
-    final maxRadius =
-        (Offset(distanceToHzCorner, distanceToVtCorner)).distance + 20;
+    final maxW = size.width;
+    final maxH = size.height;
 
-    final radius = maxRadius * Curves.easeIn.transform(percent);
+    final dX = center.dx > maxW / 2 ? center.dx : maxW - center.dx;
+    final dY = center.dy > maxH / 2 ? center.dy : maxH - center.dy;
 
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    // Simple Pythagorean theorem without Offset object creation
+    final maxRadius = (dX * dX + dY * dY).toDouble() + 50;
 
-    // Create a path that covers the whole screen MINUS the circle
+    // Use easeInOutCubic for that "smoothy" organic feel (starts slow, fast middle, ends slow)
+    // We manually calculate sqrt of maxRadius effectively here for the distance
+    final radius =
+        math.sqrt(maxRadius) * Curves.easeInOutCubic.transform(percent);
+
+    final rect = Rect.fromLTWH(0, 0, maxW, maxH);
+
+    // We must create a new path each frame as the geometry changes completely
     final path = Path()
       ..fillType = PathFillType.evenOdd
       ..addRect(rect)
@@ -185,7 +172,20 @@ class _ClipRevealPainter extends CustomPainter {
 
     canvas.save();
     canvas.clipPath(path);
-    canvas.drawImage(image, Offset.zero, Paint());
+
+    // Draw the image scaled to fit the view (prevents zoomed-in effect)
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTWH(
+        0,
+        0,
+        image.width.toDouble(),
+        image.height.toDouble(),
+      ), // Source
+      Rect.fromLTWH(0, 0, size.width, size.height), // Destination
+      _paint,
+    );
+
     canvas.restore();
   }
 
