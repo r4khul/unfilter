@@ -26,9 +26,9 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icons/findstack-bg.png" # Standard icon
+  image_path: "assets/icons/white-findstack-bg-black.png" # Standard icon
   adaptive_icon_background: "#000000" # Pure black layer
-  adaptive_icon_foreground: "assets/icons/findstack-nobg.png" # Floating logo layer
+  adaptive_icon_foreground: "assets/icons/white-findstack-nobg.png" # Floating logo layer
 
 flutter:
   uses-material-design: true
