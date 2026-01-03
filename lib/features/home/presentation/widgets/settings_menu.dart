@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/theme_provider.dart';
+import 'statistics_dialog.dart';
 
 class SettingsMenu extends ConsumerWidget {
   const SettingsMenu({super.key});
@@ -48,36 +49,34 @@ class SettingsMenu extends ConsumerWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Settings',
-      barrierColor: Colors.black.withOpacity(0.3), // Darken background slightly
+      barrierColor: Colors
+          .transparent, // We handle blur manually if needed, or keeping transparent for 'popover' feel
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, animation, secondaryAnimation) {
         return Stack(
           children: [
-            // Backdrop Blur
+            // Close on tap outside
             Positioned.fill(
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
                 behavior: HitTestBehavior.opaque,
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                  child: Container(color: Colors.transparent),
-                ),
+                child: Container(color: Colors.transparent),
               ),
             ),
             // Menu
             Positioned(
               top: position.dy + button.size.height + 8,
-              right: 16, // Align to right with some padding
+              right: 16,
               child: Material(
                 color: Colors.transparent,
                 child: ScaleTransition(
                   scale: CurvedAnimation(
                     parent: animation,
-                    curve: Curves.easeOutCubic,
+                    curve: Curves.easeOutBack,
                   ),
                   alignment: Alignment.topRight,
                   child: Container(
-                    width: 200,
+                    width: 240,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
@@ -92,16 +91,13 @@ class SettingsMenu extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.all(12),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
+                          padding: const EdgeInsets.only(left: 8, bottom: 8),
                           child: Text(
                             "Appearance",
                             style: theme.textTheme.labelMedium?.copyWith(
@@ -110,29 +106,103 @@ class SettingsMenu extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        _buildThemeOption(
-                          context,
-                          ref,
-                          "System",
-                          ThemeMode.system,
-                          currentTheme,
-                          Icons.brightness_auto_outlined,
+                        // Compact Theme Switcher
+                        Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest
+                                .withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: Row(
+                            children: [
+                              _buildCompactThemeOption(
+                                context,
+                                ref,
+                                ThemeMode.system,
+                                Icons.brightness_auto_outlined,
+                                currentTheme,
+                              ),
+                              _buildCompactThemeOption(
+                                context,
+                                ref,
+                                ThemeMode.light,
+                                Icons.light_mode_outlined,
+                                currentTheme,
+                              ),
+                              _buildCompactThemeOption(
+                                context,
+                                ref,
+                                ThemeMode.dark,
+                                Icons.dark_mode_outlined,
+                                currentTheme,
+                              ),
+                            ],
+                          ),
                         ),
-                        _buildThemeOption(
-                          context,
-                          ref,
-                          "Light Mode",
-                          ThemeMode.light,
-                          currentTheme,
-                          Icons.light_mode_outlined,
+
+                        const SizedBox(height: 16),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, bottom: 8),
+                          child: Text(
+                            "Analytics",
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                        _buildThemeOption(
-                          context,
-                          ref,
-                          "Dark Mode",
-                          ThemeMode.dark,
-                          currentTheme,
-                          Icons.dark_mode_outlined,
+
+                        // Statistics Option
+                        InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                            showDialog(
+                              context: context,
+                              builder: (_) => const StatisticsDialog(),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primaryContainer
+                                  .withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: theme.colorScheme.primary.withOpacity(
+                                  0.1,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.pie_chart_rounded,
+                                  size: 20,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    "Usage Statistics",
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 14,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -146,49 +216,44 @@ class SettingsMenu extends ConsumerWidget {
     );
   }
 
-  Widget _buildThemeOption(
+  Widget _buildCompactThemeOption(
     BuildContext context,
     WidgetRef ref,
-    String label,
     ThemeMode mode,
-    ThemeMode currentMode,
     IconData icon,
+    ThemeMode currentMode,
   ) {
     final theme = Theme.of(context);
     final isSelected = mode == currentMode;
 
-    return InkWell(
-      onTap: () {
-        ref.read(themeProvider.notifier).setTheme(mode);
-        Navigator.pop(context);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        color: isSelected ? theme.colorScheme.primary.withOpacity(0.05) : null,
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: isSelected
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurface,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.onSurface,
-                ),
-              ),
-            ),
-            if (isSelected)
-              Icon(Icons.check, size: 16, color: theme.colorScheme.primary),
-          ],
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          ref.read(themeProvider.notifier).setTheme(mode);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? theme.colorScheme.surface : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

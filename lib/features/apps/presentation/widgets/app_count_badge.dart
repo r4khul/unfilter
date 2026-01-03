@@ -178,83 +178,95 @@ class _VerticalBadgeContent extends StatelessWidget {
         ),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.black.withOpacity(0.5)
-                  : Colors.white.withOpacity(0.6),
-              border: Border(
-                top: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.1),
-                ),
-                bottom: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.1),
-                ),
-                right: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.1),
-                ),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(2, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.apps_rounded,
-                  size: 18,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(height: 12),
-                // Rotated Text
-                RotatedBox(
-                  quarterTurns: 3, // Reads bottom to top
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Number with animation
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (child, animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: ScaleTransition(
-                              scale: animation,
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: Text(
-                          "$count",
-                          key: ValueKey<int>(count),
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        "Apps",
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 12,
-                          letterSpacing: 0.5,
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutExpo,
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.black.withOpacity(0.5)
+                    : Colors.white.withOpacity(0.6),
+                border: Border(
+                  top: BorderSide(
+                    color: theme.colorScheme.outline.withOpacity(0.1),
+                  ),
+                  bottom: BorderSide(
+                    color: theme.colorScheme.outline.withOpacity(0.1),
+                  ),
+                  right: BorderSide(
+                    color: theme.colorScheme.outline.withOpacity(0.1),
                   ),
                 ),
-              ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(2, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.apps_rounded,
+                    size: 18,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(height: 12),
+                  // Rotated Text
+                  RotatedBox(
+                    quarterTurns: 3, // Reads bottom to top
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment:
+                          MainAxisAlignment.center, // Center content
+                      children: [
+                        // Number with animation
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (child, animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: ScaleTransition(
+                                scale: animation,
+                                child: child,
+                              ),
+                            );
+                          },
+                          // Use a layout builder to prevent layout jumps during cross-fade if possible,
+                          // but MainAxisAlignment.center + AnimatedSize handles most.
+                          child: Text(
+                            "$count",
+                            key: ValueKey<int>(count),
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: theme.colorScheme.onSurface,
+                              fontFeatures: [
+                                const FontFeature.tabularFigures(),
+                              ], // Stable scale width
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          "Apps",
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                            letterSpacing: 0.5,
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
