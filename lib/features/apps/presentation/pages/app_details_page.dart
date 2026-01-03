@@ -285,8 +285,6 @@ class AppDetailsPage extends ConsumerWidget {
             final hasUsage =
                 history.isNotEmpty && history.any((h) => h.usage.inSeconds > 0);
 
-            // "when you cannot get activity then dont waste too much of soace just say info in a small container"
-            // If no usage, use a smaller container height.
             final containerHeight = hasUsage ? 320.0 : 100.0;
 
             return Container(
@@ -465,12 +463,154 @@ class AppDetailsPage extends ConsumerWidget {
     );
   }
 
+  Widget _buildDeepInsights(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(theme, "Deep Insights"),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: theme.colorScheme.outline.withOpacity(0.2),
+            ),
+          ),
+          child: Column(
+            children: [
+              if (app.installerStore != 'Unknown') ...[
+                _buildDetailItem(
+                  context,
+                  theme,
+                  "Installer",
+                  _formatInstallerName(app.installerStore),
+                  showDivider: true,
+                ),
+              ],
+              if (app.kotlinVersion != null) ...[
+                _buildDetailItem(
+                  context,
+                  theme,
+                  "Kotlin Version",
+                  app.kotlinVersion!,
+                  showDivider: true,
+                ),
+              ],
+              _buildDetailItem(
+                context,
+                theme,
+                "Min SDK",
+                "${app.minSdkVersion} (${_sdkVersionName(app.minSdkVersion)})",
+                showDivider: true,
+              ),
+              _buildDetailItem(
+                context,
+                theme,
+                "Target SDK",
+                "${app.targetSdkVersion} (${_sdkVersionName(app.targetSdkVersion)})",
+                showDivider: true,
+              ),
+              if (app.signingSha1 != null)
+                _buildDetailItem(
+                  context,
+                  theme,
+                  "Signature (SHA-1)",
+                  app.signingSha1!,
+                  showDivider: true,
+                ),
+              if (app.splitApks.isNotEmpty)
+                _buildDetailItem(
+                  context,
+                  theme,
+                  "Split APKs",
+                  "${app.splitApks.length} splits",
+                  showDivider: true,
+                ),
+              _buildDetailItem(
+                context,
+                theme,
+                "App Size",
+                _formatBytes(app.size),
+                showDivider: true,
+              ),
+              _buildDetailItem(
+                context,
+                theme,
+                "APK Path",
+                app.apkPath,
+                showDivider: true,
+              ),
+              _buildDetailItem(context, theme, "Data Dir", app.dataDir),
+
+              const SizedBox(height: 24),
+              // Component Counts Grid
+              Row(
+                children: [
+                  _buildComponentCount(
+                    theme,
+                    "Activities",
+                    app.activitiesCount,
+                  ),
+                  const SizedBox(width: 12),
+                  _buildComponentCount(theme, "Services", app.servicesCount),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _buildComponentCount(theme, "Receivers", app.receiversCount),
+                  const SizedBox(width: 12),
+                  _buildComponentCount(theme, "Providers", app.providersCount),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildComponentCount(ThemeData theme, String label, int count) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Text(
+              count.toString(),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildNativeLibsSection(
     BuildContext context,
     ThemeData theme,
     bool isDark,
   ) {
-    // "when they excedd a a certain amount then just put them in same way like you have doen for permissions"
     if (app.nativeLibraries.length > 6) {
       const int maxVisible = 5;
       final displayedLibs = app.nativeLibraries.take(maxVisible).toList();
@@ -654,6 +794,209 @@ class AppDetailsPage extends ConsumerWidget {
                       ),
                       title: Text(
                         app.nativeLibraries[index],
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeveloperSection(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    final packages = _detectPackages();
+    if (packages.isEmpty) return const SizedBox.shrink();
+
+    if (packages.length > 6) {
+      const int maxVisible = 5;
+      final displayedPackages = packages.values.take(maxVisible).toList();
+      final remainingCount = packages.length - maxVisible;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(theme, "Detected Packages"),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border.all(
+                color: theme.colorScheme.outline.withOpacity(0.2),
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...displayedPackages.map((pkg) => _buildPackageRow(theme, pkg)),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => _showAllPackages(
+                      context,
+                      theme,
+                      packages.values.toList(),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: BorderSide(
+                        color: theme.colorScheme.primary.withOpacity(0.5),
+                      ),
+                    ),
+                    child: Text(
+                      "View $remainingCount More",
+                      style: TextStyle(color: theme.colorScheme.primary),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(theme, "Detected Packages"),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            border: Border.all(
+              color: theme.colorScheme.outline.withOpacity(0.2),
+            ),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            children: packages.values
+                .map((pkg) => _buildPackageRow(theme, pkg))
+                .toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Map<String, String> _detectPackages() {
+    final Map<String, String> detected = {};
+    for (final lib in app.nativeLibraries) {
+      if (lib.contains("stripe"))
+        detected["Stripe"] = "Payment Gateway";
+      else if (lib.contains("mapbox"))
+        detected["Mapbox"] = "Maps & Location";
+      else if (lib.contains("realm"))
+        detected["Realm"] = "Database";
+      else if (lib.contains("firebase"))
+        detected["Firebase"] = "Backend/Analytics";
+      else if (lib.contains("appwrite"))
+        detected["Appwrite"] = "Backend";
+      else if (lib.contains("supabase"))
+        detected["Supabase"] = "Backend";
+      else if (lib.contains("sentry"))
+        detected["Sentry"] = "Crash Reporting";
+    }
+    return detected;
+  }
+
+  Widget _buildPackageRow(ThemeData theme, String package) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        children: [
+          Icon(
+            Icons.extension_rounded,
+            size: 18,
+            color: theme.colorScheme.secondary,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            package,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAllPackages(
+    BuildContext context,
+    ThemeData theme,
+    List<String> packages,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Text(
+                      "Detected Packages",
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  controller: controller,
+                  itemCount: packages.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: Icon(
+                        Icons.extension_rounded,
+                        color: theme.colorScheme.secondary,
+                      ),
+                      title: Text(
+                        packages[index],
                         style: theme.textTheme.bodyMedium,
                       ),
                     );
@@ -852,323 +1195,52 @@ class AppDetailsPage extends ConsumerWidget {
     }
   }
 
-  Widget _buildDeepInsights(
-    BuildContext context,
-    ThemeData theme,
-    bool isDark,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(theme, "Storage & Paths"),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.2),
-            ),
-          ),
-          child: Column(
-            children: [
-              _buildDetailItem(
-                context,
-                theme,
-                "App Size",
-                _formatBytes(app.size),
-                showDivider: true,
-              ),
-              _buildDetailItem(
-                context,
-                theme,
-                "APK Path",
-                app.apkPath,
-                showDivider: true,
-              ),
-              _buildDetailItem(context, theme, "Data Dir", app.dataDir),
-            ],
-          ),
-        ),
-      ],
-    );
+  String _formatInstallerName(String pkg) {
+    if (pkg.contains("vending")) return "Google Play Store";
+    if (pkg.contains("amazon")) return "Amazon Appstore";
+    if (pkg.contains("packageinstaller")) return "Manual Install (APK)";
+    return pkg;
   }
 
-  Widget _buildDeveloperSection(
-    BuildContext context,
-    ThemeData theme,
-    bool isDark,
-  ) {
-    final packages = _detectPackages();
-    if (packages.isEmpty) return const SizedBox.shrink();
-
-    // "when they excedd a a certain amount then just put them in same way like you have doen for permissions"
-    if (packages.length > 6) {
-      const int maxVisible = 5;
-      final displayedPackages = packages.values.take(maxVisible).toList();
-      final remainingCount = packages.length - maxVisible;
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionHeader(theme, "Detected Packages"),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.2),
-              ),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ...displayedPackages.map((pkg) => _buildPackageRow(theme, pkg)),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => _showAllPackages(
-                      context,
-                      theme,
-                      packages.values.toList(),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      side: BorderSide(
-                        color: theme.colorScheme.primary.withOpacity(0.5),
-                      ),
-                    ),
-                    child: Text(
-                      "View $remainingCount More",
-                      style: TextStyle(color: theme.colorScheme.primary),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
+  String _sdkVersionName(int sdk) {
+    switch (sdk) {
+      case 34:
+        return "Android 14";
+      case 33:
+        return "Android 13";
+      case 32:
+        return "Android 12L";
+      case 31:
+        return "Android 12";
+      case 30:
+        return "Android 11";
+      case 29:
+        return "Android 10";
+      case 28:
+        return "Pie";
+      case 27:
+        return "Oreo 8.1";
+      case 26:
+        return "Oreo 8.0";
+      case 25:
+        return "Nougat 7.1";
+      case 24:
+        return "Nougat 7.0";
+      case 23:
+        return "Marshmallow";
+      case 22:
+        return "Lollipop 5.1";
+      case 21:
+        return "Lollipop 5.0";
+      default:
+        return "API $sdk";
     }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(theme, "Detected Packages"),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: packages.values.map((pkg) {
-            return Material(
-              color: isDark
-                  ? theme.colorScheme.surfaceContainerHighest
-                  : theme.colorScheme.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: theme.colorScheme.primary.withOpacity(0.3),
-                ),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('$pkg Detected using heuristics'),
-                      behavior: SnackBarBehavior.floating,
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.extension,
-                        size: 14,
-                        color: theme.colorScheme.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          pkg,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPackageRow(ThemeData theme, String pkg) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Row(
-        children: [
-          Icon(
-            Icons.extension,
-            size: 18,
-            color: theme.colorScheme.primary.withOpacity(0.8),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              pkg,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAllPackages(
-    BuildContext context,
-    ThemeData theme,
-    List<String> packages,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        builder: (_, controller) => Container(
-          decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: theme.dividerColor,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Text(
-                      "Detected Packages",
-                      style: theme.textTheme.headlineSmall,
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  controller: controller,
-                  itemCount: packages.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: Icon(
-                        Icons.extension,
-                        color: theme.colorScheme.primary,
-                      ),
-                      title: Text(
-                        packages[index],
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Map<String, String> _detectPackages() {
-    final Map<String, String> detected = {};
-
-    void check(String text, String keyword, String pkgName) {
-      if (text.toLowerCase().contains(keyword.toLowerCase()))
-        detected[pkgName] = pkgName;
-    }
-
-    final allComponents = [...app.services, ...app.receivers, ...app.providers];
-
-    for (var s in allComponents) {
-      check(s, 'com.google.firebase', 'Firebase Core');
-      check(s, 'com.google.android.gms.ads', 'Google Mobile Ads');
-      check(s, 'com.google.android.gms.maps', 'Google Maps');
-      check(s, 'com.facebook', 'Facebook SDK');
-      check(s, 'com.amazonaws', 'AWS Amplify');
-      check(s, 'androidx.work', 'WorkManager');
-      check(s, 'androidx.room', 'Room Database');
-      check(s, 'com.squareup.picasso', 'Picasso');
-      check(s, 'com.bumptech.glide', 'Glide');
-      check(s, 'retrofit', 'Retrofit');
-      check(s, 'okhttp', 'OkHttp');
-      check(s, 'coil', 'Coil');
-      check(s, 'sentry', 'Sentry');
-      check(s, 'crashlytics', 'Crashlytics');
-      check(s, 'onesignal', 'OneSignal');
-      check(s, 'stripe', 'Stripe');
-      check(s, 'razorpay', 'Razorpay');
-      check(s, 'zoom', 'Zoom SDK');
-      check(s, 'twilio', 'Twilio');
-    }
-
-    for (var lib in app.nativeLibraries) {
-      check(lib, 'mapbox', 'Mapbox');
-      check(lib, 'realm', 'Realm');
-      check(lib, 'reanimated', 'Reanimated');
-      check(lib, 'hermes', 'Hermes Engine');
-      check(lib, 'skia', 'Skia');
-      check(lib, 'flipper', 'Flipper');
-    }
-
-    return detected;
   }
 
   String _formatBytes(int bytes) {
     if (bytes <= 0) return "0 B";
     const suffixes = ["B", "KB", "MB", "GB", "TB"];
     var i = (log(bytes) / log(1024)).floor();
-    return ((bytes / pow(1024, i)).toStringAsFixed(1)) + ' ' + suffixes[i];
+    return '${(bytes / pow(1024, i)).toStringAsFixed(1)} ${suffixes[i]}';
   }
 }

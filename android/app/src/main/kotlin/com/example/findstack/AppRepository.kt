@@ -19,6 +19,8 @@ class AppRepository(private val context: Context) {
     private val stackDetector = StackDetector()
     private val usageManager = UsageManager(context)
 
+    private val deepAnalyzer = DeepAnalyzer(context)
+
     fun getInstalledApps(
         includeDetails: Boolean,
         onProgress: (current: Int, total: Int, currentApp: String) -> Unit,
@@ -28,7 +30,8 @@ class AppRepository(private val context: Context) {
                 PackageManager.GET_PERMISSIONS or
                 PackageManager.GET_SERVICES or
                 PackageManager.GET_RECEIVERS or
-                PackageManager.GET_PROVIDERS
+                PackageManager.GET_PROVIDERS or
+                (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES)
 
         val packages = packageManager.getInstalledPackages(flags)
         val total = packages.size
@@ -66,7 +69,8 @@ class AppRepository(private val context: Context) {
                 PackageManager.GET_PERMISSIONS or
                 PackageManager.GET_SERVICES or
                 PackageManager.GET_RECEIVERS or
-                PackageManager.GET_PROVIDERS
+                PackageManager.GET_PROVIDERS or
+                (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return packageNames.parallelStream()
@@ -106,6 +110,7 @@ class AppRepository(private val context: Context) {
         var libs = emptyList<String>()
         var iconBytes = ByteArray(0)
         var usage: android.app.usage.UsageStats? = null
+        var deepData: Map<String, Any?> = emptyMap()
 
         if (includeDetails) {
             val pair = stackDetector.detectStackAndLibs(appInfo)
@@ -113,6 +118,7 @@ class AppRepository(private val context: Context) {
             libs = pair.second
 
             usage = usageMap?.get(pkg.packageName)
+            deepData = deepAnalyzer.analyze(pkg, packageManager)
 
             try {
                 val iconDrawable = packageManager.getApplicationIcon(appInfo)
@@ -128,7 +134,7 @@ class AppRepository(private val context: Context) {
         val receivers = pkg.receivers?.map { it.name } ?: emptyList()
         val providers = pkg.providers?.map { it.name } ?: emptyList()
 
-        return mapOf(
+        val map = mutableMapOf<String, Any?>(
             "appName" to packageManager.getApplicationLabel(appInfo).toString(),
             "packageName" to pkg.packageName,
             "version" to (pkg.versionName ?: "Unknown"),
@@ -166,6 +172,11 @@ class AppRepository(private val context: Context) {
             "apkPath" to (appInfo.sourceDir ?: ""),
             "dataDir" to (appInfo.dataDir ?: "")
         )
+        
+        // Merge deep data
+        map.putAll(deepData)
+        
+        return map
     }
 
     private fun drawableToByteArray(drawable: Drawable): ByteArray {

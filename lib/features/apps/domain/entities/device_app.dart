@@ -42,6 +42,17 @@ class DeviceApp extends Equatable {
   final String apkPath;
   final String dataDir;
 
+  // Deep Analysis Fields
+  final String installerStore;
+  final String? signingSha1;
+  final String? signingSha256;
+  final String? kotlinVersion;
+  final int activitiesCount;
+  final int servicesCount;
+  final int receiversCount;
+  final int providersCount;
+  final List<String> splitApks;
+
   const DeviceApp({
     required this.appName,
     required this.packageName,
@@ -65,6 +76,15 @@ class DeviceApp extends Equatable {
     this.size = 0,
     this.apkPath = '',
     this.dataDir = '',
+    this.installerStore = 'Unknown',
+    this.signingSha1,
+    this.signingSha256,
+    this.kotlinVersion,
+    this.activitiesCount = 0,
+    this.servicesCount = 0,
+    this.receiversCount = 0,
+    this.providersCount = 0,
+    this.splitApks = const [],
   });
 
   factory DeviceApp.fromMap(Map<Object?, Object?> map) {
@@ -115,6 +135,19 @@ class DeviceApp extends Equatable {
       size: map['size'] as int? ?? 0,
       apkPath: map['apkPath'] as String? ?? '',
       dataDir: map['dataDir'] as String? ?? '',
+      installerStore: map['installerStore'] as String? ?? 'Unknown',
+      signingSha1: map['signingSha1'] as String?,
+      signingSha256: map['signingSha256'] as String?,
+      kotlinVersion: map['kotlinVersion'] as String?,
+      activitiesCount: map['activitiesCount'] as int? ?? 0,
+      servicesCount: map['servicesCount'] as int? ?? 0,
+      receiversCount: map['receiversCount'] as int? ?? 0,
+      providersCount: map['providersCount'] as int? ?? 0,
+      splitApks:
+          (map['splitApks'] as List<Object?>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
     );
   }
 
@@ -140,8 +173,7 @@ class DeviceApp extends Equatable {
       'appName': appName,
       'packageName': packageName,
       'version': version,
-      'icon':
-          icon, // Assuming icon is Uint8List which might need base64 encoding for JSON
+      'icon': icon,
       'stack': stack,
       'nativeLibraries': nativeLibraries,
       'permissions': permissions,
@@ -160,6 +192,15 @@ class DeviceApp extends Equatable {
       'size': size,
       'apkPath': apkPath,
       'dataDir': dataDir,
+      'installerStore': installerStore,
+      'signingSha1': signingSha1,
+      'signingSha256': signingSha256,
+      'kotlinVersion': kotlinVersion,
+      'activitiesCount': activitiesCount,
+      'servicesCount': servicesCount,
+      'receiversCount': receiversCount,
+      'providersCount': providersCount,
+      'splitApks': splitApks,
     };
   }
 
@@ -180,5 +221,14 @@ class DeviceApp extends Equatable {
     size,
     apkPath,
     dataDir,
+    installerStore,
+    signingSha1,
+    signingSha256,
+    kotlinVersion,
+    activitiesCount,
+    servicesCount,
+    receiversCount,
+    providersCount,
+    splitApks,
   ];
 }
