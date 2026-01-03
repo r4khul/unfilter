@@ -493,7 +493,18 @@ class AppDetailsPage extends ConsumerWidget {
                   showDivider: true,
                 ),
               ],
-              if (app.kotlinVersion != null) ...[
+              if (app.techVersions.isNotEmpty) ...[
+                for (final entry in app.techVersions.entries)
+                  _buildDetailItem(
+                    context,
+                    theme,
+                    "${entry.key} Version",
+                    entry.value,
+                    showDivider: true,
+                  ),
+              ],
+              if (app.kotlinVersion != null &&
+                  !app.techVersions.containsKey('Kotlin')) ...[
                 _buildDetailItem(
                   context,
                   theme,

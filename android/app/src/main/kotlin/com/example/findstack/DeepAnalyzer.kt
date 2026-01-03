@@ -37,10 +37,34 @@ class DeepAnalyzer(private val context: Context) {
         analysis["receiversCount"] = pkg.receivers?.size ?: 0
         analysis["providersCount"] = pkg.providers?.size ?: 0
 
-        // 4. Advanced Kotlin Version Detection
-        val kotlinVersion = detectKotlinVersion(appInfo)
-        if (kotlinVersion != null) {
-            analysis["kotlinVersion"] = kotlinVersion
+        // 4. Advanced Stack Version Detection
+        val techVersions = mutableMapOf<String, String>()
+        val apkPath = appInfo.sourceDir
+        if (apkPath != null && File(apkPath).exists()) {
+             try {
+                ZipFile(File(apkPath)).use { zip ->
+                    // Kotlin
+                    detectKotlinVersion(zip)?.let { techVersions["Kotlin"] = it }
+                    
+                    // React Native
+                    detectReactNativeVersion(zip)?.let { techVersions["React Native"] = it }
+                    
+                    // Unity
+                    detectUnityVersion(zip)?.let { techVersions["Unity"] = it }
+                    
+                    // Flutter (Basic)
+                    detectFlutterVersion(zip)?.let { techVersions["Flutter"] = it }
+                }
+             } catch (e: Exception) { }
+        }
+        
+        if (techVersions.isNotEmpty()) {
+            analysis["techVersions"] = techVersions
+        }
+        
+        // Backward compatibility for UI
+        if (techVersions.containsKey("Kotlin")) {
+            analysis["kotlinVersion"] = techVersions["Kotlin"]
         }
 
         // 5. Split APKs
@@ -106,44 +130,99 @@ class DeepAnalyzer(private val context: Context) {
         }
     }
 
-    private fun detectKotlinVersion(appInfo: ApplicationInfo): String? {
-        val apkPath = appInfo.sourceDir ?: return null
-        val file = File(apkPath)
-        if (!file.exists()) return null
-
+    private fun detectKotlinVersion(zip: ZipFile): String? {
         try {
-            ZipFile(file).use { zip ->
-                val entries = zip.entries()
-                while (entries.hasMoreElements()) {
-                    val entry = entries.nextElement()
-                    val name = entry.name
-                    
-                    // Kotlin Module files contain version in header
-                    // Format: .kotlin_module
-                    if (name.endsWith(".kotlin_module")) {
-                        zip.getInputStream(entry).use { stream ->
-                            // The header for binary metadata is distinct, but kotlin_module files 
-                            // often start with a small integer version header.
-                            // However, parsing strictly is complex. A simple heuristic is hard here 
-                            // without a proto buf parser.
-                            // BUT, we can sometimes find "kotlin-stdlib-<version>" in META-INF path
-                        }
-                    }
-                    
-                    // Easier heuristic: Look for kotlin-stdlib version files in META-INF
-                    // Many builds include META-INF/kotlin-stdlib.kotlin_module or version files
-                    // Or "META-INF/maven/org.jetbrains.kotlin/kotlin-stdlib/pom.properties"
-                    if (name.equals("META-INF/kotlin-stdlib.kotlin_module")) {
-                        // This confirms stdlib presence.
-                        // Let's try to find maven properties which are VERY common in builds.
-                    }
-                    
-                    if (name.contains("META-INF/maven/org.jetbrains.kotlin/kotlin-stdlib/pom.properties")) {
-                         zip.getInputStream(entry).use { stream ->
-                             val props = java.util.Properties()
-                             props.load(stream)
-                             return props.getProperty("version")
+            val entry = zip.getEntry("META-INF/maven/org.jetbrains.kotlin/kotlin-stdlib/pom.properties")
+            if (entry != null) {
+                zip.getInputStream(entry).use { stream ->
+                    val props = java.util.Properties()
+                    props.load(stream)
+                    return props.getProperty("version")
+                }
+            }
+        } catch (e: Exception) { }
+        return null
+    }
+
+    private fun detectFlutterVersion(zip: ZipFile): String? {
+        try {
+            // Check libflutter.so for engine hash or version string if visible
+            // Note: Scanning large binaries is slow, read only header or small chunks
+            val abis = arrayOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+            var libEntry: java.util.zip.ZipEntry? = null
+            
+            for (abi in abis) {
+                libEntry = zip.getEntry("lib/$abi/libflutter.so")
+                if (libEntry != null) break
+            }
+
+            if (libEntry != null) {
+                 // Scan first 32KB for "Flutter <version>" string
+                 // This primarily works for Debug/Profile builds or specific engine variants
+                 zip.getInputStream(libEntry).use { stream ->
+                     val buffer = ByteArray(32 * 1024)
+                     val read = stream.read(buffer)
+                     if (read > 0) {
+                         val content = String(buffer, 0, read)
+                         // Look for "Flutter 3.x.x" etc.
+                         val regex = "Flutter (\\d+\\.\\d+\\.\\d+)".toRegex()
+                         val match = regex.find(content)
+                         if (match != null) {
+                             return match.groupValues[1]
                          }
+                     }
+                 }
+            }
+            
+            // Note: version.json usually contains App Version, not SDK version, so we skip it 
+            // to avoid confusing the user with "1.0.0" when they expect SDK version.
+        } catch (e: Exception) { }
+        return null
+    }
+
+    private fun detectReactNativeVersion(zip: ZipFile): String? {
+        try {
+            val entry = zip.getEntry("assets/index.android.bundle")
+            if (entry != null) {
+                zip.getInputStream(entry).use { stream ->
+                    val buffer = ByteArray(1024)
+                    val read = stream.read(buffer)
+                    if (read > 0) {
+                        val header = String(buffer, 0, read)
+                        if (header.contains("Hermes")) {
+                            // "Hermes JavaScript bytecode, version 84"
+                            val regex = "Hermes JavaScript bytecode, version (\\d+)".toRegex()
+                            val match = regex.find(header)
+                            if (match != null) {
+                                return "Hermes Bytecode v${match.groupValues[1]}"
+                            }
+                            return "Hermes Enabled"
+                        }
+                        return "Standard Bundle" 
+                    }
+                }
+            }
+        } catch (e: Exception) { }
+        return null
+    }
+
+    private fun detectUnityVersion(zip: ZipFile): String? {
+        try {
+            val entry = zip.getEntry("assets/bin/Data/ProjectSettings") 
+                ?: zip.getEntry("assets/bin/Data/globalgamemanagers")
+                ?: zip.getEntry("assets/bin/Data/data.unity3d")
+            
+            if (entry != null) {
+                zip.getInputStream(entry).use { stream ->
+                    val buffer = ByteArray(8192) // Read 8KB
+                    val read = stream.read(buffer)
+                    if (read > 0) {
+                        val text = String(buffer, 0, read)
+                        val regex = "(\\d+\\.\\d+\\.\\d+[a-z]\\d+)".toRegex()
+                        val match = regex.find(text)
+                        if (match != null) {
+                            return match.groupValues[1]
+                        }
                     }
                 }
             }
