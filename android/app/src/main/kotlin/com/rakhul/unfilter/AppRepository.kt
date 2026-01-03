@@ -61,8 +61,20 @@ class AppRepository(private val context: Context) {
                  onProgress(index + 1, total, packageName)
             }
 
-            // Fast filter using Set lookup
-            if (launchablePackages.contains(packageName)) {
+            val appInfo = pkg.applicationInfo ?: continue
+
+            val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+            val isUpdatedSystem = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+
+            // Robust Fix: Include the app if:
+            // 1. It is known to be launchable (has a launcher activity).
+            // 2. OR it is a User app (not a pure system app).
+            //    This ensures apps like PWAs/TWAs (e.g. Unstop) or those with unusual manifests are included
+            //    provided they are installed by the user.
+            // 3. We also include updated system apps explicitly if not covered by launchable check (usually they are).
+            val shouldInclude = launchablePackages.contains(packageName) || (!isSystem || isUpdatedSystem)
+
+            if (shouldInclude) {
                 try {
                     // Pass includeDetails to convertPackageToMap
                     appList.add(convertPackageToMap(pkg, includeDetails, usageMap))
@@ -86,7 +98,7 @@ class AppRepository(private val context: Context) {
                 .map { name ->
                     try {
                         val pkg = packageManager.getPackageInfo(name, flags)
-                        if (packageManager.getLaunchIntentForPackage(pkg.packageName) != null && pkg.applicationInfo != null) {
+                        if (pkg.applicationInfo != null) {
                             convertPackageToMap(pkg, true, usageMap)
                         } else null
                     } catch (e: Exception) { null }
@@ -99,7 +111,7 @@ class AppRepository(private val context: Context) {
             for (name in packageNames) {
                 try {
                     val pkg = packageManager.getPackageInfo(name, flags)
-                    if (packageManager.getLaunchIntentForPackage(pkg.packageName) != null && pkg.applicationInfo != null) {
+                    if (pkg.applicationInfo != null) {
                         list.add(convertPackageToMap(pkg, true, usageMap))
                     }
                 } catch (e: Exception) { }
