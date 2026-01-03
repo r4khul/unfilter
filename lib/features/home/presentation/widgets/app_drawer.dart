@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../providers/github_stars_provider.dart';
 import '../../../analytics/presentation/pages/analytics_page.dart';
+import '../../../../core/widgets/theme_transition_wrapper.dart';
 
 class AppDrawer extends ConsumerStatefulWidget {
   const AppDrawer({super.key});
@@ -169,6 +170,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
   // --- Theme Switcher ---
 
+  // --- Theme Switcher ---
+
   Widget _buildThemeSwitcher(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final currentTheme = ref.watch(themeProvider);
@@ -266,9 +269,19 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () {
-          HapticFeedback.selectionClick();
-          ref.read(themeProvider.notifier).setTheme(mode);
+        onTapUp: (details) {
+          if (mode == ref.read(themeProvider)) return;
+
+          // Pro-level haptic feedback
+          HapticFeedback.mediumImpact();
+
+          // Trigger the high-performance circular reveal transition
+          ThemeTransitionWrapper.of(context).switchTheme(
+            center: details.globalPosition,
+            onThemeSwitch: () {
+              ref.read(themeProvider.notifier).setTheme(mode);
+            },
+          );
         },
         child: AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 200),
@@ -280,10 +293,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
           child: Center(
             child: TweenAnimationBuilder<Color?>(
               duration: const Duration(milliseconds: 200),
-              tween: ColorTween(
-                begin: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
-                end: color,
-              ),
+              tween: ColorTween(end: color),
               builder: (context, color, child) {
                 return Icon(icon, size: 20, color: color);
               },
