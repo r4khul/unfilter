@@ -220,7 +220,11 @@ class AppCard extends StatelessWidget {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.60),
+                                    color: isDark
+                                        ? Colors.black.withOpacity(0.60)
+                                        : Colors.grey.withOpacity(
+                                            0.2,
+                                          ), // Lighter shadow for light mode
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),

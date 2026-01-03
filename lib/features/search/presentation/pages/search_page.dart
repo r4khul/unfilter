@@ -40,7 +40,9 @@ class SearchPage extends ConsumerWidget {
                 margin: const EdgeInsets.only(right: 12),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
+                  color: theme.brightness == Brightness.dark
+                      ? theme.colorScheme.surface
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: theme.colorScheme.outline.withOpacity(0.2),

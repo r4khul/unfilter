@@ -84,7 +84,11 @@ class CategorySlider extends ConsumerWidget {
             decoration: BoxDecoration(
               color: isSelected
                   ? theme.colorScheme.primary
-                  : theme.colorScheme.surface,
+                  : (theme.brightness == Brightness.dark
+                        ? theme.colorScheme.surface
+                        : Colors
+                              .grey
+                              .shade100), // Light grey for light mode unselected
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
                 color: isSelected
@@ -92,21 +96,6 @@ class CategorySlider extends ConsumerWidget {
                     : theme.colorScheme.outline.withOpacity(0.1),
                 width: 1,
               ),
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: theme.colorScheme.primary.withOpacity(0.3),
-                        blurRadius: isCompact ? 6 : 8,
-                        offset: Offset(0, isCompact ? 3 : 4),
-                      ),
-                    ]
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
-                        blurRadius: isCompact ? 3 : 4,
-                        offset: Offset(0, isCompact ? 1 : 2),
-                      ),
-                    ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
