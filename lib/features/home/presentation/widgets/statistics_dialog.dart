@@ -1,9 +1,9 @@
 import 'dart:ui';
-import 'dart:typed_data';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/widgets/premium_app_bar.dart';
 import '../../../apps/domain/entities/device_app.dart';
 import '../../../apps/presentation/providers/apps_provider.dart';
 import '../../../../features/apps/presentation/pages/app_details_page.dart';
@@ -17,7 +17,7 @@ class StatisticsDialog extends ConsumerStatefulWidget {
 
 class _StatisticsDialogState extends ConsumerState<StatisticsDialog> {
   int _touchedIndex = -1;
-  int _showTopCount = 5; // Default show top 5
+  int _showTopCount = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -27,103 +27,70 @@ class _StatisticsDialogState extends ConsumerState<StatisticsDialog> {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(16),
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 750),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              blurRadius: 30,
-              offset: const Offset(0, 15),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Header with Dropdown
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.pie_chart_rounded,
-                      color: theme.colorScheme.primary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      "Usage Statistics",
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ),
-                  _buildTopSelector(theme),
-                ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 750),
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
               ),
-            ),
-
-            Expanded(
-              child: appsAsync.when(
-                data: (apps) => _buildContent(context, apps),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, _) => Center(child: Text("Error: $err")),
-              ),
-            ),
-
-            // Close Button Footer
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.tonal(
-                  onPressed: () => Navigator.pop(context),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+            ],
+          ),
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: PremiumAppBar(
+              title: "Usage Statistics",
+              centerTitle: true,
+              leading: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    shape: BoxShape.circle,
                   ),
-                  child: const Text("Close"),
+                  child: const Icon(Icons.close_rounded, size: 20),
                 ),
               ),
+              actions: [_buildFilterAction(theme), const SizedBox(width: 8)],
             ),
-          ],
+            body: appsAsync.when(
+              data: (apps) => _buildContent(context, apps),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(child: Text("Error: $err")),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTopSelector(ThemeData theme) {
+  Widget _buildFilterAction(ThemeData theme) {
     return PopupMenuButton<int>(
       initialValue: _showTopCount,
       onSelected: (value) => setState(() => _showTopCount = value),
       itemBuilder: (context) => [
-        const PopupMenuItem(value: 5, child: Text("Top 5 Apps")),
-        const PopupMenuItem(value: 10, child: Text("Top 10 Apps")),
-        const PopupMenuItem(value: 25, child: Text("Top 25 Apps")),
+        const PopupMenuItem(value: 5, child: Text("Top 5")),
+        const PopupMenuItem(value: 10, child: Text("Top 10")),
+        const PopupMenuItem(value: 20, child: Text("Top 20")),
       ],
+      offset: const Offset(0, 40),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
+          color: theme.colorScheme.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               "Top $_showTopCount",
@@ -160,8 +127,6 @@ class _StatisticsDialogState extends ConsumerState<StatisticsDialog> {
       (sum, app) => sum + app.totalTimeInForeground,
     );
 
-    // Logic: Chart shows exactly what's requested (Top 5, 10, 25).
-    // "Others" is the rest of the valid apps not in the top list.
     final topApps = validApps.take(_showTopCount).toList();
     final topUsage = topApps.fold<int>(
       0,
@@ -169,11 +134,30 @@ class _StatisticsDialogState extends ConsumerState<StatisticsDialog> {
     );
     final otherUsage = totalUsage - topUsage;
 
+    // Center text calculation
+    String centerTopText = "Total";
+    String centerBottomText = _formatDuration(
+      Duration(milliseconds: totalUsage),
+    );
+
+    if (_touchedIndex != -1 && _touchedIndex < topApps.length) {
+      final app = topApps[_touchedIndex];
+      final percentage = (app.totalTimeInForeground / totalUsage) * 100;
+      centerTopText = "${percentage.toStringAsFixed(1)}%";
+      centerBottomText = app.appName;
+    } else if (_touchedIndex == topApps.length && otherUsage > 0) {
+      // Touched "Others"
+      final percentage = (otherUsage / totalUsage) * 100;
+      centerTopText = "${percentage.toStringAsFixed(1)}%";
+      centerBottomText = "Others";
+    }
+
     return Column(
       children: [
+        const SizedBox(height: 16),
         // Pie Chart Area
         SizedBox(
-          height: 240,
+          height: 260,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -184,24 +168,21 @@ class _StatisticsDialogState extends ConsumerState<StatisticsDialog> {
                       if (!event.isInterestedForInteractions ||
                           pieTouchResponse == null ||
                           pieTouchResponse.touchedSection == null) {
-                        if (_touchedIndex != -1)
+                        if (event is FlTapUpEvent && _touchedIndex != -1) {
                           setState(() => _touchedIndex = -1);
+                        }
                         return;
                       }
                       final newIndex =
                           pieTouchResponse.touchedSection!.touchedSectionIndex;
-                      if (_touchedIndex != newIndex)
+                      if (_touchedIndex != newIndex) {
                         setState(() => _touchedIndex = newIndex);
-
-                      // Handle touch navigation if touchUp
-                      if (event is FlTapUpEvent && newIndex < topApps.length) {
-                        _navigateToApp(context, topApps[newIndex]);
                       }
                     },
                   ),
                   borderData: FlBorderData(show: false),
                   sectionsSpace: 2,
-                  centerSpaceRadius: 50,
+                  centerSpaceRadius: 60,
                   sections: _generateSections(
                     context,
                     topApps,
@@ -209,202 +190,162 @@ class _StatisticsDialogState extends ConsumerState<StatisticsDialog> {
                     totalUsage,
                   ),
                 ),
-                swapAnimationDuration: const Duration(milliseconds: 600),
-                swapAnimationCurve: Curves.easeOutQuint,
+                swapAnimationDuration: const Duration(milliseconds: 350),
+                swapAnimationCurve: Curves.easeOutQuad,
               ),
               // Center Info
               IgnorePointer(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _touchedIndex != -1 && _touchedIndex < topApps.length
-                          ? "${((topApps[_touchedIndex].totalTimeInForeground / totalUsage) * 100).toStringAsFixed(1)}%"
-                          : "${validApps.length}",
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            height: 1,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                    ),
-                    Text(
-                      _touchedIndex != -1 && _touchedIndex < topApps.length
-                          ? "Of total usage"
-                          : "Apps Used",
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.5),
-                        fontWeight: FontWeight.w600,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Column(
+                    key: ValueKey("$_touchedIndex"),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        centerTopText,
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          height: 1,
+                          fontSize: 28,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          centerBottomText,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
 
-        // Peak Modern Containerized ListView
+        // List View
         Expanded(
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.all(
-              4,
-            ), // Inner padding for scrollbar space
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(20),
+              color: theme.colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.05),
+                color: theme.colorScheme.outlineVariant.withOpacity(0.5),
               ),
             ),
-            child: Theme(
-              data: theme.copyWith(
-                scrollbarTheme: ScrollbarThemeData(
-                  thumbColor: MaterialStateProperty.all(
-                    theme.colorScheme.onSurface.withOpacity(0.2),
-                  ),
-                  radius: const Radius.circular(10),
-                  thickness: MaterialStateProperty.all(4),
-                ),
-              ),
-              child: Scrollbar(
-                thumbVisibility: true,
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
-                  itemCount: topApps.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final app = topApps[index];
-                    final percent = (app.totalTimeInForeground / totalUsage);
-                    final isTouchHighlighted = index == _touchedIndex;
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: topApps.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final app = topApps[index];
+                  final percent = (app.totalTimeInForeground / totalUsage);
+                  final isTouched = index == _touchedIndex;
 
-                    return GestureDetector(
-                      onTap: () => _navigateToApp(context, app),
-                      onTapDown: (_) {
-                        if (index < topApps.length)
-                          setState(() => _touchedIndex = index);
-                      },
-                      onTapCancel: () => setState(() => _touchedIndex = -1),
-                      onTapUp: (_) => setState(() => _touchedIndex = -1),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isTouchHighlighted
-                              ? theme.colorScheme.onSurface.withOpacity(0.08)
-                              : theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isTouchHighlighted
-                                ? theme.colorScheme.onSurface.withOpacity(0.1)
-                                : Colors.transparent,
-                          ),
-                          boxShadow: isTouchHighlighted
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Hero(
-                              tag: app.packageName + "_stats", // Unique tag
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.surfaceContainerHigh,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.all(1),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(9),
-                                  child: app.icon != null
-                                      ? Image.memory(
-                                          app.icon!,
-                                          fit: BoxFit.cover,
-                                          gaplessPlayback: true,
-                                        )
-                                      : const Icon(Icons.android, size: 20),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          app.appName,
-                                          style: theme.textTheme.bodyMedium
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 14,
-                                              ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        "${(percent * 100).toStringAsFixed(1)}%",
-                                        style: theme.textTheme.labelSmall
-                                            ?.copyWith(
-                                              color: theme.colorScheme.onSurface
-                                                  .withOpacity(0.6),
-                                              fontFeatures: [
-                                                const FontFeature.tabularFigures(),
-                                              ],
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  // Monochrome Progress Bar
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: LinearProgressIndicator(
-                                      value: percent,
-                                      minHeight: 4,
-                                      backgroundColor: theme
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.05),
-                                      color: theme.colorScheme.onSurface
-                                          .withOpacity(0.8), // Monochrome
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                  return GestureDetector(
+                    onTap: () => _navigateToApp(context, app),
+                    onTapDown: (_) => setState(() => _touchedIndex = index),
+                    onTapCancel: () => setState(() => _touchedIndex = -1),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isTouched
+                            ? theme.colorScheme.surfaceContainerHighest
+                            : theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isTouched
+                              ? theme.colorScheme.primary.withOpacity(0.1)
+                              : Colors.transparent,
                         ),
                       ),
-                    );
-                  },
-                ),
+                      child: Row(
+                        children: [
+                          Hero(
+                            tag: app.packageName,
+                            child: _AppIcon(app: app, size: 40),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        app.appName,
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Text(
+                                      "${(percent * 100).toStringAsFixed(1)}%",
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: theme.colorScheme.primary,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: percent,
+                                    minHeight: 6,
+                                    borderRadius: BorderRadius.circular(4),
+                                    backgroundColor: theme
+                                        .colorScheme
+                                        .surfaceContainerHighest,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
         ),
       ],
     );
+  }
+
+  String _formatDuration(Duration duration) {
+    if (duration.inHours > 0) {
+      return "${duration.inHours}h ${duration.inMinutes % 60}m";
+    } else {
+      return "${duration.inMinutes}m";
+    }
   }
 
   void _navigateToApp(BuildContext context, DeviceApp app) {
@@ -422,49 +363,46 @@ class _StatisticsDialogState extends ConsumerState<StatisticsDialog> {
   ) {
     final theme = Theme.of(context);
     List<PieChartSectionData> sections = [];
-
-    // Only show badges (icons) if we are not in High Density mode (e.g. top 25)
-    // OR show them only for larger slices.
-    // For sleekness, let's show icons only for Top 10. For Top 25, it's too crowded.
-    final bool showIcons = displayApps.length <= 15;
+    final bool showBadges = displayApps.length <= 10;
 
     for (int i = 0; i < displayApps.length; i++) {
       final isTouched = i == _touchedIndex;
-      final radius = isTouched ? 65.0 : 55.0;
+      final radius = isTouched ? 60.0 : 50.0;
       final app = displayApps[i];
       final value = app.totalTimeInForeground.toDouble();
 
-      // Monochrome Palette Generation
-      // Vary opacity based on rank to distinguish slices
-      final double opacity = 1.0 - (i / (displayApps.length + 5));
-      final Color sectionColor = theme.colorScheme.primary.withOpacity(
-        opacity.clamp(0.2, 1.0),
-      );
+      // Use a gradient-like palette or cycling colors
+      final colors = [
+        theme.colorScheme.primary,
+        theme.colorScheme.tertiary,
+        theme.colorScheme.secondary,
+        theme.colorScheme.error,
+        Colors.orange,
+        Colors.purple,
+        Colors.teal,
+      ];
+      final color = colors[i % colors.length];
 
       sections.add(
         PieChartSectionData(
-          color: sectionColor,
+          color: color.withOpacity(0.9),
           value: value,
           title: '',
           radius: radius,
-          // Conditionally show badge
-          badgeWidget: showIcons
-              ? (isTouched
-                    ? _Badge(
-                        app.icon,
-                        size: 40,
-                        borderColor: theme.colorScheme.onSurface,
-                      )
-                    : _Badge(app.icon, size: 28))
-              : null,
-          badgePositionPercentageOffset: .98,
+          badgeWidget: showBadges && isTouched
+              ? _AppIcon(app: app, size: 32, addBorder: true)
+              : (showBadges ? _AppIcon(app: app, size: 24) : null),
+          badgePositionPercentageOffset: 0.98,
+          borderSide: isTouched
+              ? BorderSide(color: theme.colorScheme.surface, width: 2)
+              : BorderSide(color: Colors.transparent),
         ),
       );
     }
 
     if (otherUsage > 0) {
-      final isTouched = sections.length == _touchedIndex;
-      final radius = isTouched ? 60.0 : 50.0;
+      final isTouched = displayApps.length == _touchedIndex;
+      final radius = isTouched ? 55.0 : 45.0;
 
       sections.add(
         PieChartSectionData(
@@ -474,10 +412,10 @@ class _StatisticsDialogState extends ConsumerState<StatisticsDialog> {
           radius: radius,
           badgeWidget: Icon(
             Icons.more_horiz,
-            color: theme.colorScheme.onSurface.withOpacity(0.5),
+            color: theme.colorScheme.onSurfaceVariant,
             size: 16,
           ),
-          badgePositionPercentageOffset: .98,
+          badgePositionPercentageOffset: 0.98,
         ),
       );
     }
@@ -486,42 +424,38 @@ class _StatisticsDialogState extends ConsumerState<StatisticsDialog> {
   }
 }
 
-class _Badge extends StatelessWidget {
-  final Uint8List? iconBytes;
+class _AppIcon extends StatelessWidget {
+  final DeviceApp app;
   final double size;
-  final Color? borderColor;
+  final bool addBorder;
 
-  const _Badge(this.iconBytes, {required this.size, this.borderColor});
+  const _AppIcon({
+    required this.app,
+    required this.size,
+    this.addBorder = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+    return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.white,
         shape: BoxShape.circle,
-        border: borderColor != null
-            ? Border.all(color: borderColor!, width: 2)
+        border: addBorder ? Border.all(color: Colors.white, width: 2) : null,
+        boxShadow: addBorder
+            ? [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ]
             : null,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            offset: const Offset(0, 3),
-            blurRadius: 6,
-          ),
-        ],
       ),
-      padding: const EdgeInsets.all(2), // White padding
       child: ClipOval(
-        child: iconBytes != null
-            ? Image.memory(
-                iconBytes!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.android, size: 16),
-              )
+        child: app.icon != null
+            ? Image.memory(app.icon!, fit: BoxFit.cover, gaplessPlayback: true)
             : const Icon(Icons.android, size: 16),
       ),
     );

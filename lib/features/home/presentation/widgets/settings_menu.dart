@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../analytics/presentation/pages/analytics_page.dart';
 import '../../../../core/providers/theme_provider.dart';
-import 'statistics_dialog.dart';
 
 class SettingsMenu extends ConsumerWidget {
   const SettingsMenu({super.key});
@@ -157,10 +157,11 @@ class SettingsMenu extends ConsumerWidget {
                         // Statistics Option
                         InkWell(
                           onTap: () {
-                            Navigator.pop(context);
-                            showDialog(
-                              context: context,
-                              builder: (_) => const StatisticsDialog(),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AnalyticsPage(),
+                              ),
                             );
                           },
                           borderRadius: BorderRadius.circular(12),
