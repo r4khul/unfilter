@@ -12,39 +12,34 @@ class AppCard extends StatelessWidget {
   Color _getStackColor(String stack, bool isDark) {
     switch (stack.toLowerCase()) {
       case 'flutter':
-        return isDark ? const Color(0xFF42A5F5) : const Color(0xFF02569B);
+        return isDark ? const Color(0xFF5CACEE) : const Color(0xFF1E88E5);
       case 'react native':
-        return isDark ? const Color(0xFF61DAFB) : const Color(0xFF0D47A1);
+        return isDark ? const Color(0xFF61DAFB) : const Color(0xFF00ACC1);
       case 'kotlin':
-        return isDark
-            ? const Color(0xFF7F52FF)
-            : const Color(0xFF4800D6); // Purple
+        return isDark ? const Color(0xFFB388FF) : const Color(0xFF7C4DFF);
+      case 'jetpack compose':
+      case 'jetpack':
+        return isDark ? const Color(0xFF42D08D) : const Color(0xFF00C853);
       case 'java':
-        return isDark
-            ? const Color(0xFFF44336)
-            : const Color(0xFFB71C1C); // Red/Orange
-      case 'swift':
-        return isDark
-            ? const Color(0xFFFF9800)
-            : const Color(0xFFE65100); // Orange
+        return isDark ? const Color(0xFFEF9A9A) : const Color(0xFFE53935);
+      case 'pwa':
+        return isDark ? const Color(0xFFB39DDB) : const Color(0xFF7E57C2);
       case 'ionic':
-        return isDark
-            ? const Color(0xFF3880FF)
-            : const Color(0xFF3880FF); // Ionic Blue
+        return isDark ? const Color(0xFF90CAF9) : const Color(0xFF42A5F5);
+      case 'cordova':
+        return isDark ? const Color(0xFFB0BEC5) : const Color(0xFF78909C);
       case 'xamarin':
-        return isDark
-            ? const Color(0xFF3498DB)
-            : const Color(0xFF2980B9); // Xamarin Blue
+        return isDark ? const Color(0xFF81D4FA) : const Color(0xFF29B6F6);
+      case 'nativescript':
+        return isDark ? const Color(0xFF80CBC4) : const Color(0xFF26A69A);
       case 'unity':
-        return isDark
-            ? const Color(0xFFE0E0E0)
-            : const Color(0xFF212121); // White/Black
+        return isDark ? const Color(0xFFEDEDED) : const Color(0xFF424242);
       case 'godot':
-        return isDark
-            ? const Color(0xFF478CBF)
-            : const Color(0xFF336699); // Godot Blue
+        return isDark ? const Color(0xFF81D4FA) : const Color(0xFF039BE5);
+      case 'corona':
+        return isDark ? const Color(0xFFFFCC80) : const Color(0xFFFFA726);
       default:
-        return const Color(0xFF3DDC84); // Android Green for others
+        return isDark ? const Color(0xFF81C784) : const Color(0xFF4CAF50);
     }
   }
 
@@ -58,8 +53,8 @@ class AppCard extends StatelessWidget {
         return 'assets/vectors/icon_kotlin.svg';
       case 'java':
         return 'assets/vectors/icon_java.svg';
-      case 'swift':
-        return 'assets/vectors/icon_swift.svg';
+      case 'pwa':
+        return 'assets/vectors/icon_pwa.svg';
       case 'ionic':
         return 'assets/vectors/icon_ionic.svg';
       case 'xamarin':

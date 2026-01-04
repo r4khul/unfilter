@@ -21,7 +21,7 @@ class TechStackFilter extends ConsumerWidget {
       },
       {'name': TechStacks.kotlin, 'icon': 'assets/vectors/icon_kotlin.svg'},
       {'name': TechStacks.java, 'icon': 'assets/vectors/icon_java.svg'},
-      {'name': TechStacks.swift, 'icon': 'assets/vectors/icon_swift.svg'},
+      {'name': TechStacks.pwa, 'icon': 'assets/vectors/icon_pwa.svg'},
       {'name': TechStacks.ionic, 'icon': 'assets/vectors/icon_ionic.svg'},
       {'name': TechStacks.xamarin, 'icon': 'assets/vectors/icon_xamarin.svg'},
     ];

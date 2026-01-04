@@ -74,34 +74,49 @@ class AppDetailsPage extends ConsumerWidget {
     Color stackColor;
     switch (app.stack.toLowerCase()) {
       case 'flutter':
-        stackColor = isDark ? const Color(0xFF42A5F5) : const Color(0xFF02569B);
+        stackColor = isDark ? const Color(0xFF5CACEE) : const Color(0xFF1E88E5);
         break;
       case 'react native':
-        stackColor = isDark ? const Color(0xFF61DAFB) : const Color(0xFF0D47A1);
+        stackColor = isDark ? const Color(0xFF61DAFB) : const Color(0xFF00ACC1);
         break;
       case 'kotlin':
-        stackColor = isDark ? const Color(0xFF7F52FF) : const Color(0xFF4800D6);
+        stackColor = isDark ? const Color(0xFFB388FF) : const Color(0xFF7C4DFF);
+        break;
+      case 'jetpack compose':
+      case 'jetpack':
+        stackColor = isDark ? const Color(0xFF42D08D) : const Color(0xFF00C853);
         break;
       case 'java':
-        stackColor = isDark ? const Color(0xFFF44336) : const Color(0xFFB71C1C);
+        stackColor = isDark ? const Color(0xFFEF9A9A) : const Color(0xFFE53935);
         break;
-      case 'swift':
-        stackColor = isDark ? const Color(0xFFFF9800) : const Color(0xFFE65100);
+      case 'pwa':
+        stackColor = isDark ? const Color(0xFFB39DDB) : const Color(0xFF7E57C2);
         break;
       case 'ionic':
-        stackColor = isDark ? const Color(0xFF3880FF) : const Color(0xFF3880FF);
+        stackColor = isDark ? const Color(0xFF90CAF9) : const Color(0xFF42A5F5);
+        break;
+      case 'cordova':
+        stackColor = isDark ? const Color(0xFFB0BEC5) : const Color(0xFF78909C);
         break;
       case 'xamarin':
-        stackColor = isDark ? const Color(0xFF3498DB) : const Color(0xFF2980B9);
+        stackColor = isDark ? const Color(0xFF81D4FA) : const Color(0xFF29B6F6);
+        break;
+      case 'nativescript':
+        stackColor = isDark ? const Color(0xFF80CBC4) : const Color(0xFF26A69A);
         break;
       case 'unity':
-        stackColor = isDark ? const Color(0xFFE0E0E0) : const Color(0xFF212121);
+        stackColor = isDark ? const Color(0xFFEDEDED) : const Color(0xFF424242);
         break;
       case 'godot':
-        stackColor = isDark ? const Color(0xFF478CBF) : const Color(0xFF336699);
+        stackColor = isDark ? const Color(0xFF81D4FA) : const Color(0xFF039BE5);
+        break;
+      case 'corona':
+        stackColor = isDark ? const Color(0xFFFFCC80) : const Color(0xFFEF6C00);
         break;
       default:
-        stackColor = const Color(0xFF3DDC84); // Android Green
+        stackColor = isDark
+            ? const Color(0xFF81C784)
+            : const Color(0xFF2E7D32); // Android Green fallback
     }
 
     return Column(
@@ -1288,8 +1303,8 @@ class AppDetailsPage extends ConsumerWidget {
         return 'assets/vectors/icon_kotlin.svg';
       case 'java':
         return 'assets/vectors/icon_java.svg';
-      case 'swift':
-        return 'assets/vectors/icon_swift.svg';
+      case 'pwa':
+        return 'assets/vectors/icon_pwa.svg';
       case 'ionic':
         return 'assets/vectors/icon_ionic.svg';
       case 'xamarin':

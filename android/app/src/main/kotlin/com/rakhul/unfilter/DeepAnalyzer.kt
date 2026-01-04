@@ -4,10 +4,10 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.content.pm.Signature
 import android.os.Build
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.InputStream
 import java.security.MessageDigest
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -15,7 +15,7 @@ import java.util.zip.ZipFile
 
 class DeepAnalyzer(private val context: Context) {
 
-    fun analyze(pkg: PackageInfo, pm: PackageManager): Map<String, Any?> {
+    fun analyze(pkg: PackageInfo, pm: PackageManager, preOpenedZip: ZipFile? = null): Map<String, Any?> {
         val appInfo = pkg.applicationInfo ?: return emptyMap()
         val analysis = mutableMapOf<String, Any?>()
 
@@ -40,20 +40,13 @@ class DeepAnalyzer(private val context: Context) {
         // 4. Advanced Stack Version Detection
         val techVersions = mutableMapOf<String, String>()
         val apkPath = appInfo.sourceDir
-        if (apkPath != null && File(apkPath).exists()) {
+        
+        if (preOpenedZip != null) {
+            detectVersionsFromZip(preOpenedZip, techVersions)
+        } else if (apkPath != null && File(apkPath).exists()) {
              try {
                 ZipFile(File(apkPath)).use { zip ->
-                    // Kotlin
-                    detectKotlinVersion(zip)?.let { techVersions["Kotlin"] = it }
-                    
-                    // React Native
-                    detectReactNativeVersion(zip)?.let { techVersions["React Native"] = it }
-                    
-                    // Unity
-                    detectUnityVersion(zip)?.let { techVersions["Unity"] = it }
-                    
-                    // Flutter (Basic)
-                    detectFlutterVersion(zip)?.let { techVersions["Flutter"] = it }
+                    detectVersionsFromZip(zip, techVersions)
                 }
              } catch (e: Exception) { }
         }
@@ -76,10 +69,26 @@ class DeepAnalyzer(private val context: Context) {
         analysis["splitApks"] = splitNames
 
         // 6. Native Lib Architecture
-        // primaryCpuAbi caused compilation issues, removed for now.
         analysis["primaryCpuAbi"] = "Unknown"
 
         return analysis
+    }
+    
+    private fun detectVersionsFromZip(zip: ZipFile, techVersions: MutableMap<String, String>) {
+        // Kotlin
+        detectKotlinVersion(zip)?.let { techVersions["Kotlin"] = it }
+        
+        // React Native
+        detectReactNativeVersion(zip)?.let { techVersions["React Native"] = it }
+        
+        // Unity
+        detectUnityVersion(zip)?.let { techVersions["Unity"] = it }
+        
+        // Flutter
+        detectFlutterVersion(zip)?.let { techVersions["Flutter"] = it }
+        
+        // Cordova/PhoneGap
+        detectCordovaVersion(zip)?.let { techVersions["Cordova"] = it }
     }
 
     private fun getInstallerPackageName(packageName: String, pm: PackageManager): String? {
@@ -146,8 +155,6 @@ class DeepAnalyzer(private val context: Context) {
 
     private fun detectFlutterVersion(zip: ZipFile): String? {
         try {
-            // Check libflutter.so for engine hash or version string if visible
-            // Note: Scanning large binaries is slow, read only header or small chunks
             val abis = arrayOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
             var libEntry: java.util.zip.ZipEntry? = null
             
@@ -157,14 +164,11 @@ class DeepAnalyzer(private val context: Context) {
             }
 
             if (libEntry != null) {
-                 // Scan first 32KB for "Flutter <version>" string
-                 // This primarily works for Debug/Profile builds or specific engine variants
                  zip.getInputStream(libEntry).use { stream ->
                      val buffer = ByteArray(32 * 1024)
                      val read = stream.read(buffer)
                      if (read > 0) {
                          val content = String(buffer, 0, read)
-                         // Look for "Flutter 3.x.x" etc.
                          val regex = "Flutter (\\d+\\.\\d+\\.\\d+)".toRegex()
                          val match = regex.find(content)
                          if (match != null) {
@@ -173,9 +177,6 @@ class DeepAnalyzer(private val context: Context) {
                      }
                  }
             }
-            
-            // Note: version.json usually contains App Version, not SDK version, so we skip it 
-            // to avoid confusing the user with "1.0.0" when they expect SDK version.
         } catch (e: Exception) { }
         return null
     }
@@ -185,12 +186,11 @@ class DeepAnalyzer(private val context: Context) {
             val entry = zip.getEntry("assets/index.android.bundle")
             if (entry != null) {
                 zip.getInputStream(entry).use { stream ->
-                    val buffer = ByteArray(1024)
+                    val buffer = ByteArray(4096)
                     val read = stream.read(buffer)
                     if (read > 0) {
                         val header = String(buffer, 0, read)
                         if (header.contains("Hermes")) {
-                            // "Hermes JavaScript bytecode, version 84"
                             val regex = "Hermes JavaScript bytecode, version (\\d+)".toRegex()
                             val match = regex.find(header)
                             if (match != null) {
@@ -214,7 +214,7 @@ class DeepAnalyzer(private val context: Context) {
             
             if (entry != null) {
                 zip.getInputStream(entry).use { stream ->
-                    val buffer = ByteArray(8192) // Read 8KB
+                    val buffer = ByteArray(8192)
                     val read = stream.read(buffer)
                     if (read > 0) {
                         val text = String(buffer, 0, read)
@@ -225,6 +225,27 @@ class DeepAnalyzer(private val context: Context) {
                         }
                     }
                 }
+            }
+        } catch (e: Exception) { }
+        return null
+    }
+    
+    private fun detectCordovaVersion(zip: ZipFile): String? {
+        try {
+            val entry = zip.getEntry("assets/www/cordova.js")
+            if (entry != null) {
+                 zip.getInputStream(entry).use { stream ->
+                    val buffer = ByteArray(4096)
+                    val read = stream.read(buffer)
+                    if (read > 0) {
+                        val text = String(buffer, 0, read)
+                        val regex = "PLATFORM_VERSION_BUILD_LABEL\\s*=\\s*['\"]([\\d\\.]+)['\"]".toRegex()
+                        val match = regex.find(text)
+                        if (match != null) {
+                            return match.groupValues[1]
+                        }
+                    }
+                 }
             }
         } catch (e: Exception) { }
         return null

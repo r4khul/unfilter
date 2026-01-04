@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 
 class AppRepository(private val context: Context) {
@@ -40,8 +41,7 @@ class AppRepository(private val context: Context) {
         // 1. Get all installed packages
         val packages = packageManager.getInstalledPackages(flags)
         
-        // 2. Pre-fetch launchable packages to avoid slow getLaunchIntentForPackage in loop
-        // queryIntentActivities is one IPC call vs N calls
+        // 2. Pre-fetch launchable packages
         val launchIntent = android.content.Intent(android.content.Intent.ACTION_MAIN, null)
         launchIntent.addCategory(android.content.Intent.CATEGORY_LAUNCHER)
         val launchables = packageManager.queryIntentActivities(launchIntent, 0)
@@ -49,39 +49,65 @@ class AppRepository(private val context: Context) {
 
         val total = packages.size
         val usageMap = if (includeDetails) usageManager.getUsageMap() else emptyMap()
-        val appList = mutableListOf<Map<String, Any?>>()
 
-        for ((index, pkg) in packages.withIndex()) {
-            if (checkScanCancelled()) break
+        // 3. Parallel Execution for Detailed Scan (Android N+)
+        // This dramatically speeds up the Deep Analysis (ZIP/DEX scanning)
+        if (includeDetails && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+             val counter = AtomicInteger(0)
+             
+             return packages.parallelStream()
+                .map { pkg ->
+                    if (checkScanCancelled()) return@map null
+                    
+                    val index = counter.incrementAndGet()
+                    val packageName = pkg.packageName
+                    
+                    if (index % 10 == 0) {
+                        onProgress(index, total, packageName)
+                    }
 
-            val packageName = pkg.packageName
+                    val appInfo = pkg.applicationInfo ?: return@map null
+                    val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                    val isUpdatedSystem = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                    val shouldInclude = launchablePackages.contains(packageName) || (!isSystem || isUpdatedSystem)
 
-            // Report progress
-            if (includeDetails && index % 10 == 0) {
-                 onProgress(index + 1, total, packageName)
+                    if (shouldInclude) {
+                        try {
+                            convertPackageToMap(pkg, true, usageMap)
+                        } catch (e: Exception) { null }
+                    } else {
+                        null
+                    }
+                }
+                .filter { it != null }
+                .collect(Collectors.toList())
+                .filterNotNull()
+        } else {
+            // Fallback for older devices or cancelled scans (though stream handles cancel somewhat)
+            // Or lite mode (includeDetails = false)
+            val appList = mutableListOf<Map<String, Any?>>()
+            for ((index, pkg) in packages.withIndex()) {
+                if (checkScanCancelled()) break
+
+                val packageName = pkg.packageName
+
+                if (includeDetails && index % 10 == 0) {
+                     onProgress(index + 1, total, packageName)
+                }
+
+                val appInfo = pkg.applicationInfo ?: continue
+                val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                val isUpdatedSystem = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                val shouldInclude = launchablePackages.contains(packageName) || (!isSystem || isUpdatedSystem)
+
+                if (shouldInclude) {
+                    try {
+                        appList.add(convertPackageToMap(pkg, includeDetails, usageMap))
+                    } catch (e: Exception) { }
+                }
             }
-
-            val appInfo = pkg.applicationInfo ?: continue
-
-            val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-            val isUpdatedSystem = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-
-            // Robust Fix: Include the app if:
-            // 1. It is known to be launchable (has a launcher activity).
-            // 2. OR it is a User app (not a pure system app).
-            //    This ensures apps like PWAs/TWAs (e.g. Unstop) or those with unusual manifests are included
-            //    provided they are installed by the user.
-            // 3. We also include updated system apps explicitly if not covered by launchable check (usually they are).
-            val shouldInclude = launchablePackages.contains(packageName) || (!isSystem || isUpdatedSystem)
-
-            if (shouldInclude) {
-                try {
-                    // Pass includeDetails to convertPackageToMap
-                    appList.add(convertPackageToMap(pkg, includeDetails, usageMap))
-                } catch (e: Exception) { }
-            }
+            return appList
         }
-        return appList
     }
 
     fun getAppsDetails(packageNames: List<String>): List<Map<String, Any?>> {
@@ -139,22 +165,42 @@ class AppRepository(private val context: Context) {
         var providers = emptyList<String>()
 
         if (includeDetails) {
-            val pair = stackDetector.detectStackAndLibs(appInfo)
-            stack = pair.first
-            libs = pair.second
-
-            usage = usageMap?.get(pkg.packageName)
-            deepData = deepAnalyzer.analyze(pkg, packageManager)
+            // Optimization: Open ZipFile once and share between detectors
+            // calculate apkPath
+            val sourceDir = appInfo.sourceDir
+            var zipFile: java.util.zip.ZipFile? = null
+            try {
+                if (sourceDir != null && File(sourceDir).exists()) {
+                    zipFile = java.util.zip.ZipFile(File(sourceDir))
+                }
+            } catch (e: Exception) { 
+                // Ignore zip open errors
+            }
 
             try {
-                val iconDrawable = packageManager.getApplicationIcon(appInfo)
-                iconBytes = drawableToByteArray(iconDrawable)
-            } catch (e: Exception) { }
-            
-            permissions = pkg.requestedPermissions?.toList() ?: emptyList()
-            services = pkg.services?.map { it.name } ?: emptyList()
-            receivers = pkg.receivers?.map { it.name } ?: emptyList()
-            providers = pkg.providers?.map { it.name } ?: emptyList()
+                val pair = stackDetector.detectStackAndLibs(appInfo, zipFile)
+                stack = pair.first
+                libs = pair.second
+
+                usage = usageMap?.get(pkg.packageName)
+                // Pass the pre-opened zip file to DeepAnalyzer as well
+                deepData = deepAnalyzer.analyze(pkg, packageManager, zipFile)
+
+                try {
+                    val iconDrawable = packageManager.getApplicationIcon(appInfo)
+                    iconBytes = drawableToByteArray(iconDrawable)
+                } catch (e: Exception) { }
+                
+                permissions = pkg.requestedPermissions?.toList() ?: emptyList()
+                services = pkg.services?.map { it.name } ?: emptyList()
+                receivers = pkg.receivers?.map { it.name } ?: emptyList()
+                providers = pkg.providers?.map { it.name } ?: emptyList()
+            } finally {
+                // Ensure ZipFile is closed
+                try {
+                    zipFile?.close()
+                } catch (e: Exception) { }
+            }
         }
 
         val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
@@ -205,24 +251,28 @@ class AppRepository(private val context: Context) {
     }
 
     private fun drawableToByteArray(drawable: Drawable): ByteArray {
-        val bitmap = if (drawable is BitmapDrawable) {
-            drawable.bitmap
-        } else {
-            val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 1
-            val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 1
-            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
-            drawable.setBounds(0, 0, canvas.width, canvas.height)
-            drawable.draw(canvas)
-            bitmap
+        try {
+            val bitmap = if (drawable is BitmapDrawable) {
+                drawable.bitmap
+            } else {
+                val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 1
+                val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 1
+                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+                bitmap
+            }
+
+            // Resize for performance - 96x96 is roughly 3KB per icon
+            // Use filter=true for better quality
+            val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 96, 96, true)
+
+            val stream = ByteArrayOutputStream()
+            scaledBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            return stream.toByteArray()
+        } catch (e: Exception) {
+            return ByteArray(0)
         }
-
-        // Resize for performance - 96x96 is roughly 3KB per icon
-        // Using filter=true for better quality
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 96, 96, true)
-
-        val stream = ByteArrayOutputStream()
-        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-        return stream.toByteArray()
     }
 }

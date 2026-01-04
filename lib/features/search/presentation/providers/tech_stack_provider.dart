@@ -11,7 +11,7 @@ class TechStacks {
   static const reactNative = 'React Native';
   static const kotlin = 'Kotlin';
   static const java = 'Java';
-  static const swift = 'Swift';
+  static const pwa = 'PWA';
   static const ionic = 'Ionic';
   static const xamarin = 'Xamarin';
 }
