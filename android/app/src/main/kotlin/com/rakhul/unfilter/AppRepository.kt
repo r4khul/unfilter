@@ -11,6 +11,9 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 
@@ -21,6 +24,9 @@ class AppRepository(private val context: Context) {
     private val usageManager = UsageManager(context)
 
     private val deepAnalyzer = DeepAnalyzer(context)
+    
+    // Bounded thread pool for deep scanning to prevent OOM and FD exhaustion
+    private val scanExecutor = Executors.newFixedThreadPool(4)
 
     fun getInstalledApps(
         includeDetails: Boolean,
@@ -52,36 +58,51 @@ class AppRepository(private val context: Context) {
 
         // 3. Parallel Execution for Detailed Scan (Android N+)
         // This dramatically speeds up the Deep Analysis (ZIP/DEX scanning)
-        if (includeDetails && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        // 3. Parallel Execution for Detailed Scan (Android N+) with Bounded Executor
+        // Replaces usage of parallelStream() which is unbounded and causes OOM/FD limits.
+        if (includeDetails) {
              val counter = AtomicInteger(0)
+             val futures = mutableListOf<Future<Map<String, Any?>?>>()
              
-             return packages.parallelStream()
-                .map { pkg ->
-                    if (checkScanCancelled()) return@map null
-                    
-                    val index = counter.incrementAndGet()
-                    val packageName = pkg.packageName
-                    
-                    if (index % 10 == 0) {
-                        onProgress(index, total, packageName)
-                    }
+             for (pkg in packages) {
+                 if (checkScanCancelled()) break
+                 
+                 futures.add(scanExecutor.submit(Callable {
+                     if (checkScanCancelled()) return@Callable null
+                     
+                     val index = counter.incrementAndGet()
+                     val packageName = pkg.packageName
+                     
+                     if (index % 10 == 0) {
+                         onProgress(index, total, packageName)
+                     }
 
-                    val appInfo = pkg.applicationInfo ?: return@map null
-                    val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                    val isUpdatedSystem = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
-                    val shouldInclude = launchablePackages.contains(packageName) || (!isSystem || isUpdatedSystem)
+                     val appInfo = pkg.applicationInfo ?: return@Callable null
+                     val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                     val isUpdatedSystem = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                     val shouldInclude = launchablePackages.contains(packageName) || (!isSystem || isUpdatedSystem)
 
-                    if (shouldInclude) {
-                        try {
-                            convertPackageToMap(pkg, true, usageMap)
-                        } catch (e: Exception) { null }
-                    } else {
-                        null
-                    }
-                }
-                .filter { it != null }
-                .collect(Collectors.toList())
-                .filterNotNull()
+                     if (shouldInclude) {
+                         try {
+                             convertPackageToMap(pkg, true, usageMap)
+                         } catch (e: Exception) { null }
+                     } else {
+                         null
+                     }
+                 }))
+             }
+
+             // Collect results
+             val results = mutableListOf<Map<String, Any?>>()
+             for (future in futures) {
+                 try {
+                     val result = future.get()
+                     if (result != null) results.add(result)
+                 } catch (e: Exception) {
+                     // Ignore individual failures
+                 }
+             }
+             return results
         } else {
             // Fallback for older devices or cancelled scans (though stream handles cancel somewhat)
             // Or lite mode (includeDetails = false)
@@ -119,32 +140,30 @@ class AppRepository(private val context: Context) {
                 PackageManager.GET_PROVIDERS or
                 (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return packageNames.parallelStream()
-                .map { name ->
-                    try {
-                        val pkg = packageManager.getPackageInfo(name, flags)
-                        if (pkg.applicationInfo != null) {
-                            convertPackageToMap(pkg, true, usageMap)
-                        } else null
-                    } catch (e: Exception) { null }
-                }
-                .filter { it != null }
-                .collect(Collectors.toList())
-                .filterNotNull()
-        } else {
-            val list = mutableListOf<Map<String, Any?>>()
-            for (name in packageNames) {
+        // Use bounded executor for details fetching as well
+        val futures = mutableListOf<Future<Map<String, Any?>?>>()
+        
+        for (name in packageNames) {
+            futures.add(scanExecutor.submit(Callable {
                 try {
                     val pkg = packageManager.getPackageInfo(name, flags)
                     if (pkg.applicationInfo != null) {
-                        list.add(convertPackageToMap(pkg, true, usageMap))
-                    }
-                } catch (e: Exception) { }
-            }
-            return list
+                        convertPackageToMap(pkg, true, usageMap)
+                    } else null
+                } catch (e: Exception) { null }
+            }))
         }
+
+        val results = mutableListOf<Map<String, Any?>>()
+        for (future in futures) {
+            try {
+                val result = future.get()
+                if (result != null) results.add(result)
+            } catch (e: Exception) { }
+        }
+        return results
     }
+
 
     private fun convertPackageToMap(
         pkg: PackageInfo,
@@ -288,28 +307,53 @@ class AppRepository(private val context: Context) {
     }
 
     private fun drawableToByteArray(drawable: Drawable): ByteArray {
+        var bitmap: Bitmap? = null
+        var scaledBitmap: Bitmap? = null
         try {
-            val bitmap = if (drawable is BitmapDrawable) {
-                drawable.bitmap
+            if (drawable is BitmapDrawable) {
+                bitmap = drawable.bitmap
             } else {
                 val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 1
                 val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 1
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(bitmap)
                 drawable.setBounds(0, 0, canvas.width, canvas.height)
                 drawable.draw(canvas)
-                bitmap
             }
+            
+            if (bitmap == null) return ByteArray(0)
 
             // Resize for performance - 96x96 is roughly 3KB per icon
             // Use filter=true for better quality
-            val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 96, 96, true)
+            scaledBitmap = Bitmap.createScaledBitmap(bitmap, 96, 96, true)
 
             val stream = ByteArrayOutputStream()
             scaledBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
             return stream.toByteArray()
         } catch (e: Exception) {
             return ByteArray(0)
+        } finally {
+            // CRITICAL: Explicitly recycle bitmaps to prevent OOM
+            // We only recycle if we created a new bitmap (not a BitmapDrawable's internal one)
+            // or if it's the intermediate scaled bitmap.
+            try {
+                if (scaledBitmap != null && scaledBitmap != bitmap) {
+                    scaledBitmap.recycle()
+                }
+                if (bitmap != null && drawable !is BitmapDrawable) {
+                    bitmap.recycle()
+                }
+            } catch (e: Exception) {
+                // Ignore recycle errors
+            }
+        }
+    }
+
+    fun shutdown() {
+        try {
+            scanExecutor.shutdownNow()
+        } catch (e: Exception) {
+            // Ignore
         }
     }
 }

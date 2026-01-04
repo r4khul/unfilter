@@ -37,30 +37,41 @@ class ProcessManager {
                  
                  if (headers != null) {
                      val parts = trimmed.split("\\s+".toRegex())
-                     if (parts.size >= headers.size - 1) { // loose check
+                     // Ensure we have enough parts to cover the essential columns
+                     if (parts.size >= 5) { 
                          val map = mutableMapOf<String, String>()
-                         // simplistic mapping
-                         // mapped indices depends on header. 
-                         // To be safe, we map valid columns we find.
                          
-                         // Helper to find index safely
-                         fun getCol(name: String): String {
-                             val index = headers?.indexOfFirst { it.contains(name) } ?: -1
-                             if (index != -1 && index < parts.size) return parts[index]
+                         // Dynamic column mapping
+                         fun getCol(colName: String, altName: String = ""): String {
+                             var idx = headers!!.indexOf(colName)
+                             if (idx == -1 && altName.isNotEmpty()) idx = headers!!.indexOfFirst { it.contains(altName) }
+                             if (idx != -1 && idx < parts.size) return parts[idx]
                              return "?"
                          }
-                         
-                         map["pid"] = getCol("PID")
+
+                         val pid = getCol("PID")
+                         if (pid == "?" || pid.toIntOrNull() == null) continue // Skip invalid lines
+
+                         map["pid"] = pid
                          map["user"] = getCol("USER")
-                         map["cpu"] = getCol("CPU") // %CPU or CPU%
-                         map["mem"] = getCol("MEM") // %MEM or MEM%
-                         map["res"] = getCol("RES") // RSS/RES
-                         map["name"] = if (parts.isNotEmpty()) parts.last() else "?"
+                         map["cpu"] = getCol("CPU", "%CPU")
+                         map["mem"] = getCol("MEM", "%MEM")
+                         map["res"] = getCol("RES", "RSS")
                          
-                         // Heuristic for name: often the last column "ARGS" or "NAME"
-                         // But ARGS can have spaces? 'top' usually truncates or shows package.
-                         // Let's try to get the actual command if possible.
+                         // Name is tricky. 'top' puts it at the end.
+                         // ARGS/NAME column index
+                         var nameIdx = headers!!.indexOf("ARGS")
+                         if (nameIdx == -1) nameIdx = headers!!.indexOf("NAME")
+                         if (nameIdx == -1) nameIdx = headers!!.indexOf("COMMAND")
                          
+                         if (nameIdx != -1 && nameIdx < parts.size) {
+                             // Join all remaining parts as name/args
+                             map["name"] = parts.subList(nameIdx, parts.size).joinToString(" ")
+                         } else {
+                             // Fallback to last column
+                             map["name"] = parts.last()
+                         }
+
                          processes.add(map)
                          count++
                      }

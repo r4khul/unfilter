@@ -22,7 +22,7 @@ final processProvider = FutureProvider.autoDispose<List<AndroidProcess>>((
 });
 
 final systemDetailsProvider = StreamProvider.autoDispose<SystemDetails>((ref) {
-  return Stream.periodic(const Duration(seconds: 3), (count) => count).asyncMap(
+  return Stream.periodic(const Duration(seconds: 5), (count) => count).asyncMap(
     (_) async {
       try {
         final result = await _channel.invokeMethod('getSystemDetails');
@@ -50,7 +50,7 @@ final systemDetailsProvider = StreamProvider.autoDispose<SystemDetails>((ref) {
 // A provider that refreshes periodically
 final activeProcessesProvider =
     StreamProvider.autoDispose<List<AndroidProcess>>((ref) {
-      return Stream.periodic(const Duration(seconds: 2), (computationCount) {
+      return Stream.periodic(const Duration(seconds: 5), (computationCount) {
         return computationCount;
       }).asyncMap((_) async {
         // Manually invoking the future logic

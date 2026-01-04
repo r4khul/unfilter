@@ -7,10 +7,10 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../core/navigation/navigation.dart';
-import '../../../apps/presentation/providers/apps_provider.dart';
 import '../../../apps/domain/entities/device_app.dart';
 import '../../../home/presentation/widgets/premium_sliver_app_bar.dart';
 import '../providers/process_provider.dart';
+import '../providers/task_manager_view_model.dart';
 import '../../domain/entities/android_process.dart';
 
 class TaskManagerPage extends ConsumerStatefulWidget {
@@ -38,8 +38,8 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
   void initState() {
     super.initState();
     _initSystemStats();
-    // Refresh stats every 3 seconds to give a "live" feel
-    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    // Refresh stats every 5 seconds to give a "live" feel while saving battery
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _refreshRam();
       _refreshBattery();
     });
@@ -123,130 +123,110 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
           // Unified List Logic
           Consumer(
             builder: (context, ref, child) {
-              final appsState = ref.watch(installedAppsProvider);
-              final processesState = ref.watch(activeProcessesProvider);
+              final viewModelState = ref.watch(taskManagerViewModelProvider);
 
-              // 1. Get Shell Processes (Kernel layer)
-              final shellProcesses = processesState.asData?.value ?? [];
+              return viewModelState.when(
+                data: (data) {
+                  final shellProcesses = data.shellProcesses;
+                  final activeApps = data.activeApps;
+                  final matches = data.matches;
 
-              // 2. Get User Apps (Application layer)
-              final userApps = appsState.asData?.value ?? [];
+                  final List<Widget> listItems = [];
 
-              final List<Widget> listItems = [];
-
-              // HEADER: KERNEL / SYSTEM
-              if (shellProcesses.isNotEmpty) {
-                listItems.add(
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-                    child: Row(
-                      children: [
-                        Text(
-                          "KERNEL / SYSTEM",
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2.0,
-                            color: theme.colorScheme.onSurface.withOpacity(0.4),
-                          ),
-                        ),
-                        const Spacer(),
-                        _LiveIndicator(color: theme.colorScheme.error),
-                      ],
-                    ),
-                  ),
-                );
-
-                for (var proc in shellProcesses) {
-                  listItems.add(_buildShellProcessItem(context, theme, proc));
-                }
-              }
-
-              // HEADER: USER APPS
-              if (userApps.isNotEmpty) {
-                // Filter: Active in last 24h
-                final activeApps = userApps.where((app) {
-                  final lastUsed = DateTime.fromMillisecondsSinceEpoch(
-                    app.lastTimeUsed,
-                  );
-                  final diff = DateTime.now().difference(lastUsed);
-                  return diff.inHours < 24;
-                }).toList();
-
-                // Sort by most recent
-                activeApps.sort(
-                  (a, b) => b.lastTimeUsed.compareTo(a.lastTimeUsed),
-                );
-
-                if (activeApps.isNotEmpty) {
-                  listItems.add(
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 32, 20, 8),
-                      child: Row(
-                        children: [
-                          Text(
-                            "USER SPACE (ACTIVE)",
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 2.0,
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.4,
+                  // HEADER: KERNEL / SYSTEM
+                  if (shellProcesses.isNotEmpty) {
+                    listItems.add(
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+                        child: Row(
+                          children: [
+                            Text(
+                              "KERNEL / SYSTEM",
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 2.0,
+                                color: theme.colorScheme.onSurface.withOpacity(
+                                  0.4,
+                                ),
                               ),
                             ),
-                          ),
-                          const Spacer(),
-                          if (shellProcesses.length < 5)
-                            Text(
-                              "SANDBOXED",
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurfaceVariant
-                                    .withOpacity(0.5),
-                              ),
-                            )
-                          else
-                            _LiveIndicator(color: theme.colorScheme.primary),
-                        ],
-                      ),
-                    ),
-                  );
-
-                  for (var app in activeApps) {
-                    // Try to find matching shell process for potentially more info
-                    AndroidProcess? matchingProc;
-                    try {
-                      matchingProc = shellProcesses.firstWhere(
-                        (p) =>
-                            p.name.contains(app.packageName) ||
-                            app.packageName.contains(p.name),
-                      );
-                    } catch (_) {}
-
-                    listItems.add(
-                      _buildUsageBasedItem(
-                        context,
-                        theme,
-                        app,
-                        matchingShell: matchingProc,
+                            const Spacer(),
+                            _LiveIndicator(color: theme.colorScheme.error),
+                          ],
+                        ),
                       ),
                     );
+
+                    for (var proc in shellProcesses) {
+                      listItems.add(
+                        _buildShellProcessItem(context, theme, proc),
+                      );
+                    }
                   }
-                }
-              }
 
-              if (listItems.isEmpty) {
-                if (appsState.isLoading || processesState.isLoading) {
-                  return _buildSkeletonList();
-                }
-                return const SliverFillRemaining(
-                  child: Center(child: Text("No process data available")),
-                );
-              }
+                  // HEADER: USER APPS
+                  if (activeApps.isNotEmpty) {
+                    listItems.add(
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 32, 20, 8),
+                        child: Row(
+                          children: [
+                            Text(
+                              "USER SPACE (ACTIVE)",
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 2.0,
+                                color: theme.colorScheme.onSurface.withOpacity(
+                                  0.4,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
+                            if (shellProcesses.length < 5)
+                              Text(
+                                "SANDBOXED",
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurfaceVariant
+                                      .withOpacity(0.5),
+                                ),
+                              )
+                            else
+                              _LiveIndicator(color: theme.colorScheme.primary),
+                          ],
+                        ),
+                      ),
+                    );
 
-              return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => listItems[index],
-                  childCount: listItems.length,
+                    for (var app in activeApps) {
+                      listItems.add(
+                        _buildUsageBasedItem(
+                          context,
+                          theme,
+                          app,
+                          matchingShell: matches[app.packageName],
+                        ),
+                      );
+                    }
+                  }
+
+                  if (listItems.isEmpty) {
+                    return const SliverFillRemaining(
+                      child: Center(child: Text("No process data available")),
+                    );
+                  }
+
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => listItems[index],
+                      childCount: listItems.length,
+                    ),
+                  );
+                },
+                loading: () => _buildSkeletonList(),
+                error: (_, __) => const SliverFillRemaining(
+                  child: Center(child: Text("Error loading tasks")),
                 ),
               );
             },

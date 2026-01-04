@@ -64,7 +64,9 @@ class DeviceAppsRepository {
     final allApps = <DeviceApp>[];
     // Batch to prevent TransactionTooLargeException (Binder 1MB limit)
     // 20 apps * 20KB (approx icon size) = ~400KB. Safe margin.
-    const int batchSize = 20;
+    // Batch to prevent TransactionTooLargeException (Binder 1MB limit)
+    // Decreased to 10 to ensure safety with larger icons/metadata
+    const int batchSize = 10;
 
     for (var i = 0; i < packageNames.length; i += batchSize) {
       final end = (i + batchSize < packageNames.length)

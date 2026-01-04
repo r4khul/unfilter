@@ -156,4 +156,12 @@ class MainActivity : FlutterActivity() {
             }
         )
     }
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        super.cleanUpFlutterEngine(flutterEngine)
+        try {
+            appRepository.shutdown()
+        } catch (e: Exception) {
+            // Ignore
+        }
+    }
 }
