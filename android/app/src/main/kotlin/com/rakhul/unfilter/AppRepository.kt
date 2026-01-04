@@ -9,8 +9,10 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
+import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 
 class AppRepository(private val context: Context) {
@@ -25,7 +27,7 @@ class AppRepository(private val context: Context) {
         includeDetails: Boolean,
         onProgress: (current: Int, total: Int, currentApp: String) -> Unit,
         checkScanCancelled: () -> Boolean
-    ): List<Map<String, Any?>> {
+    ): List<Map<String, Any?>> = runBlocking {
         // Optimize flags: 0 for lite mode, full needed flags for details
         var flags = 0
         if (includeDetails) {
@@ -37,51 +39,54 @@ class AppRepository(private val context: Context) {
                     (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES)
         }
 
-        // 1. Get all installed packages
+        // 1. Get all installed packages (Blocking IO, fast enough)
         val packages = packageManager.getInstalledPackages(flags)
         
-        // 2. Pre-fetch launchable packages to avoid slow getLaunchIntentForPackage in loop
-        // queryIntentActivities is one IPC call vs N calls
+        // 2. Pre-fetch launchable packages
         val launchIntent = android.content.Intent(android.content.Intent.ACTION_MAIN, null)
         launchIntent.addCategory(android.content.Intent.CATEGORY_LAUNCHER)
-        val launchables = packageManager.queryIntentActivities(launchIntent, 0)
+        val launchables = try {
+            packageManager.queryIntentActivities(launchIntent, 0)
+        } catch (e: Exception) { emptyList() }
         val launchablePackages = launchables.map { it.activityInfo.packageName }.toSet()
 
         val total = packages.size
         val usageMap = if (includeDetails) usageManager.getUsageMap() else emptyMap()
-        val appList = mutableListOf<Map<String, Any?>>()
+        
+        val progressCounter = AtomicInteger(0)
 
-        for ((index, pkg) in packages.withIndex()) {
-            if (checkScanCancelled()) break
+        // 3. Parallel Processing "Rocket Jet" Loop
+        // Distribute checking and deep analysis across threads.
+        // Limit concurrency to avoid OOM on low-end devices if icon decoding is heavy? 
+        // 256KB deep analysis buffer * N threads. With default dispatcher (size = cores), it's safe.
+        
+        val processedApps = packages.map { pkg ->
+             async(Dispatchers.Default) {
+                if (checkScanCancelled()) return@async null
 
-            val packageName = pkg.packageName
+                val currentCount = progressCounter.incrementAndGet()
+                if (includeDetails && currentCount % 5 == 0) {
+                     onProgress(currentCount, total, pkg.packageName)
+                }
 
-            // Report progress
-            if (includeDetails && index % 10 == 0) {
-                 onProgress(index + 1, total, packageName)
-            }
+                val appInfo = pkg.applicationInfo ?: return@async null
+                val packageName = pkg.packageName
 
-            val appInfo = pkg.applicationInfo ?: continue
+                val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                val isUpdatedSystem = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
 
-            val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-            val isUpdatedSystem = (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+                // Robust filtering logic
+                val shouldInclude = launchablePackages.contains(packageName) || (!isSystem || isUpdatedSystem)
 
-            // Robust Fix: Include the app if:
-            // 1. It is known to be launchable (has a launcher activity).
-            // 2. OR it is a User app (not a pure system app).
-            //    This ensures apps like PWAs/TWAs (e.g. Unstop) or those with unusual manifests are included
-            //    provided they are installed by the user.
-            // 3. We also include updated system apps explicitly if not covered by launchable check (usually they are).
-            val shouldInclude = launchablePackages.contains(packageName) || (!isSystem || isUpdatedSystem)
+                if (shouldInclude) {
+                    try {
+                        convertPackageToMap(pkg, includeDetails, usageMap)
+                    } catch (e: Exception) { null }
+                } else null
+             }
+        }.awaitAll().filterNotNull()
 
-            if (shouldInclude) {
-                try {
-                    // Pass includeDetails to convertPackageToMap
-                    appList.add(convertPackageToMap(pkg, includeDetails, usageMap))
-                } catch (e: Exception) { }
-            }
-        }
-        return appList
+        return@runBlocking processedApps
     }
 
     fun getAppsDetails(packageNames: List<String>): List<Map<String, Any?>> {
@@ -198,9 +203,7 @@ class AppRepository(private val context: Context) {
             "dataDir" to (appInfo.dataDir ?: "")
         )
         
-        // Merge deep data
         map.putAll(deepData)
-        
         return map
     }
 
@@ -217,8 +220,7 @@ class AppRepository(private val context: Context) {
             bitmap
         }
 
-        // Resize for performance - 96x96 is roughly 3KB per icon
-        // Using filter=true for better quality
+        // Resize for performance
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 96, 96, true)
 
         val stream = ByteArrayOutputStream()

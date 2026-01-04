@@ -54,6 +54,9 @@ class DeviceApp extends Equatable {
   final List<String> splitApks;
   final Map<String, String> techVersions;
 
+  // New: Detailed Tech Stack
+  final List<Map<String, String>> techStack;
+
   const DeviceApp({
     required this.appName,
     required this.packageName,
@@ -87,6 +90,7 @@ class DeviceApp extends Equatable {
     this.providersCount = 0,
     this.splitApks = const [],
     this.techVersions = const {},
+    this.techStack = const [],
   });
 
   factory DeviceApp.fromMap(Map<Object?, Object?> map) {
@@ -155,6 +159,11 @@ class DeviceApp extends Equatable {
             (key, value) => MapEntry(key.toString(), value.toString()),
           ) ??
           {},
+      techStack:
+          (map['techStack'] as List<Object?>?)
+              ?.map((e) => Map<String, String>.from(e as Map))
+              .toList() ??
+          [],
     );
   }
 
@@ -209,6 +218,7 @@ class DeviceApp extends Equatable {
       'providersCount': providersCount,
       'splitApks': splitApks,
       'techVersions': techVersions,
+      'techStack': techStack,
     };
   }
 
@@ -239,5 +249,6 @@ class DeviceApp extends Equatable {
     providersCount,
     splitApks,
     techVersions,
+    techStack,
   ];
 }

@@ -49,6 +49,12 @@ class AppDetailsPage extends ConsumerWidget {
                   const SizedBox(height: 32),
                   _buildInfoSection(context, theme, isDark),
                   const SizedBox(height: 32),
+                  _buildInfoSection(context, theme, isDark),
+                  const SizedBox(height: 32),
+                  if (app.techStack.isNotEmpty) ...[
+                    _buildTechStackSection(context, theme, isDark),
+                    const SizedBox(height: 32),
+                  ],
                   _buildDeepInsights(context, theme, isDark),
                   const SizedBox(height: 32),
                   if (app.nativeLibraries.isNotEmpty) ...[
@@ -445,6 +451,151 @@ class AppDetailsPage extends ConsumerWidget {
               ),
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTechStackSection(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    // Group by category
+    final grouped = <String, List<Map<String, String>>>{};
+    for (final item in app.techStack) {
+      final category = item['category'] ?? 'Other';
+      grouped.putIfAbsent(category, () => []).add(item);
+    }
+
+    // Sort categories (Framework first, then others alphabetically)
+    final sortedKeys = grouped.keys.toList()
+      ..sort((a, b) {
+        if (a == 'Framework') return -1;
+        if (b == 'Framework') return 1;
+        if (a == 'Game Engine') return -1;
+        if (b == 'Game Engine') return 1;
+        return a.compareTo(b);
+      });
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(theme, "Technology Stack"),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: theme.colorScheme.outline.withOpacity(0.2),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (int i = 0; i < sortedKeys.length; i++) ...[
+                if (i > 0)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Divider(
+                      height: 1,
+                      color: theme.colorScheme.outline.withOpacity(0.1),
+                    ),
+                  ),
+                _buildTechCategory(
+                  theme,
+                  sortedKeys[i],
+                  grouped[sortedKeys[i]]!,
+                  isDark,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTechCategory(
+    ThemeData theme,
+    String category,
+    List<Map<String, String>> items,
+    bool isDark,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          category.toUpperCase(),
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: items.map((item) {
+            final name = item['name'] ?? 'Unknown';
+            final version = item['version'];
+            final hasVersion = version != null && version.isNotEmpty;
+
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2C2C2E) : Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: theme.colorScheme.outline.withOpacity(0.1),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (category == 'Framework' || category == 'Game Engine')
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Icon(
+                        Icons.layers_rounded,
+                        size: 14,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  Text(
+                    name,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (hasVersion) ...[
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        "v$version",
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          }).toList(),
         ),
       ],
     );
