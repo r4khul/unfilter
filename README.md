@@ -1,8 +1,6 @@
-# Unfilter
-
 ![Unfilter Banner](docs/assets/unfilter-banner.png)
 
-## Hey there! 👋
+## Unfilter - The Real Truth Of Apps 
 
 Unfilter is a simple tool I built to help you see what's under the hood of the apps on your phone.
 
