@@ -30,7 +30,7 @@ jobs:
           flutter-version: "3.22.2"
 
       - name: Setup Shorebird
-        uses: shorebird-tech/setup-shorebird@v1
+        uses: shorebird/setup-shorebird@v1
         with:
           cache: true
 
