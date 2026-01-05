@@ -31,16 +31,51 @@ class DeepAnalyzer(private val context: Context) {
             analysis["signingSha256"] = getFingerprint(cert, "SHA-256")
         }
 
-        // 3. Component Counts
-        analysis["activitiesCount"] = pkg.activities?.size ?: 0
-        analysis["servicesCount"] = pkg.services?.size ?: 0
-        analysis["receiversCount"] = pkg.receivers?.size ?: 0
-        analysis["providersCount"] = pkg.providers?.size ?: 0
-
-        // 4. Advanced Stack Version Detection
+        // 3. Component Counts (Default System Values)
+        var actCount = pkg.activities?.size ?: 0
+        var svcCount = pkg.services?.size ?: 0
+        var recvCount = pkg.receivers?.size ?: 0
+        var provCount = pkg.providers?.size ?: 0
+        
+        // 4. Advanced Stack Version Detection & AXML Parsing (The "Truth")
         val techVersions = mutableMapOf<String, String>()
         val apkPath = appInfo.sourceDir
         
+        // AXML Parsing: Read Manifest directly to find hidden components
+        try {
+            if (apkPath != null && File(apkPath).exists()) {
+                net.dongliu.apk.parser.ApkFile(File(apkPath)).use { apk ->
+                    val manifestXml = apk.manifestXml
+                    
+                    val realActs = extractComponents(manifestXml, "activity")
+                    val realSvcs = extractComponents(manifestXml, "service")
+                    val realRecs = extractComponents(manifestXml, "receiver")
+                    val realProvs = extractComponents(manifestXml, "provider")
+                    val realPerms = extractComponents(manifestXml, "uses-permission")
+
+                    // Override with the "Real" counts from binary analysis
+                    if (realActs.isNotEmpty()) actCount = realActs.size
+                    if (realSvcs.isNotEmpty()) svcCount = realSvcs.size
+                    if (realRecs.isNotEmpty()) recvCount = realRecs.size
+                    if (realProvs.isNotEmpty()) provCount = realProvs.size
+
+                    // Store lists for potential deep display
+                    analysis["activities"] = realActs
+                    analysis["services"] = realSvcs
+                    analysis["receivers"] = realRecs
+                    analysis["providers"] = realProvs
+                    analysis["realPermissions"] = realPerms
+                }
+            }
+        } catch (e: Exception) {
+            // Fallback to system counts if AXML parsing fails
+        }
+
+        analysis["activitiesCount"] = actCount
+        analysis["servicesCount"] = svcCount
+        analysis["receiversCount"] = recvCount
+        analysis["providersCount"] = provCount
+
         if (preOpenedZip != null) {
             detectVersionsFromZip(preOpenedZip, techVersions)
         } else if (apkPath != null && File(apkPath).exists()) {
@@ -68,10 +103,22 @@ class DeepAnalyzer(private val context: Context) {
         }
         analysis["splitApks"] = splitNames
 
-        // 6. Native Lib Architecture
+        // 6. Native Lib Architecture (Placeholder, updated by AppRepository)
         analysis["primaryCpuAbi"] = "Unknown"
 
         return analysis
+    }
+    
+    // Helper to extract component names from XML string using Regex
+    private fun extractComponents(xml: String, tagName: String): List<String> {
+        val list = mutableListOf<String>()
+        // Pattern matches <tagName ... android:name="com.example.Name" ... >
+        // We use a robust regex that handles attributes in any order
+        val pattern = "<$tagName\\s+[^>]*android:name=\"([^\"]+)\"".toRegex()
+        pattern.findAll(xml).forEach { 
+            list.add(it.groupValues[1])
+        }
+        return list
     }
     
     private fun detectVersionsFromZip(zip: ZipFile, techVersions: MutableMap<String, String>) {

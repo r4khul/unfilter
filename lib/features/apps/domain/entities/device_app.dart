@@ -53,6 +53,7 @@ class DeviceApp extends Equatable {
   final String? signingSha1;
   final String? signingSha256;
   final String? kotlinVersion;
+  final String primaryCpuAbi;
   final int activitiesCount;
   final int servicesCount;
   final int receiversCount;
@@ -91,6 +92,7 @@ class DeviceApp extends Equatable {
     this.signingSha1,
     this.signingSha256,
     this.kotlinVersion,
+    this.primaryCpuAbi = 'Unknown',
     this.activitiesCount = 0,
     this.servicesCount = 0,
     this.receiversCount = 0,
@@ -155,6 +157,7 @@ class DeviceApp extends Equatable {
       signingSha1: map['signingSha1'] as String?,
       signingSha256: map['signingSha256'] as String?,
       kotlinVersion: map['kotlinVersion'] as String?,
+      primaryCpuAbi: map['primaryCpuAbi'] as String? ?? 'Unknown',
       activitiesCount: map['activitiesCount'] as int? ?? 0,
       servicesCount: map['servicesCount'] as int? ?? 0,
       receiversCount: map['receiversCount'] as int? ?? 0,
@@ -221,6 +224,7 @@ class DeviceApp extends Equatable {
       'signingSha1': signingSha1,
       'signingSha256': signingSha256,
       'kotlinVersion': kotlinVersion,
+      'primaryCpuAbi': primaryCpuAbi,
       'activitiesCount': activitiesCount,
       'servicesCount': servicesCount,
       'receiversCount': receiversCount,
@@ -255,6 +259,7 @@ class DeviceApp extends Equatable {
     signingSha1,
     signingSha256,
     kotlinVersion,
+    primaryCpuAbi,
     activitiesCount,
     servicesCount,
     receiversCount,

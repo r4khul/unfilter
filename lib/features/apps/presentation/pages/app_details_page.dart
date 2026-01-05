@@ -621,6 +621,14 @@ class AppDetailsPage extends ConsumerWidget {
                   showDivider: true,
                 ),
               ],
+              if (app.primaryCpuAbi != 'Unknown')
+                _buildDetailItem(
+                  context,
+                  theme,
+                  "Architecture",
+                  app.primaryCpuAbi,
+                  showDivider: true,
+                ),
               _buildDetailItem(
                 context,
                 theme,

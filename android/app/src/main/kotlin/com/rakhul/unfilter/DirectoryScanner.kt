@@ -1,21 +1,48 @@
 package com.rakhul.unfilter
 
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Phaser
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Safe, bounded directory scanner with depth limits and cancellation support.
+ * Result of directory scan with categorized sizes.
+ */
+data class ScanResult(
+    val totalSize: Long = 0L,
+    val databasesSize: Long = 0L,
+    val logsSize: Long = 0L,
+    val mediaSize: Long = 0L,
+    val imagesSize: Long = 0L,
+    val videosSize: Long = 0L,
+    val audioSize: Long = 0L,
+    val documentsSize: Long = 0L,
+    val residualSize: Long = 0L,
+    val databaseBreakdown: Map<String, Long> = emptyMap(),
+    val filesScanned: Int = 0,
+    val limitReached: Boolean = false
+)
+
+/**
+ * Safe, bounded, and concurrent directory scanner with depth limits and cancellation support.
+ * Optimized for speed by using a work-stealing thread pool to parallelize I/O operations.
  * Designed to prevent ANRs, OOMs, and excessive I/O.
  */
 class DirectoryScanner {
-    
+
+    internal data class ScanTask(val dir: File, val depth: Int)
+
     companion object {
         // Safety limits
         private const val MAX_TRAVERSAL_DEPTH = 5
         private const val MAX_FILES_TO_SCAN = 5000
         private const val MAX_FILE_SIZE_TO_CATEGORIZE = 100 * 1024 * 1024L // 100 MB
-        
+
         // File extensions for categorization
         private val DATABASE_EXTENSIONS = setOf("db", "sqlite", "sqlite3", "realm", "db-shm", "db-wal")
         private val LOG_EXTENSIONS = setOf("log", "txt", "trace")
@@ -23,49 +50,22 @@ class DirectoryScanner {
         private val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "avi", "mov", "webm", "3gp", "flv")
         private val AUDIO_EXTENSIONS = setOf("mp3", "m4a", "wav", "flac", "ogg", "aac", "opus")
         private val DOCUMENT_EXTENSIONS = setOf("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx")
+
+        private val threadPool: ExecutorService by lazy {
+            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+        }
     }
-    
-    /**
-     * Result of directory scan with categorized sizes.
-     */
-    data class ScanResult(
-        val totalSize: Long = 0L,
-        val databasesSize: Long = 0L,
-        val logsSize: Long = 0L,
-        val mediaSize: Long = 0L,
-        val imagesSize: Long = 0L,
-        val videosSize: Long = 0L,
-        val audioSize: Long = 0L,
-        val documentsSize: Long = 0L,
-        val residualSize: Long = 0L,
-        val databaseBreakdown: Map<String, Long> = emptyMap(),
-        val filesScanned: Int = 0,
-        val limitReached: Boolean = false
-    )
-    
-    /**
-     * Scan directory with safety limits.
-     * 
-     * @param rootDir Directory to scan
-     * @param maxDepth Maximum traversal depth (default: MAX_TRAVERSAL_DEPTH)
-     * @param maxFiles Maximum files to scan (default: MAX_FILES_TO_SCAN)
-     * @param checkCancelled Lambda to check if scan should be cancelled
-     * @return ScanResult with categorized sizes
-     */
+
     fun scanDirectory(
         rootDir: File,
         maxDepth: Int = MAX_TRAVERSAL_DEPTH,
         maxFiles: Int = MAX_FILES_TO_SCAN,
         checkCancelled: () -> Boolean = { Thread.currentThread().isInterrupted }
     ): ScanResult {
-        if (!rootDir.exists() || !rootDir.isDirectory) {
-            return ScanResult()
+        if (!rootDir.exists() || !rootDir.isDirectory || !rootDir.canRead()) {
+            return ScanResult(limitReached = !rootDir.canRead())
         }
-        
-        if (!rootDir.canRead()) {
-            return ScanResult(limitReached = true)
-        }
-        
+
         val fileCounter = AtomicInteger(0)
         val totalSize = AtomicLong(0L)
         val databasesSize = AtomicLong(0L)
@@ -75,30 +75,56 @@ class DirectoryScanner {
         val audioSize = AtomicLong(0L)
         val documentsSize = AtomicLong(0L)
         val residualSize = AtomicLong(0L)
-        val databaseFiles = mutableMapOf<String, Long>()
-        
-        var limitReached = false
-        
+        val databaseFiles = ConcurrentHashMap<String, Long>()
+        val limitReached = AtomicBoolean(false)
+
+        val tasks = ConcurrentLinkedQueue<ScanTask>().apply { add(ScanTask(rootDir, 0)) }
+        val phaser = Phaser(1)
+
+        val taskProcessor = Runnable {
+            var currentTask = tasks.poll()
+            while (currentTask != null) {
+                if (limitReached.get() || checkCancelled()) {
+                    phaser.arriveAndDeregister()
+                    while (tasks.poll() != null) {
+                        phaser.arriveAndDeregister()
+                    }
+                    break
+                }
+
+                scanDirectoryConcurrent(
+                    task = currentTask,
+                    maxDepth = maxDepth,
+                    fileCounter = fileCounter,
+                    maxFiles = maxFiles,
+                    totalSize = totalSize,
+                    databasesSize = databasesSize,
+                    logsSize = logsSize,
+                    imagesSize = imagesSize,
+                    videosSize = videosSize,
+                    audioSize = audioSize,
+                    documentsSize = documentsSize,
+                    residualSize = residualSize,
+                    databaseFiles = databaseFiles,
+                    limitReached = limitReached,
+                    tasks = tasks,
+                    phaser = phaser
+                )
+                
+                phaser.arriveAndDeregister()
+                currentTask = tasks.poll()
+            }
+        }
+
+        repeat(Runtime.getRuntime().availableProcessors()) {
+            threadPool.submit(taskProcessor)
+        }
+
         try {
-            limitReached = scanRecursive(
-                dir = rootDir,
-                depth = 0,
-                maxDepth = maxDepth,
-                fileCounter = fileCounter,
-                maxFiles = maxFiles,
-                totalSize = totalSize,
-                databasesSize = databasesSize,
-                logsSize = logsSize,
-                imagesSize = imagesSize,
-                videosSize = videosSize,
-                audioSize = audioSize,
-                documentsSize = documentsSize,
-                residualSize = residualSize,
-                databaseFiles = databaseFiles,
-                checkCancelled = checkCancelled
-            )
-        } catch (e: Exception) {
-            // Catch any unexpected errors, return what we have
+            phaser.arriveAndAwaitAdvance()
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            limitReached.set(true)
         }
         
         val mediaSize = imagesSize.get() + videosSize.get() + audioSize.get() + documentsSize.get()
@@ -113,18 +139,14 @@ class DirectoryScanner {
             audioSize = audioSize.get(),
             documentsSize = documentsSize.get(),
             residualSize = residualSize.get(),
-            databaseBreakdown = databaseFiles.toMap(),
+            databaseBreakdown = databaseFiles,
             filesScanned = fileCounter.get(),
-            limitReached = limitReached
+            limitReached = limitReached.get()
         )
     }
     
-    /**
-     * Recursive scan implementation with all safety checks.
-     */
-    private fun scanRecursive(
-        dir: File,
-        depth: Int,
+    private fun scanDirectoryConcurrent(
+        task: ScanTask,
         maxDepth: Int,
         fileCounter: AtomicInteger,
         maxFiles: Int,
@@ -137,174 +159,173 @@ class DirectoryScanner {
         documentsSize: AtomicLong,
         residualSize: AtomicLong,
         databaseFiles: MutableMap<String, Long>,
-        checkCancelled: () -> Boolean
-    ): Boolean {
-        // Safety check: depth limit
-        if (depth > maxDepth) return true
+        limitReached: AtomicBoolean,
+        tasks: ConcurrentLinkedQueue<ScanTask>,
+        phaser: Phaser
+    ) {
+        val (dir, depth) = task
         
-        // Safety check: file count limit
-        if (fileCounter.get() >= maxFiles) return true
-        
-        // Safety check: cancellation
-        if (checkCancelled()) return true
-        
-        // Safety check: can read directory
-        if (!dir.canRead()) return false
-        
+        if (depth > maxDepth || !dir.canRead()) {
+            limitReached.set(true)
+            return
+        }
+
         val files = try {
             dir.listFiles()
-        } catch (e: SecurityException) {
-            return false
         } catch (e: Exception) {
-            return false
-        }
-        
-        if (files == null) return false
+            null
+        } ?: return
         
         for (file in files) {
-            // Check limits on every iteration
-            if (fileCounter.incrementAndGet() > maxFiles) return true
-            if (checkCancelled()) return true
+            if (limitReached.get()) break
+            if (fileCounter.get() >= maxFiles) {
+                limitReached.set(true)
+                break
+            }
+            fileCounter.incrementAndGet()
             
             try {
                 if (file.isDirectory) {
-                    // Recurse into subdirectory
-                    val limitReached = scanRecursive(
-                        dir = file,
-                        depth = depth + 1,
-                        maxDepth = maxDepth,
-                        fileCounter = fileCounter,
-                        maxFiles = maxFiles,
-                        totalSize = totalSize,
-                        databasesSize = databasesSize,
-                        logsSize = logsSize,
-                        imagesSize = imagesSize,
-                        videosSize = videosSize,
-                        audioSize = audioSize,
-                        documentsSize = documentsSize,
-                        residualSize = residualSize,
-                        databaseFiles = databaseFiles,
-                        checkCancelled = checkCancelled
-                    )
-                    if (limitReached) return true
+                    phaser.register()
+                    tasks.add(ScanTask(file, depth + 1))
                 } else {
-                    // Process file
-                    val fileSize = file.length()
-                    
-                    // Safety: ignore extremely large files to prevent memory issues
-                    if (fileSize > MAX_FILE_SIZE_TO_CATEGORIZE) {
-                        totalSize.addAndGet(fileSize)
-                        residualSize.addAndGet(fileSize)
-                        continue
-                    }
-                    
-                    totalSize.addAndGet(fileSize)
-                    
-                    // Categorize by extension
-                    val extension = file.extension.lowercase()
-                    val fileName = file.name
-                    
-                    when {
-                        DATABASE_EXTENSIONS.contains(extension) -> {
-                            databasesSize.addAndGet(fileSize)
-                            // Store individual database file sizes
-                            synchronized(databaseFiles) {
-                                databaseFiles[fileName] = fileSize
-                            }
-                        }
-                        LOG_EXTENSIONS.contains(extension) -> {
-                            logsSize.addAndGet(fileSize)
-                        }
-                        IMAGE_EXTENSIONS.contains(extension) -> {
-                            imagesSize.addAndGet(fileSize)
-                        }
-                        VIDEO_EXTENSIONS.contains(extension) -> {
-                            videosSize.addAndGet(fileSize)
-                        }
-                        AUDIO_EXTENSIONS.contains(extension) -> {
-                            audioSize.addAndGet(fileSize)
-                        }
-                        DOCUMENT_EXTENSIONS.contains(extension) -> {
-                            documentsSize.addAndGet(fileSize)
-                        }
-                        else -> {
-                            residualSize.addAndGet(fileSize)
-                        }
-                    }
+                    processFile(file, totalSize, databasesSize, logsSize, imagesSize, videosSize, audioSize, documentsSize, residualSize, databaseFiles)
                 }
-            } catch (e: SecurityException) {
-                // Can't access this file, skip it
-                continue
             } catch (e: Exception) {
-                // Any other error, skip this file
-                continue
+                // Skip file on error
             }
         }
-        
-        return false
     }
     
-    /**
-     * Quick size calculation without categorization.
-     * Faster for cases where we only need total size.
-     */
+    private fun processFile(
+        file: File,
+        totalSize: AtomicLong,
+        databasesSize: AtomicLong,
+        logsSize: AtomicLong,
+        imagesSize: AtomicLong,
+        videosSize: AtomicLong,
+        audioSize: AtomicLong,
+        documentsSize: AtomicLong,
+        residualSize: AtomicLong,
+        databaseFiles: MutableMap<String, Long>
+    ) {
+        val fileSize = file.length()
+        totalSize.addAndGet(fileSize)
+        
+        if (fileSize > MAX_FILE_SIZE_TO_CATEGORIZE) {
+            residualSize.addAndGet(fileSize)
+            return
+        }
+
+        when (file.extension.lowercase()) {
+            in DATABASE_EXTENSIONS -> {
+                databasesSize.addAndGet(fileSize)
+                databaseFiles[file.name] = fileSize
+            }
+            in LOG_EXTENSIONS -> logsSize.addAndGet(fileSize)
+            in IMAGE_EXTENSIONS -> imagesSize.addAndGet(fileSize)
+            in VIDEO_EXTENSIONS -> videosSize.addAndGet(fileSize)
+            in AUDIO_EXTENSIONS -> audioSize.addAndGet(fileSize)
+            in DOCUMENT_EXTENSIONS -> documentsSize.addAndGet(fileSize)
+            else -> residualSize.addAndGet(fileSize)
+        }
+    }
+
     fun quickSizeCalculation(
         rootDir: File,
         maxDepth: Int = MAX_TRAVERSAL_DEPTH,
         maxFiles: Int = MAX_FILES_TO_SCAN,
         checkCancelled: () -> Boolean = { Thread.currentThread().isInterrupted }
     ): Long {
-        if (!rootDir.exists()) return 0L
-        if (!rootDir.canRead()) return 0L
-        
+        if (!rootDir.exists() || !rootDir.canRead()) return 0L
+
         val fileCounter = AtomicInteger(0)
-        
-        return quickSizeRecursive(
-            dir = rootDir,
-            depth = 0,
-            maxDepth = maxDepth,
-            fileCounter = fileCounter,
-            maxFiles = maxFiles,
-            checkCancelled = checkCancelled
-        )
+        val totalSize = AtomicLong(0L)
+        val limitReached = AtomicBoolean(false)
+
+        val tasks = ConcurrentLinkedQueue<ScanTask>().apply { add(ScanTask(rootDir, 0)) }
+        val phaser = Phaser(1)
+
+        val taskProcessor = Runnable {
+            var currentTask = tasks.poll()
+            while (currentTask != null) {
+                if (limitReached.get() || checkCancelled()) {
+                    phaser.arriveAndDeregister()
+                    while (tasks.poll() != null) {
+                        phaser.arriveAndDeregister()
+                    }
+                    break
+                }
+                
+                quickSizeConcurrent(
+                    task = currentTask,
+                    maxDepth = maxDepth,
+                    fileCounter = fileCounter,
+                    maxFiles = maxFiles,
+                    totalSize = totalSize,
+                    limitReached = limitReached,
+                    tasks = tasks,
+                    phaser = phaser
+                )
+
+                phaser.arriveAndDeregister()
+                currentTask = tasks.poll()
+            }
+        }
+
+        repeat(Runtime.getRuntime().availableProcessors()) {
+            threadPool.submit(taskProcessor)
+        }
+
+        try {
+            phaser.arriveAndAwaitAdvance()
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
+
+        return totalSize.get()
     }
-    
-    private fun quickSizeRecursive(
-        dir: File,
-        depth: Int,
+
+    private fun quickSizeConcurrent(
+        task: ScanTask,
         maxDepth: Int,
         fileCounter: AtomicInteger,
         maxFiles: Int,
-        checkCancelled: () -> Boolean
-    ): Long {
-        if (depth > maxDepth) return 0L
-        if (fileCounter.get() >= maxFiles) return 0L
-        if (checkCancelled()) return 0L
-        if (!dir.canRead()) return 0L
-        
+        totalSize: AtomicLong,
+        limitReached: AtomicBoolean,
+        tasks: ConcurrentLinkedQueue<ScanTask>,
+        phaser: Phaser
+    ) {
+        val (dir, depth) = task
+
+        if (depth > maxDepth || !dir.canRead()) {
+            limitReached.set(true)
+            return
+        }
+
         val files = try {
             dir.listFiles()
         } catch (e: Exception) {
-            return 0L
-        } ?: return 0L
-        
-        var totalSize = 0L
-        
+            null
+        } ?: return
+
         for (file in files) {
-            if (fileCounter.incrementAndGet() > maxFiles) break
-            if (checkCancelled()) break
-            
+            if (limitReached.get() || fileCounter.get() >= maxFiles) {
+                limitReached.set(true)
+                break
+            }
+            fileCounter.incrementAndGet()
+
             try {
-                totalSize += if (file.isDirectory) {
-                    quickSizeRecursive(file, depth + 1, maxDepth, fileCounter, maxFiles, checkCancelled)
+                if (file.isDirectory) {
+                    phaser.register()
+                    tasks.add(ScanTask(file, depth + 1))
                 } else {
-                    file.length()
+                    totalSize.addAndGet(file.length())
                 }
             } catch (e: Exception) {
-                // Skip this file
+                // Skip file
             }
         }
-        
-        return totalSize
     }
 }
