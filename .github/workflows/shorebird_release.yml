@@ -29,8 +29,9 @@ jobs:
           channel: "stable"
           flutter-version: "3.22.2"
 
+      # FIX: Use 'shorebirdtech/setup-shorebird' instead of 'shorebird/setup-shorebird'
       - name: Setup Shorebird
-        uses: shorebird/setup-shorebird@v1
+        uses: shorebirdtech/setup-shorebird@v1
         with:
           cache: true
 
@@ -38,16 +39,21 @@ jobs:
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
 
+      # RECOMMENDED: Use the official shorebird-release action
       - name: Shorebird Release
+        uses: shorebirdtech/shorebird-release@v1
+        with:
+          platform: android
+          args: "--artifact apk --verbose"
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+          # These env vars are passed to the flutter build process
           ANDROID_KEYSTORE_PATH: "upload-keystore.jks"
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-        run: shorebird release android --artifact apk --verbose
 
       - name: Rename APK
         run: mv build/app/outputs/apk/release/app-release.apk unfilter-release.apk
