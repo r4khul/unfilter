@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -18,7 +17,7 @@ class OnboardingPage extends ConsumerStatefulWidget {
 }
 
 class _OnboardingPageState extends ConsumerState<OnboardingPage>
-    with TickerProviderStateMixin, WidgetsBindingObserver {
+    with WidgetsBindingObserver {
   final PageController _pageController = PageController();
 
   int _currentPage = 0;
@@ -125,7 +124,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                       // Page 1: Intro
                       OnboardingPageContent(
                         title: "UnFilter",
-                        description: "Reveal the invisible.",
+                        description: "The Real Truth Of Apps.",
                         visual: _buildBrandingVisual(context, isDark),
                         extraContent: _buildBrandHighlights(theme),
                         isBrandTitle: true,
@@ -327,13 +326,20 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
           width: 1,
         ),
       ),
-      child: Text(
-        text,
-        style: theme.textTheme.labelMedium?.copyWith(
-          fontWeight: FontWeight.w500,
-          fontSize: 13,
-          color: theme.colorScheme.onSurface,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: theme.colorScheme.onSurface),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
       ),
     );
   }

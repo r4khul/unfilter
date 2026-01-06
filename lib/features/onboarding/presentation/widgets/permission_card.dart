@@ -21,100 +21,88 @@ class PermissionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Monochromatic approach: no green/red, just primary or onSurface
-    final activeColor = theme.colorScheme.primary;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: isGranted ? null : onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerLow.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(12),
-            // Minimal border only if needed for contrast, but let's keep it clean
-            border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.05),
-            ),
-          ),
-          child: Row(
-            children: [
-              // Subtle Icon Container
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: theme.colorScheme.outline.withOpacity(0.05),
-                  ),
-                ),
-                child: Icon(icon, color: theme.colorScheme.onSurface, size: 20),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      description,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                          0.8,
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isGranted ? null : onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(icon, size: 24, color: theme.colorScheme.onSurface),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              if (isLoading)
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                )
-              else
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.fastOutSlowIn,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isGranted ? activeColor : theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isGranted
-                          ? activeColor
-                          : theme.colorScheme.outline.withOpacity(0.2),
-                    ),
-                  ),
-                  child: Text(
-                    isGranted ? "Granted" : "Enable",
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isGranted
-                          ? theme.colorScheme.onPrimary
-                          : theme.colorScheme.onSurface,
-                    ),
+                      const SizedBox(height: 2),
+                      Text(
+                        description,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-            ],
+                const SizedBox(width: 12),
+                if (isLoading)
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: theme.colorScheme.primary,
+                    ),
+                  )
+                else
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOut,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isGranted
+                          ? Colors.transparent
+                          : theme.colorScheme.primary,
+                      borderRadius: BorderRadius.circular(100),
+                      border: isGranted
+                          ? Border.all(
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.1,
+                              ),
+                            )
+                          : null,
+                    ),
+                    child: Text(
+                      isGranted ? "Granted" : "Allow",
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: isGranted
+                            ? theme.colorScheme.onSurface.withOpacity(0.6)
+                            : theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
