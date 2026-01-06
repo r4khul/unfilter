@@ -148,7 +148,7 @@ class ForceUpdateScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     // Description
                     Text(
-                      'A critical update is available that improves stability and security.\nYou must update to continue using FindStack.',
+                      'A critical update is available that improves stability and security.\nYou must update to continue using UnFilter.',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                         height: 1.5,
