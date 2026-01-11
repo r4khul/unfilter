@@ -1,6 +1,3 @@
-/// Barrel file for app details widgets.
-///
-/// Exports all components used in the app details page.
 library;
 
 export 'activity_section.dart';

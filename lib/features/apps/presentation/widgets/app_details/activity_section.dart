@@ -1,4 +1,3 @@
-/// Widget displaying app activity and usage information.
 library;
 
 import 'package:flutter/material.dart';
@@ -11,21 +10,11 @@ import '../usage_chart.dart';
 import 'common_widgets.dart';
 import 'constants.dart';
 
-/// A section displaying app activity and usage stats.
-///
-/// Shows:
-/// - Total usage time badge
-/// - Usage description with install date
-/// - Usage chart (if granular data available)
-/// - Empty states for no data
 class ActivitySection extends ConsumerWidget {
-  /// The app to display activity for.
   final DeviceApp app;
 
-  /// Async value containing usage history.
   final AsyncValue<List<AppUsagePoint>> historyAsync;
 
-  /// Creates an activity section.
   const ActivitySection({
     super.key,
     required this.app,
@@ -67,7 +56,6 @@ class ActivitySection extends ConsumerWidget {
     );
   }
 
-  /// Formats a duration to a readable string.
   String _formatDuration(Duration duration) {
     if (duration.inHours > 0) {
       return "${duration.inHours}h ${duration.inMinutes % 60}m";
@@ -75,7 +63,6 @@ class ActivitySection extends ConsumerWidget {
     return "${duration.inMinutes}m";
   }
 
-  /// Builds the section header with total usage badge.
   Widget _buildHeader(ThemeData theme, String totalUsageStr) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -115,7 +102,6 @@ class ActivitySection extends ConsumerWidget {
     );
   }
 
-  /// Builds the usage chart or appropriate state.
   Widget _buildChart(ThemeData theme, bool isDark) {
     return historyAsync.when(
       data: (history) => _buildDataState(history, theme, isDark),
@@ -124,7 +110,6 @@ class ActivitySection extends ConsumerWidget {
     );
   }
 
-  /// Builds the chart when data is available.
   Widget _buildDataState(
     List<AppUsagePoint> history,
     ThemeData theme,
@@ -162,7 +147,6 @@ class ActivitySection extends ConsumerWidget {
     );
   }
 
-  /// Builds state when there's total usage but no granular data.
   Widget _buildNoChartDataState(ThemeData theme) {
     return Center(
       child: Column(
@@ -191,7 +175,6 @@ class ActivitySection extends ConsumerWidget {
     );
   }
 
-  /// Builds empty state when there's no usage data.
   Widget _buildEmptyState(List<AppUsagePoint> history, ThemeData theme) {
     return Center(
       child: Column(
@@ -220,7 +203,6 @@ class ActivitySection extends ConsumerWidget {
     );
   }
 
-  /// Builds loading state.
   Widget _buildLoadingState(bool isDark) {
     return SectionContainer(
       useAltBackground: false,
@@ -231,7 +213,6 @@ class ActivitySection extends ConsumerWidget {
     );
   }
 
-  /// Builds error state.
   Widget _buildErrorState(bool isDark, ThemeData theme) {
     return SectionContainer(
       useAltBackground: false,

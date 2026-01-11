@@ -1,4 +1,3 @@
-/// Common UI components used across app details sections.
 library;
 
 import 'package:flutter/material.dart';
@@ -6,14 +5,9 @@ import 'package:flutter/services.dart';
 
 import 'constants.dart';
 
-/// A section header with consistent styling.
-///
-/// Used to label major sections in the app details page.
 class SectionHeader extends StatelessWidget {
-  /// The title text to display.
   final String title;
 
-  /// Creates a section header.
   const SectionHeader({super.key, required this.title});
 
   @override
@@ -30,20 +24,13 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
-/// A detail item row with label and value.
-///
-/// Supports long press to copy the value to clipboard.
 class DetailItem extends StatelessWidget {
-  /// The label for this detail.
   final String label;
 
-  /// The value to display.
   final String value;
 
-  /// Whether to show a divider below this item.
   final bool showDivider;
 
-  /// Creates a detail item.
   const DetailItem({
     super.key,
     required this.label,
@@ -115,9 +102,7 @@ class DetailItem extends StatelessWidget {
   }
 }
 
-/// A vertical divider for stats.
 class StatDivider extends StatelessWidget {
-  /// Creates a stat divider.
   const StatDivider({super.key});
 
   @override
@@ -132,15 +117,11 @@ class StatDivider extends StatelessWidget {
   }
 }
 
-/// A section container with consistent styling.
 class SectionContainer extends StatelessWidget {
-  /// The child widget to display inside.
   final Widget child;
 
-  /// Whether to use alternative background (less opaque).
   final bool useAltBackground;
 
-  /// Creates a section container.
   const SectionContainer({
     super.key,
     required this.child,

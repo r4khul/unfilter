@@ -1,4 +1,3 @@
-/// Widget displaying native libraries used by the app.
 library;
 
 import 'package:flutter/material.dart';
@@ -7,21 +6,13 @@ import '../../../domain/entities/device_app.dart';
 import 'common_widgets.dart';
 import 'constants.dart';
 
-/// A section displaying native libraries.
-///
-/// Shows libraries as chips if 6 or fewer, otherwise shows a list
-/// with expansion to view all in a bottom sheet.
 class NativeLibsSection extends StatelessWidget {
-  /// The app to display native libraries for.
   final DeviceApp app;
 
-  /// Maximum number of libs to show in list mode before requiring expansion.
   static const int maxVisible = 5;
 
-  /// Threshold for switching from chips to list mode.
   static const int chipsThreshold = 6;
 
-  /// Creates a native libs section.
   const NativeLibsSection({super.key, required this.app});
 
   @override
@@ -36,7 +27,6 @@ class NativeLibsSection extends StatelessWidget {
     return _buildChipsMode(theme, isDark);
   }
 
-  /// Builds the list mode with expandable view for many libraries.
   Widget _buildListMode(BuildContext context, ThemeData theme) {
     final displayedLibs = app.nativeLibraries.take(maxVisible).toList();
     final remainingCount = app.nativeLibraries.length - maxVisible;
@@ -95,7 +85,6 @@ class NativeLibsSection extends StatelessWidget {
     );
   }
 
-  /// Builds the chips mode for fewer libraries.
   Widget _buildChipsMode(ThemeData theme, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +103,6 @@ class NativeLibsSection extends StatelessWidget {
     );
   }
 
-  /// Shows all native libraries in a draggable bottom sheet.
   void _showAllNativeLibs(BuildContext context, ThemeData theme) {
     showModalBottomSheet(
       context: context,
@@ -143,7 +131,6 @@ class NativeLibsSection extends StatelessWidget {
     );
   }
 
-  /// Builds the draggable handle.
   Widget _buildHandle(ThemeData theme) {
     return Center(
       child: Container(
@@ -158,7 +145,6 @@ class NativeLibsSection extends StatelessWidget {
     );
   }
 
-  /// Builds the sheet header.
   Widget _buildSheetHeader(BuildContext context, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.all(AppDetailsSpacing.standard),
@@ -175,7 +161,6 @@ class NativeLibsSection extends StatelessWidget {
     );
   }
 
-  /// Builds the scrollable libraries list.
   Widget _buildLibsList(ScrollController controller, ThemeData theme) {
     return ListView.builder(
       controller: controller,
@@ -196,7 +181,6 @@ class NativeLibsSection extends StatelessWidget {
   }
 }
 
-/// A single native library row.
 class _NativeLibRow extends StatelessWidget {
   final String library;
 
@@ -233,7 +217,6 @@ class _NativeLibRow extends StatelessWidget {
   }
 }
 
-/// A chip displaying a native library.
 class _NativeLibChip extends StatelessWidget {
   final String library;
   final bool isDark;

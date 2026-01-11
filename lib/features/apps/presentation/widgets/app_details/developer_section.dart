@@ -1,4 +1,3 @@
-/// Widget displaying detected third-party packages/SDKs.
 library;
 
 import 'package:flutter/material.dart';
@@ -7,21 +6,13 @@ import '../../../domain/entities/device_app.dart';
 import 'common_widgets.dart';
 import 'constants.dart';
 
-/// A section displaying detected third-party packages.
-///
-/// Detects known packages from native libraries like:
-/// - Stripe, Mapbox, Realm, Firebase, etc.
 class DeveloperSection extends StatelessWidget {
-  /// The app to detect packages for.
   final DeviceApp app;
 
-  /// Maximum number of packages to show before requiring expansion.
   static const int maxVisible = 5;
 
-  /// Threshold for switching to expandable mode.
   static const int expandThreshold = 6;
 
-  /// Creates a developer section.
   const DeveloperSection({super.key, required this.app});
 
   @override
@@ -38,7 +29,6 @@ class DeveloperSection extends StatelessWidget {
     return _buildCompactMode(theme, packages);
   }
 
-  /// Detects known third-party packages from native libraries.
   Map<String, String> _detectPackages() {
     final Map<String, String> detected = {};
     for (final lib in app.nativeLibraries) {
@@ -61,7 +51,6 @@ class DeveloperSection extends StatelessWidget {
     return detected;
   }
 
-  /// Builds expandable mode for many packages.
   Widget _buildExpandableMode(
     BuildContext context,
     ThemeData theme,
@@ -128,7 +117,6 @@ class DeveloperSection extends StatelessWidget {
     );
   }
 
-  /// Builds compact mode for fewer packages.
   Widget _buildCompactMode(ThemeData theme, Map<String, String> packages) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,7 +145,6 @@ class DeveloperSection extends StatelessWidget {
     );
   }
 
-  /// Shows all packages in a draggable bottom sheet.
   void _showAllPackages(
     BuildContext context,
     ThemeData theme,
@@ -190,7 +177,6 @@ class DeveloperSection extends StatelessWidget {
     );
   }
 
-  /// Builds the draggable handle.
   Widget _buildHandle(ThemeData theme) {
     return Center(
       child: Container(
@@ -205,7 +191,6 @@ class DeveloperSection extends StatelessWidget {
     );
   }
 
-  /// Builds the sheet header.
   Widget _buildSheetHeader(BuildContext context, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.all(AppDetailsSpacing.standard),
@@ -222,7 +207,6 @@ class DeveloperSection extends StatelessWidget {
     );
   }
 
-  /// Builds the scrollable packages list.
   Widget _buildPackagesList(
     ScrollController controller,
     ThemeData theme,
@@ -244,7 +228,6 @@ class DeveloperSection extends StatelessWidget {
   }
 }
 
-/// A single package row.
 class _PackageRow extends StatelessWidget {
   final String package;
 

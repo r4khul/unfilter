@@ -1,15 +1,7 @@
-/// Utility functions for app details.
-///
-/// Contains helper functions for:
-/// - Stack colors and icons
-/// - SDK version names
-/// - Formatter functions
-/// - Installer name formatting
 library;
 
 import 'package:flutter/material.dart';
 
-/// Gets the color for a given tech stack.
 Color getStackColor(String stack, bool isDark) {
   switch (stack.toLowerCase()) {
     case 'flutter':
@@ -44,7 +36,6 @@ Color getStackColor(String stack, bool isDark) {
   }
 }
 
-/// Gets the SVG icon path for a given tech stack.
 String getStackIconPath(String stack) {
   final stackLower = stack.toLowerCase();
   switch (stackLower) {
@@ -80,7 +71,6 @@ String getStackIconPath(String stack) {
   }
 }
 
-/// Gets the Android version name for a given SDK level.
 String getSdkVersionName(int sdk) {
   if (sdk >= 35) return "Android 15+";
   if (sdk == 34) return "Android 14";
@@ -100,7 +90,6 @@ String getSdkVersionName(int sdk) {
   return "API $sdk";
 }
 
-/// Formats bytes to a human-readable string.
 String formatBytes(int bytes) {
   if (bytes < 1024) return "$bytes B";
   if (bytes < 1024 * 1024) return "${(bytes / 1024).toStringAsFixed(1)} KB";
@@ -110,7 +99,6 @@ String formatBytes(int bytes) {
   return "${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB";
 }
 
-/// Formats an installer store name to be human-readable.
 String formatInstallerName(String installer) {
   if (installer.contains('google') ||
       installer.contains('com.android.vending')) {
@@ -153,7 +141,6 @@ String formatInstallerName(String installer) {
   return installer;
 }
 
-/// Formats a number with thousand separators.
 String formatNumber(int number) {
   return number.toString().replaceAllMapped(
     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),

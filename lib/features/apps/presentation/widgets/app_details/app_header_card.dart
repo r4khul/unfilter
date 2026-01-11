@@ -1,4 +1,3 @@
-/// Widget displaying the app header with icon, name, and tech stack.
 library;
 
 import 'package:flutter/material.dart';
@@ -8,21 +7,11 @@ import '../../../domain/entities/device_app.dart';
 import 'constants.dart';
 import 'utils.dart';
 
-/// A header card displaying app icon, name, stack badge, and share button.
-///
-/// Features:
-/// - Hero-animated app icon
-/// - App name and package name
-/// - Tech stack badge with icon
-/// - Share button
 class AppHeaderCard extends StatelessWidget {
-  /// The app to display.
   final DeviceApp app;
 
-  /// Callback when share button is tapped.
   final VoidCallback onShare;
 
-  /// Creates an app header card.
   const AppHeaderCard({super.key, required this.app, required this.onShare});
 
   @override
@@ -47,7 +36,6 @@ class AppHeaderCard extends StatelessWidget {
     );
   }
 
-  /// Builds the app icon with hero animation.
   Widget _buildAppIcon(ThemeData theme, Color stackColor) {
     return Hero(
       tag: app.packageName,
@@ -85,7 +73,6 @@ class AppHeaderCard extends StatelessWidget {
     );
   }
 
-  /// Builds the app name text.
   Widget _buildAppName(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -104,7 +91,6 @@ class AppHeaderCard extends StatelessWidget {
     );
   }
 
-  /// Builds the package name text.
   Widget _buildPackageName(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDetailsSpacing.xl),
@@ -122,7 +108,6 @@ class AppHeaderCard extends StatelessWidget {
     );
   }
 
-  /// Builds the tech stack badge.
   Widget _buildStackBadge(Color stackColor) {
     final displayName = app.stack == 'Jetpack' ? 'Jetpack Compose' : app.stack;
 
@@ -162,7 +147,6 @@ class AppHeaderCard extends StatelessWidget {
     );
   }
 
-  /// Builds the share button.
   Widget _buildShareButton(ThemeData theme) {
     return GestureDetector(
       onTap: onShare,

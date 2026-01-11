@@ -1,4 +1,3 @@
-/// Widget displaying deep technical insights about the app.
 library;
 
 import 'package:flutter/material.dart';
@@ -8,21 +7,9 @@ import 'common_widgets.dart';
 import 'constants.dart';
 import 'utils.dart';
 
-/// A section displaying deep technical insights.
-///
-/// Shows:
-/// - Installer store
-/// - Tech framework versions
-/// - Min/Target SDK with names
-/// - Signing signature
-/// - Split APKs
-/// - App size and paths
-/// - Component counts (Activities, Services, Receivers, Providers)
 class DeepInsightsSection extends StatelessWidget {
-  /// The app to display insights for.
   final DeviceApp app;
 
-  /// Creates a deep insights section.
   const DeepInsightsSection({super.key, required this.app});
 
   @override
@@ -57,11 +44,9 @@ class DeepInsightsSection extends StatelessWidget {
     );
   }
 
-  /// Builds the list of detail items.
   List<Widget> _buildDetailItems() {
     final items = <Widget>[];
 
-    // Installer
     if (app.installerStore != 'Unknown') {
       items.add(
         DetailItem(
@@ -72,7 +57,6 @@ class DeepInsightsSection extends StatelessWidget {
       );
     }
 
-    // Tech versions
     if (app.techVersions.isNotEmpty) {
       for (final entry in app.techVersions.entries) {
         items.add(
@@ -85,7 +69,6 @@ class DeepInsightsSection extends StatelessWidget {
       }
     }
 
-    // Kotlin version (if not already in tech versions)
     if (app.kotlinVersion != null && !app.techVersions.containsKey('Kotlin')) {
       items.add(
         DetailItem(
@@ -96,7 +79,6 @@ class DeepInsightsSection extends StatelessWidget {
       );
     }
 
-    // Min SDK
     items.add(
       DetailItem(
         label: "Min SDK",
@@ -105,7 +87,6 @@ class DeepInsightsSection extends StatelessWidget {
       ),
     );
 
-    // Target SDK
     items.add(
       DetailItem(
         label: "Target SDK",
@@ -115,7 +96,6 @@ class DeepInsightsSection extends StatelessWidget {
       ),
     );
 
-    // Signing signature
     if (app.signingSha1 != null) {
       items.add(
         DetailItem(
@@ -126,7 +106,6 @@ class DeepInsightsSection extends StatelessWidget {
       );
     }
 
-    // Split APKs
     if (app.splitApks.isNotEmpty) {
       items.add(
         DetailItem(
@@ -137,7 +116,6 @@ class DeepInsightsSection extends StatelessWidget {
       );
     }
 
-    // App size
     items.add(
       DetailItem(
         label: "App Size",
@@ -146,18 +124,15 @@ class DeepInsightsSection extends StatelessWidget {
       ),
     );
 
-    // APK path
     items.add(
       DetailItem(label: "APK Path", value: app.apkPath, showDivider: true),
     );
 
-    // Data directory
     items.add(DetailItem(label: "Data Dir", value: app.dataDir));
 
     return items;
   }
 
-  /// Builds the component counts grid.
   Widget _buildComponentCounts(ThemeData theme) {
     return Column(
       children: [
@@ -181,7 +156,6 @@ class DeepInsightsSection extends StatelessWidget {
   }
 }
 
-/// A component count display card.
 class _ComponentCount extends StatelessWidget {
   final String label;
   final int count;

@@ -1,4 +1,3 @@
-/// Widget displaying app version, SDK, and update date statistics.
 library;
 
 import 'package:flutter/material.dart';
@@ -8,17 +7,9 @@ import '../../../domain/entities/device_app.dart';
 import 'common_widgets.dart';
 import 'constants.dart';
 
-/// A row displaying key app statistics.
-///
-/// Shows three stats side by side:
-/// - Version number
-/// - SDK range (min - target)
-/// - Last update date
 class AppStatsRow extends StatelessWidget {
-  /// The app to display stats for.
   final DeviceApp app;
 
-  /// Creates an app stats row.
   const AppStatsRow({super.key, required this.app});
 
   @override
@@ -54,7 +45,6 @@ class AppStatsRow extends StatelessWidget {
   }
 }
 
-/// A single stat item with label and value.
 class _StatItem extends StatelessWidget {
   final String label;
   final String value;

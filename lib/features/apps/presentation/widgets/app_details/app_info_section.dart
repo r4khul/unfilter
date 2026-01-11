@@ -1,4 +1,3 @@
-/// Widget displaying basic app information details.
 library;
 
 import 'package:flutter/material.dart';
@@ -8,14 +7,9 @@ import '../../../domain/entities/device_app.dart';
 import 'common_widgets.dart';
 import 'constants.dart';
 
-/// A section displaying basic app details.
-///
-/// Shows package name, UID, and install date in a styled container.
 class AppInfoSection extends StatelessWidget {
-  /// The app to display info for.
   final DeviceApp app;
 
-  /// Creates an app info section.
   const AppInfoSection({super.key, required this.app});
 
   @override

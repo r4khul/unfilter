@@ -1,4 +1,3 @@
-/// Widget displaying app permissions.
 library;
 
 import 'package:flutter/material.dart';
@@ -7,18 +6,11 @@ import '../../../domain/entities/device_app.dart';
 import 'common_widgets.dart';
 import 'constants.dart';
 
-/// A section displaying app permissions with expandable view.
-///
-/// Shows up to 5 permissions initially with a "View More" button
-/// to see all permissions in a bottom sheet.
 class PermissionsSection extends StatelessWidget {
-  /// The app to display permissions for.
   final DeviceApp app;
 
-  /// Maximum number of permissions to show initially.
   static const int maxVisible = 5;
 
-  /// Creates a permissions section.
   const PermissionsSection({super.key, required this.app});
 
   @override
@@ -83,7 +75,6 @@ class PermissionsSection extends StatelessWidget {
     );
   }
 
-  /// Shows all permissions in a draggable bottom sheet.
   void _showAllPermissions(BuildContext context, ThemeData theme) {
     showModalBottomSheet(
       context: context,
@@ -112,7 +103,6 @@ class PermissionsSection extends StatelessWidget {
     );
   }
 
-  /// Builds the draggable handle.
   Widget _buildHandle(ThemeData theme) {
     return Center(
       child: Container(
@@ -127,7 +117,6 @@ class PermissionsSection extends StatelessWidget {
     );
   }
 
-  /// Builds the sheet header with title and close button.
   Widget _buildSheetHeader(BuildContext context, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.all(AppDetailsSpacing.standard),
@@ -144,7 +133,6 @@ class PermissionsSection extends StatelessWidget {
     );
   }
 
-  /// Builds the scrollable permissions list.
   Widget _buildPermissionsList(ScrollController controller, ThemeData theme) {
     return ListView.builder(
       controller: controller,
@@ -175,7 +163,6 @@ class PermissionsSection extends StatelessWidget {
   }
 }
 
-/// A single permission row.
 class _PermissionRow extends StatelessWidget {
   final String permission;
 

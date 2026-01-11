@@ -1,4 +1,3 @@
-/// Utility function for showing premium styled snackbars.
 library;
 
 import 'dart:ui' as ui;
@@ -7,23 +6,6 @@ import 'package:flutter/material.dart';
 
 import 'constants.dart';
 
-/// Shows a premium styled snackbar with glassmorphism effect.
-///
-/// Features:
-/// - Backdrop blur effect
-/// - Icon with colored background
-/// - Adaptive colors for light/dark mode
-/// - Floating behavior
-///
-/// ## Usage
-/// ```dart
-/// showPremiumSnackbar(
-///   context: context,
-///   icon: Icons.check_circle_rounded,
-///   message: 'App data refreshed',
-///   isSuccess: true,
-/// );
-/// ```
 void showPremiumSnackbar({
   required BuildContext context,
   required IconData icon,
