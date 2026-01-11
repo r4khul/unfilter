@@ -137,7 +137,7 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
 
   String _buildShareText() {
     final buffer = StringBuffer();
-    buffer.writeln("${widget.app.appName} exposed by Unfilter 🔍");
+    buffer.writeln("${widget.app.appName} just got exposed 🔍");
     buffer.writeln();
     buffer.writeln("Built with: ${widget.app.stack}");
 
@@ -145,16 +145,14 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
       buffer.writeln("Version: ${widget.app.version}");
     }
     if (_config.showSize) {
-      buffer.writeln("Size on device: ${_formatBytes(widget.app.size)}");
+      buffer.writeln("Size: ${_formatBytes(widget.app.size)}");
     }
 
     buffer.writeln();
-    buffer.writeln("See what YOUR apps are really made of →");
-    buffer.writeln("https://github.com/r4khul/unfilter/releases/latest");
+    buffer.writeln("See what your apps are really made of.");
+    buffer.writeln("github.com/r4khul/unfilter/releases/latest");
     buffer.writeln();
-    buffer.writeln("Love open source? Give a ⭐ on GitHub!");
-    buffer.writeln();
-    buffer.writeln("#UnfilterApp #TheRealTruthOfApps");
+    buffer.writeln("Don't forget to give a star!");
 
     return buffer.toString();
   }

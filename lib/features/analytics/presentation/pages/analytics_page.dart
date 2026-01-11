@@ -412,20 +412,16 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path)],
-          text: '''Unfilter just exposed my screen addiction. 💀
+          text: '''Unfilter exposed my screen addiction 💀
 
-✦ See what apps are REALLY built with
-✦ Real usage stats, no sugar-coating
-✦ Monitor background tasks eating your battery
-✦ In-app updates, no Play Store needed
+See what apps are really built with. Real usage stats. No sugar coating.
 
 100% open source. No trackers. No BS.
 
-Get it → https:
+Get it: github.com/r4khul/unfilter/releases/latest
 
-Love open source? Give a ⭐ on GitHub!
-
-#UnfilterApp #TheRealTruthOfApps''',
+Don't forget to give a star!
+''',
         ),
       );
     } catch (e) {
