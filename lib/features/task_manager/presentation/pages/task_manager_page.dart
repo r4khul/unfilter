@@ -275,7 +275,12 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
         ),
       );
       for (var proc in processesWithHistory) {
-        listItems.add(EnhancedProcessItem(processWithHistory: proc));
+        listItems.add(
+          EnhancedProcessItem(
+            key: ValueKey(proc.process.pid),
+            processWithHistory: proc,
+          ),
+        );
       }
     }
 

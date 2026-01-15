@@ -384,7 +384,8 @@ class ShellProcessItem extends StatelessWidget {
 class EnhancedProcessItem extends StatelessWidget {
   final ProcessWithHistory processWithHistory;
 
-  const EnhancedProcessItem({super.key, required this.processWithHistory});
+  const EnhancedProcessItem({Key? key, required this.processWithHistory})
+    : super(key: key ?? const ValueKey('process_item'));
 
   AndroidProcess get process => processWithHistory.process;
 
@@ -394,44 +395,49 @@ class EnhancedProcessItem extends StatelessWidget {
     final intensity = processWithHistory.intensityLevel;
     final shouldGlow = processWithHistory.shouldGlow;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: TaskManagerSpacing.lg,
-        vertical: TaskManagerSpacing.sm,
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(TaskManagerSpacing.standard),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(TaskManagerBorderRadius.standard),
-          border: Border.all(
-            color: shouldGlow
-                ? _getIntensityColor(intensity).withOpacity(0.5)
-                : theme.colorScheme.outlineVariant.withOpacity(
-                    TaskManagerOpacity.light,
-                  ),
-            width: shouldGlow ? 1.5 : 1,
-          ),
-          boxShadow: shouldGlow
-              ? [
-                  BoxShadow(
-                    color: _getIntensityColor(intensity).withOpacity(0.2),
-                    blurRadius: 8,
-                    spreadRadius: 0,
-                  ),
-                ]
-              : null,
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: TaskManagerSpacing.lg,
+          vertical: TaskManagerSpacing.sm,
         ),
-        child: Row(
-          children: [
-            _buildPidBadge(theme, intensity),
-            const SizedBox(width: TaskManagerSpacing.md),
-            Expanded(child: _buildProcessInfo(theme)),
-            const SizedBox(width: TaskManagerSpacing.sm),
-            _buildSparkline(),
-            const SizedBox(width: TaskManagerSpacing.md),
-            _buildStats(theme),
-          ],
+        child: Container(
+          padding: const EdgeInsets.all(TaskManagerSpacing.standard),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(
+              TaskManagerBorderRadius.standard,
+            ),
+            border: Border.all(
+              color: shouldGlow
+                  ? _getIntensityColor(intensity).withOpacity(0.5)
+                  : theme.colorScheme.outlineVariant.withOpacity(
+                      TaskManagerOpacity.light,
+                    ),
+              width: shouldGlow ? 1.5 : 1,
+            ),
+            // Optimized shadow: only render for glowing items, reduce spread
+            boxShadow: shouldGlow
+                ? [
+                    BoxShadow(
+                      color: _getIntensityColor(intensity).withOpacity(0.15),
+                      blurRadius: 4, // Reduced blur radius for performance
+                      spreadRadius: 0,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            children: [
+              _buildPidBadge(theme, intensity),
+              const SizedBox(width: TaskManagerSpacing.md),
+              Expanded(child: _buildProcessInfo(theme)),
+              const SizedBox(width: TaskManagerSpacing.sm),
+              _buildSparkline(),
+              const SizedBox(width: TaskManagerSpacing.md),
+              _buildStats(theme),
+            ],
+          ),
         ),
       ),
     );
