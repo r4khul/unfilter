@@ -178,22 +178,24 @@ final activeProcessesProvider = StreamProvider.autoDispose<ProcessListState>((
 ) {
   late StreamController<ProcessListState> controller;
   Timer? refreshTimer;
+  ProcessListState currentState = const ProcessListState();
 
   controller = StreamController<ProcessListState>(
     onListen: () async {
-      controller.add(const ProcessListState(isRefreshing: true));
+      currentState = const ProcessListState(isRefreshing: true);
+      controller.add(currentState);
 
       try {
         final processes = await _fetchProcesses();
-        controller.add(
-          ProcessListState(
-            processes: processes,
-            isRefreshing: false,
-            lastUpdated: DateTime.now(),
-          ),
+        currentState = ProcessListState(
+          processes: processes,
+          isRefreshing: false,
+          lastUpdated: DateTime.now(),
         );
+        controller.add(currentState);
       } on ProcessFetchException catch (e) {
-        controller.add(ProcessListState(isRefreshing: false, error: e));
+        currentState = ProcessListState(isRefreshing: false, error: e);
+        controller.add(currentState);
       }
 
       refreshTimer = Timer.periodic(_refreshInterval, (timer) async {
@@ -202,23 +204,20 @@ final activeProcessesProvider = StreamProvider.autoDispose<ProcessListState>((
           return;
         }
 
-        final currentState = await controller.stream.first.catchError(
-          (_) => const ProcessListState(),
-        );
-
-        controller.add(currentState.copyWith(isRefreshing: true));
+        currentState = currentState.copyWith(isRefreshing: true);
+        controller.add(currentState);
 
         try {
           final processes = await _fetchProcesses();
-          controller.add(
-            ProcessListState(
-              processes: processes,
-              isRefreshing: false,
-              lastUpdated: DateTime.now(),
-            ),
+          currentState = ProcessListState(
+            processes: processes,
+            isRefreshing: false,
+            lastUpdated: DateTime.now(),
           );
+          controller.add(currentState);
         } on ProcessFetchException catch (e) {
-          controller.add(currentState.copyWith(isRefreshing: false, error: e));
+          currentState = currentState.copyWith(isRefreshing: false, error: e);
+          controller.add(currentState);
         }
       });
     },

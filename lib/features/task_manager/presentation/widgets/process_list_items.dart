@@ -2,6 +2,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/navigation/navigation.dart';
 import '../../domain/entities/active_app.dart';
 import '../../domain/entities/android_process.dart';
 import 'constants.dart';
@@ -393,24 +394,35 @@ class UserAppItem extends StatelessWidget {
         horizontal: TaskManagerSpacing.lg,
         vertical: TaskManagerSpacing.sm + 2,
       ),
-      child: Container(
-        padding: const EdgeInsets.all(TaskManagerSpacing.standard),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => AppRouteFactory.toAppDetailsByPackage(
+            context,
+            app.packageName,
+            appName: app.appName,
+          ),
           borderRadius: BorderRadius.circular(TaskManagerBorderRadius.lg),
-          border: Border.all(
-            color: theme.colorScheme.outlineVariant.withOpacity(
-              TaskManagerOpacity.mediumLight,
+          child: Container(
+            padding: const EdgeInsets.all(TaskManagerSpacing.standard),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(TaskManagerBorderRadius.lg),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withOpacity(
+                  TaskManagerOpacity.mediumLight,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                _AppIcon(app: app, size: TaskManagerSizes.appIconSize),
+                const SizedBox(width: TaskManagerSpacing.lg),
+                Expanded(child: _buildAppInfo(theme)),
+                _buildStats(theme),
+              ],
             ),
           ),
-        ),
-        child: Row(
-          children: [
-            _AppIcon(app: app, size: TaskManagerSizes.appIconSize),
-            const SizedBox(width: TaskManagerSpacing.lg),
-            Expanded(child: _buildAppInfo(theme)),
-            _buildStats(theme),
-          ],
         ),
       ),
     );

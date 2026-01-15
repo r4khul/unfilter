@@ -10,6 +10,7 @@ import '../../features/home/presentation/pages/info/about_page.dart';
 import '../../features/home/presentation/pages/info/how_it_works_page.dart';
 import '../../features/home/presentation/pages/info/privacy_page.dart';
 import '../../features/apps/presentation/pages/app_details_page.dart';
+import '../../features/apps/presentation/pages/app_details_by_package_page.dart';
 import '../../features/apps/domain/entities/device_app.dart';
 import '../../features/analytics/presentation/pages/storage_insights_page.dart';
 import 'navigation.dart';
@@ -183,6 +184,17 @@ class AppRouteFactory {
 
   static Future<void> toAppDetails(BuildContext context, DeviceApp app) {
     return PremiumNavigation.push(context, AppDetailsPage(app: app));
+  }
+
+  static Future<void> toAppDetailsByPackage(
+    BuildContext context,
+    String packageName, {
+    String? appName,
+  }) {
+    return PremiumNavigation.push(
+      context,
+      AppDetailsByPackagePage(packageName: packageName, appName: appName),
+    );
   }
 
   static Future<void> toUpdateCheck(BuildContext context) {
