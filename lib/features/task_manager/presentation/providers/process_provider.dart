@@ -10,6 +10,18 @@ import '../../domain/entities/android_process.dart';
 import '../../domain/entities/system_details.dart';
 
 const _channel = MethodChannel('com.rakhul.unfilter/apps');
+const _fetchTimeout = Duration(seconds: 10);
+const _refreshInterval = Duration(seconds: 5);
+
+class ProcessFetchException implements Exception {
+  final String message;
+  final Object? cause;
+  const ProcessFetchException(this.message, [this.cause]);
+
+  @override
+  String toString() =>
+      'ProcessFetchException: $message${cause != null ? ' ($cause)' : ''}';
+}
 
 List<AndroidProcess> _parseProcesses(dynamic result) {
   if (result is List) {
@@ -30,49 +42,167 @@ SystemDetails _parseSystemDetails(dynamic result) {
   );
 }
 
+Future<List<AndroidProcess>> _fetchProcesses() async {
+  try {
+    final result = await _channel
+        .invokeMethod('getRunningProcesses')
+        .timeout(_fetchTimeout);
+    return await compute(_parseProcesses, result);
+  } on TimeoutException {
+    throw const ProcessFetchException('Process fetch timed out');
+  } on PlatformException catch (e) {
+    throw ProcessFetchException('Platform error', e.message);
+  } catch (e) {
+    throw ProcessFetchException('Unknown error', e);
+  }
+}
+
+Future<SystemDetails> _fetchSystemDetails() async {
+  try {
+    final result = await _channel
+        .invokeMethod('getSystemDetails')
+        .timeout(_fetchTimeout);
+    return await compute(_parseSystemDetails, result);
+  } on TimeoutException {
+    debugPrint('System details fetch timed out');
+    return const SystemDetails(
+      memInfo: {},
+      cpuTemp: 0,
+      gpuUsage: "N/A",
+      kernel: "",
+    );
+  } catch (e) {
+    debugPrint('Error fetching system details: $e');
+    return const SystemDetails(
+      memInfo: {},
+      cpuTemp: 0,
+      gpuUsage: "N/A",
+      kernel: "",
+    );
+  }
+}
+
 final processProvider = FutureProvider.autoDispose<List<AndroidProcess>>((
   ref,
 ) async {
-  try {
-    final result = await _channel.invokeMethod('getRunningProcesses');
-    return await compute(_parseProcesses, result);
-  } catch (e) {
-    debugPrint('Error fetching processes: $e');
-    return [];
-  }
+  return _fetchProcesses();
 });
 
 final systemDetailsProvider = StreamProvider.autoDispose<SystemDetails>((ref) {
-  return Stream.periodic(const Duration(seconds: 5), (count) => count).asyncMap(
-    (_) async {
-      try {
-        final result = await _channel.invokeMethod('getSystemDetails');
-        return await compute(_parseSystemDetails, result);
-      } catch (e) {
-        debugPrint('Error fetching system details: $e');
-        return const SystemDetails(
-          memInfo: {},
-          cpuTemp: 0,
-          gpuUsage: "N/A",
-          kernel: "",
-        );
-      }
-    },
-  );
-});
+  late StreamController<SystemDetails> controller;
 
-final activeProcessesProvider =
-    StreamProvider.autoDispose<List<AndroidProcess>>((ref) {
-      return Stream.periodic(
-        const Duration(seconds: 5),
-        (count) => count,
-      ).asyncMap((_) async {
+  controller = StreamController<SystemDetails>(
+    onListen: () async {
+      try {
+        controller.add(await _fetchSystemDetails());
+      } catch (e) {
+        debugPrint('Initial system details fetch failed: $e');
+      }
+
+      Timer.periodic(_refreshInterval, (timer) async {
+        if (controller.isClosed) {
+          timer.cancel();
+          return;
+        }
         try {
-          final result = await _channel.invokeMethod('getRunningProcesses');
-          return await compute(_parseProcesses, result);
+          controller.add(await _fetchSystemDetails());
         } catch (e) {
-          debugPrint('Error fetching active processes: $e');
-          return <AndroidProcess>[];
+          debugPrint('Periodic system details fetch failed: $e');
         }
       });
-    });
+    },
+    onCancel: () => controller.close(),
+  );
+
+  return controller.stream;
+});
+
+class ProcessListState {
+  final List<AndroidProcess> processes;
+  final bool isRefreshing;
+  final ProcessFetchException? error;
+  final DateTime? lastUpdated;
+
+  const ProcessListState({
+    this.processes = const [],
+    this.isRefreshing = false,
+    this.error,
+    this.lastUpdated,
+  });
+
+  ProcessListState copyWith({
+    List<AndroidProcess>? processes,
+    bool? isRefreshing,
+    ProcessFetchException? error,
+    DateTime? lastUpdated,
+    bool clearError = false,
+  }) {
+    return ProcessListState(
+      processes: processes ?? this.processes,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
+      error: clearError ? null : (error ?? this.error),
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+    );
+  }
+
+  bool get hasData => processes.isNotEmpty;
+  bool get hasError => error != null;
+}
+
+final activeProcessesProvider = StreamProvider.autoDispose<ProcessListState>((
+  ref,
+) {
+  late StreamController<ProcessListState> controller;
+  Timer? refreshTimer;
+
+  controller = StreamController<ProcessListState>(
+    onListen: () async {
+      controller.add(const ProcessListState(isRefreshing: true));
+
+      try {
+        final processes = await _fetchProcesses();
+        controller.add(
+          ProcessListState(
+            processes: processes,
+            isRefreshing: false,
+            lastUpdated: DateTime.now(),
+          ),
+        );
+      } on ProcessFetchException catch (e) {
+        controller.add(ProcessListState(isRefreshing: false, error: e));
+      }
+
+      refreshTimer = Timer.periodic(_refreshInterval, (timer) async {
+        if (controller.isClosed) {
+          timer.cancel();
+          return;
+        }
+
+        final currentState = await controller.stream.first.catchError(
+          (_) => const ProcessListState(),
+        );
+
+        controller.add(currentState.copyWith(isRefreshing: true));
+
+        try {
+          final processes = await _fetchProcesses();
+          controller.add(
+            ProcessListState(
+              processes: processes,
+              isRefreshing: false,
+              lastUpdated: DateTime.now(),
+            ),
+          );
+        } on ProcessFetchException catch (e) {
+          controller.add(currentState.copyWith(isRefreshing: false, error: e));
+        }
+      });
+    },
+    onCancel: () {
+      refreshTimer?.cancel();
+      controller.close();
+    },
+  );
+
+  return controller.stream;
+});

@@ -178,7 +178,6 @@ class ShellProcessItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bool isRoot = process.user == 'root';
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -198,36 +197,57 @@ class ShellProcessItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            _buildPidBadge(theme, isRoot),
+            _buildPidBadge(theme),
             const SizedBox(width: TaskManagerSpacing.standard),
             Expanded(child: _buildProcessInfo(theme)),
-            _buildCpuUsage(theme),
+            _buildStats(theme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPidBadge(ThemeData theme, bool isRoot) {
-    return Container(
-      padding: const EdgeInsets.all(TaskManagerSizes.pidContainerPadding),
-      decoration: BoxDecoration(
-        color: isRoot
-            ? theme.colorScheme.error.withOpacity(TaskManagerOpacity.light)
-            : theme.colorScheme.surfaceContainerHighest.withOpacity(
-                TaskManagerOpacity.standard,
-              ),
-        borderRadius: BorderRadius.circular(TaskManagerBorderRadius.md),
-      ),
-      child: Text(
-        process.pid,
-        style: theme.textTheme.labelSmall?.copyWith(
-          fontFamily: 'monospace',
-          fontWeight: FontWeight.bold,
-          color: isRoot ? theme.colorScheme.error : theme.colorScheme.primary,
+  Widget _buildPidBadge(ThemeData theme) {
+    final statusColor = _getStatusColor(theme);
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(TaskManagerSizes.pidContainerPadding),
+          decoration: BoxDecoration(
+            color: process.isRootProcess
+                ? theme.colorScheme.error.withOpacity(TaskManagerOpacity.light)
+                : theme.colorScheme.surfaceContainerHighest.withOpacity(
+                    TaskManagerOpacity.standard,
+                  ),
+            borderRadius: BorderRadius.circular(TaskManagerBorderRadius.md),
+          ),
+          child: Text(
+            process.pid,
+            style: theme.textTheme.labelSmall?.copyWith(
+              fontFamily: 'monospace',
+              fontWeight: FontWeight.bold,
+              color: process.isRootProcess
+                  ? theme.colorScheme.error
+                  : theme.colorScheme.primary,
+            ),
+          ),
         ),
-      ),
+        const SizedBox(height: 4),
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
+        ),
+      ],
     );
+  }
+
+  Color _getStatusColor(ThemeData theme) {
+    if (process.isRunning) return Colors.green;
+    if (process.isZombie) return theme.colorScheme.error;
+    if (process.isSleeping) return theme.colorScheme.outline;
+    return theme.colorScheme.outline;
   }
 
   Widget _buildProcessInfo(ThemeData theme) {
@@ -238,14 +258,37 @@ class ShellProcessItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          displayName,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: TaskManagerFontSizes.body,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                displayName,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: TaskManagerFontSizes.body,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (process.isRunning)
+              Container(
+                margin: const EdgeInsets.only(left: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'R',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: TaskManagerSpacing.xs),
         Row(
@@ -257,30 +300,43 @@ class ShellProcessItem extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(width: TaskManagerSpacing.md),
-            Container(
-              width: TaskManagerSizes.dividerWidth,
-              height: 10,
-              color: theme.colorScheme.outlineVariant,
-            ),
-            const SizedBox(width: TaskManagerSpacing.md),
+            _buildDivider(theme),
             Text(
-              "RSS: ${process.res}",
+              process.formattedMemory,
               style: theme.textTheme.labelSmall?.copyWith(
                 fontSize: TaskManagerFontSizes.sm,
                 fontFamily: 'monospace',
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+            if (process.threads != null) ...[
+              _buildDivider(theme),
+              Text(
+                '${process.threads} thr',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontSize: TaskManagerFontSizes.sm,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ],
         ),
       ],
     );
   }
 
-  Widget _buildCpuUsage(ThemeData theme) {
-    final isActive = process.cpu != "0.0" && process.cpu != "0";
+  Widget _buildDivider(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: TaskManagerSpacing.md),
+      child: Container(
+        width: TaskManagerSizes.dividerWidth,
+        height: 10,
+        color: theme.colorScheme.outlineVariant,
+      ),
+    );
+  }
 
+  Widget _buildStats(ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -289,7 +345,7 @@ class ShellProcessItem extends StatelessWidget {
           style: theme.textTheme.labelSmall?.copyWith(
             fontWeight: FontWeight.bold,
             fontFamily: 'monospace',
-            color: isActive
+            color: process.isActive
                 ? theme.colorScheme.primary
                 : theme.colorScheme.onSurfaceVariant,
           ),
@@ -303,6 +359,20 @@ class ShellProcessItem extends StatelessWidget {
             ),
           ),
         ),
+        if (process.nice != null && process.nice != 0)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              'ni:${process.nice}',
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontSize: TaskManagerFontSizes.tiny,
+                fontFamily: 'monospace',
+                color: process.nice! < 0
+                    ? theme.colorScheme.error.withOpacity(0.8)
+                    : theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+              ),
+            ),
+          ),
       ],
     );
   }

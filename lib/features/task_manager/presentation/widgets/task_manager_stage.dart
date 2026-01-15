@@ -1,164 +1,98 @@
 library;
 
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class TaskManagerStage extends StatefulWidget {
+class TaskManagerStage extends StatelessWidget {
   final bool isLoading;
-
+  final bool isRefreshing;
   final Widget child;
 
   const TaskManagerStage({
     super.key,
     required this.isLoading,
+    this.isRefreshing = false,
     required this.child,
   });
 
   @override
-  State<TaskManagerStage> createState() => _TaskManagerStageState();
-}
-
-class _TaskManagerStageState extends State<TaskManagerStage> {
-  late final ValueNotifier<int> _stageNotifier;
-  Timer? _stageTimer;
-
-  final List<String> _statusMessages = [
-    "Initializing system",
-    "Preparing secure channels",
-    "Scanning environment",
-    "Finalizing setup",
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _stageNotifier = ValueNotifier<int>(0);
-    _startStageTimer();
-  }
-
-  @override
-  void didUpdateWidget(TaskManagerStage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isLoading && !oldWidget.isLoading) {
-      _stageNotifier.value = 0;
-      _startStageTimer();
-    } else if (!widget.isLoading) {
-      _stageTimer?.cancel();
-    }
-  }
-
-  void _startStageTimer() {
-    _stageTimer?.cancel();
-    _stageTimer = Timer.periodic(const Duration(milliseconds: 1200), (timer) {
-      if (_stageNotifier.value < _statusMessages.length - 1) {
-        _stageNotifier.value++;
-      } else {
-        timer.cancel();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _stageTimer?.cancel();
-    _stageNotifier.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 800),
-      switchInCurve: Curves.easeInOutCubic,
-      switchOutCurve: Curves.easeInOutCubic,
-      child: widget.isLoading ? _buildLoadingState(context) : widget.child,
+    if (isLoading) {
+      return _buildLoadingState(context);
+    }
+
+    return Stack(
+      children: [
+        child,
+        if (isRefreshing)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(child: _RefreshingIndicator()),
+          ),
+      ],
     );
   }
 
   Widget _buildLoadingState(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Stack(
-      children: [
-        Opacity(
-          opacity: 0.7,
-          child: CustomScrollView(
-            key: const ValueKey('loading_state'),
-            physics: const NeverScrollableScrollPhysics(),
-            slivers: [
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 60),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.all(16.0),
-                sliver: SliverToBoxAdapter(
-                  child: _TaskManagerSkeleton(theme: theme),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        Align(
-          alignment: const Alignment(
-            0,
-            -0.1,
-          ),
-          child: ValueListenableBuilder<int>(
-            valueListenable: _stageNotifier,
-            builder: (context, stageIndex, _) {
-              return _StatusMessage(
-                message: _statusMessages[stageIndex],
-                theme: theme,
-              );
-            },
-          ),
+    return CustomScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      slivers: [
+        const SliverToBoxAdapter(child: SizedBox(height: 60)),
+        SliverPadding(
+          padding: const EdgeInsets.all(16.0),
+          sliver: SliverToBoxAdapter(child: _TaskManagerSkeleton(theme: theme)),
         ),
       ],
     );
   }
 }
 
-class _StatusMessage extends StatelessWidget {
-  final String message;
-  final ThemeData theme;
-
-  const _StatusMessage({required this.message, required this.theme});
-
+class _RefreshingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Center(
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 600),
-        transitionBuilder: (child, animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0.0, 0.4),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutBack,
-                    ),
-                  ),
-              child: child,
+      child: Container(
+        margin: const EdgeInsets.only(top: 100),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primaryContainer.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-          );
-        },
-        child: Text(
-          message.toUpperCase(),
-          key: ValueKey(message),
-          style: theme.textTheme.labelSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 3.0,
-            color: theme.colorScheme.primary.withOpacity(0.8),
-            fontSize: 11,
-          ),
-          textAlign: TextAlign.center,
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation(
+                  theme.colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              "Refreshing...",
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -185,7 +119,7 @@ class _TaskManagerSkeleton extends StatelessWidget {
       effect: ShimmerEffect(
         baseColor: skeletonColor,
         highlightColor: highlightColor,
-        duration: const Duration(milliseconds: 2000),
+        duration: const Duration(milliseconds: 1500),
       ),
       containersColor: theme.colorScheme.surfaceContainerHighest,
       child: Column(

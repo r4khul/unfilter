@@ -1,7 +1,7 @@
 library;
 
 abstract class TaskManagerDurations {
-  static const Duration minLoadingWait = Duration(milliseconds: 2500);
+  static const Duration minLoadingWait = Duration.zero;
 
   static const Duration refreshInterval = Duration(seconds: 5);
 

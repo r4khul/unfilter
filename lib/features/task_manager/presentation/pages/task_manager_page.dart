@@ -65,14 +65,7 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
   }
 
   Future<void> _initSystemStats() async {
-    final minWait = Future.delayed(TaskManagerDurations.minLoadingWait);
-    final fetchTask = Future.wait([
-      _refreshRam(),
-      _refreshBattery(),
-      _getDeviceInfo(),
-    ]);
-
-    await Future.wait([minWait, fetchTask]);
+    await Future.wait([_refreshRam(), _refreshBattery(), _getDeviceInfo()]);
 
     if (mounted) {
       setState(() => _isLoadingStats = false);
@@ -86,6 +79,7 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
       _freeRam = SysInfo.getFreePhysicalMemory() ~/ mb;
       if (mounted) setState(() {});
     } catch (e) {
+      debugPrint('Error refreshing RAM: $e');
     }
   }
 
@@ -100,6 +94,7 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
         });
       }
     } catch (e) {
+      debugPrint('Error refreshing battery: $e');
     }
   }
 
@@ -114,6 +109,7 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
         });
       }
     } catch (e) {
+      debugPrint('Error getting device info: $e');
     }
   }
 
@@ -122,50 +118,64 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
     final theme = Theme.of(context);
     final viewModelState = ref.watch(taskManagerViewModelProvider);
 
+    final isLoading = _isLoadingStats || viewModelState.isLoading;
+    final isRefreshing = viewModelState.maybeWhen(
+      data: (data) => data.isRefreshingProcesses,
+      orElse: () => false,
+    );
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: TaskManagerStage(
-        isLoading: _isLoadingStats || viewModelState.isLoading,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            const PremiumSliverAppBar(title: "Task Manager"),
+        isLoading: isLoading,
+        isRefreshing: isRefreshing,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await Future.wait([_refreshRam(), _refreshBattery()]);
+          },
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            slivers: [
+              const PremiumSliverAppBar(title: "Task Manager"),
 
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(TaskManagerSpacing.lg),
-                child: SystemStatsCard(
-                  deviceModel: _deviceModel,
-                  androidVersion: _androidVersion,
-                  totalRam: _totalRam,
-                  freeRam: _freeRam,
-                  batteryLevel: _batteryLevel,
-                  batteryState: _batteryState,
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(TaskManagerSpacing.lg),
+                  child: SystemStatsCard(
+                    deviceModel: _deviceModel,
+                    androidVersion: _androidVersion,
+                    totalRam: _totalRam,
+                    freeRam: _freeRam,
+                    batteryLevel: _batteryLevel,
+                    batteryState: _batteryState,
+                  ),
                 ),
               ),
-            ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 10)),
+              const SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: TaskManagerSpacing.lg,
-                ),
-                child: TaskManagerSearchBar(
-                  controller: _searchController,
-                  searchQuery: _searchQuery,
-                  onChanged: (val) => setState(() => _searchQuery = val),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: TaskManagerSpacing.lg,
+                  ),
+                  child: TaskManagerSearchBar(
+                    controller: _searchController,
+                    searchQuery: _searchQuery,
+                    onChanged: (val) => setState(() => _searchQuery = val),
+                  ),
                 ),
               ),
-            ),
 
-            _buildProcessList(viewModelState, theme),
+              _buildProcessList(viewModelState, theme),
 
-            const SliverPadding(
-              padding: EdgeInsets.only(bottom: TaskManagerSpacing.listBottom),
-            ),
-          ],
+              const SliverPadding(
+                padding: EdgeInsets.only(bottom: TaskManagerSpacing.listBottom),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -178,8 +188,49 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
     return viewModelState.when(
       data: (data) => _buildProcessListContent(data, theme),
       loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-      error: (_, __) => const SliverFillRemaining(
-        child: Center(child: Text("Error loading tasks")),
+      error: (error, _) => _buildErrorState(theme, error.toString()),
+    );
+  }
+
+  Widget _buildErrorState(ThemeData theme, String error) {
+    return SliverFillRemaining(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                size: 56,
+                color: theme.colorScheme.error.withOpacity(0.8),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Failed to load processes",
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: () {
+                  ref.invalidate(taskManagerViewModelProvider);
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text("Retry"),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -196,6 +247,15 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
     }
 
     final List<Widget> listItems = [];
+
+    if (data.hasProcessError && shellProcesses.isEmpty) {
+      listItems.add(
+        _ProcessErrorBanner(
+          error: data.processError!.message,
+          onRetry: () => ref.invalidate(taskManagerViewModelProvider),
+        ),
+      );
+    }
 
     if (shellProcesses.isNotEmpty) {
       listItems.add(
@@ -276,6 +336,49 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProcessErrorBanner extends StatelessWidget {
+  final String error;
+  final VoidCallback onRetry;
+
+  const _ProcessErrorBanner({required this.error, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.errorContainer.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.colorScheme.error.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: theme.colorScheme.error,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                "Process data may be incomplete: $error",
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onErrorContainer,
+                ),
+              ),
+            ),
+            TextButton(onPressed: onRetry, child: const Text("Retry")),
           ],
         ),
       ),

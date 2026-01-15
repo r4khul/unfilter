@@ -9,16 +9,24 @@ import 'process_provider.dart';
 
 class TaskManagerData {
   final List<AndroidProcess> shellProcesses;
-
   final List<DeviceApp> activeApps;
-
   final Map<String, AndroidProcess> matches;
+  final bool isRefreshingProcesses;
+  final DateTime? processesLastUpdated;
+  final ProcessFetchException? processError;
 
   const TaskManagerData({
     this.shellProcesses = const [],
     this.activeApps = const [],
     this.matches = const {},
+    this.isRefreshingProcesses = false,
+    this.processesLastUpdated,
+    this.processError,
   });
+
+  bool get hasProcessError => processError != null;
+  bool get hasProcessData => shellProcesses.isNotEmpty;
+  bool get hasAppsData => activeApps.isNotEmpty;
 }
 
 final taskManagerViewModelProvider =
@@ -26,25 +34,28 @@ final taskManagerViewModelProvider =
       final appsState = ref.watch(installedAppsProvider);
       final processesState = ref.watch(activeProcessesProvider);
 
-      if (appsState.isLoading || processesState.isLoading) {
+      final processListState = processesState.when(
+        data: (state) => state,
+        loading: () => const ProcessListState(isRefreshing: true),
+        error: (e, _) => ProcessListState(
+          error: e is ProcessFetchException
+              ? e
+              : ProcessFetchException('Unknown error', e),
+        ),
+      );
+
+      if (appsState.isLoading && !processListState.hasData) {
         return const AsyncValue.loading();
       }
 
-      if (appsState.hasError) {
+      if (appsState.hasError && processListState.hasError) {
         return AsyncValue.error(appsState.error!, appsState.stackTrace!);
       }
-      if (processesState.hasError) {
-        return AsyncValue.error(
-          processesState.error!,
-          processesState.stackTrace!,
-        );
-      }
 
-      final shellProcesses = processesState.value ?? [];
+      final shellProcesses = processListState.processes;
       final userApps = appsState.value ?? [];
 
       final activeApps = _filterRecentlyActiveApps(userApps);
-
       activeApps.sort((a, b) => b.lastTimeUsed.compareTo(a.lastTimeUsed));
 
       final matches = _matchProcessesToApps(activeApps, shellProcesses);
@@ -54,6 +65,9 @@ final taskManagerViewModelProvider =
           shellProcesses: shellProcesses,
           activeApps: activeApps,
           matches: matches,
+          isRefreshingProcesses: processListState.isRefreshing,
+          processesLastUpdated: processListState.lastUpdated,
+          processError: processListState.error,
         ),
       );
     });
@@ -80,8 +94,7 @@ Map<String, AndroidProcess> _matchProcessesToApps(
             app.packageName.contains(p.name),
       );
       matches[app.packageName] = match;
-    } catch (_) {
-    }
+    } catch (_) {}
   }
 
   return matches;
