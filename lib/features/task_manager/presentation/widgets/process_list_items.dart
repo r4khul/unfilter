@@ -50,13 +50,7 @@ class ProcessSectionHeader extends StatelessWidget {
 class UserSpaceSectionHeader extends StatelessWidget {
   final bool showSandboxedBadge;
 
-  final Color indicatorColor;
-
-  const UserSpaceSectionHeader({
-    super.key,
-    required this.showSandboxedBadge,
-    required this.indicatorColor,
-  });
+  const UserSpaceSectionHeader({super.key, this.showSandboxedBadge = false});
 
   @override
   Widget build(BuildContext context) {
@@ -92,81 +86,8 @@ class UserSpaceSectionHeader extends StatelessWidget {
                   TaskManagerOpacity.half,
                 ),
               ),
-            )
-          else
-            LiveIndicator(color: indicatorColor),
+            ),
         ],
-      ),
-    );
-  }
-}
-
-class LiveIndicator extends StatefulWidget {
-  final Color color;
-
-  const LiveIndicator({super.key, required this.color});
-
-  @override
-  State<LiveIndicator> createState() => _LiveIndicatorState();
-}
-
-class _LiveIndicatorState extends State<LiveIndicator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: TaskManagerDurations.livePulse,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _controller,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: TaskManagerSpacing.md,
-          vertical: TaskManagerSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: widget.color.withOpacity(TaskManagerOpacity.light),
-          borderRadius: BorderRadius.circular(TaskManagerBorderRadius.badge),
-          border: Border.all(
-            color: widget.color.withOpacity(TaskManagerOpacity.half),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: TaskManagerSizes.liveIndicatorDotSize,
-              height: TaskManagerSizes.liveIndicatorDotSize,
-              decoration: BoxDecoration(
-                color: widget.color,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: TaskManagerSpacing.sm),
-            Text(
-              "LIVE",
-              style: TextStyle(
-                fontSize: TaskManagerFontSizes.sm,
-                fontWeight: FontWeight.bold,
-                color: widget.color,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

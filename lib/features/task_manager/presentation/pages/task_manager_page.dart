@@ -274,12 +274,7 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
     }
 
     if (processesWithHistory.isNotEmpty) {
-      listItems.add(
-        ProcessSectionHeader(
-          title: "KERNEL / SYSTEM",
-          trailing: LiveIndicator(color: theme.colorScheme.error),
-        ),
-      );
+      listItems.add(const ProcessSectionHeader(title: "KERNEL / SYSTEM"));
       for (var proc in processesWithHistory) {
         listItems.add(
           EnhancedProcessItem(
@@ -294,7 +289,6 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
       listItems.add(
         UserSpaceSectionHeader(
           showSandboxedBadge: processesWithHistory.length < 5,
-          indicatorColor: theme.colorScheme.primary,
         ),
       );
       for (var app in activeApps) {

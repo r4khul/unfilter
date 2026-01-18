@@ -16,7 +16,10 @@ class AndroidProcess {
   final String? args;
   final String? startTime;
 
-  const AndroidProcess({
+  // Cached uppercase status for fast comparisons
+  late final String _statusUpper;
+
+  AndroidProcess({
     required this.pid,
     required this.user,
     required this.name,
@@ -30,7 +33,12 @@ class AndroidProcess {
     this.priority,
     this.args,
     this.startTime,
-  });
+  }) {
+    _statusUpper = status.toUpperCase();
+  }
+
+  /// Empty placeholder for pre-allocation
+  static final empty = AndroidProcess(pid: '0', user: '', name: '');
 
   factory AndroidProcess.fromMap(Map<Object?, Object?> map) {
     return AndroidProcess(
@@ -58,7 +66,7 @@ class AndroidProcess {
   }
 
   String get statusDescription {
-    switch (status.toUpperCase()) {
+    switch (_statusUpper) {
       case 'R':
         return 'Running';
       case 'S':
@@ -78,9 +86,9 @@ class AndroidProcess {
     }
   }
 
-  bool get isRunning => status.toUpperCase() == 'R';
-  bool get isSleeping => status.toUpperCase() == 'S';
-  bool get isZombie => status.toUpperCase() == 'Z';
+  bool get isRunning => _statusUpper == 'R';
+  bool get isSleeping => _statusUpper == 'S';
+  bool get isZombie => _statusUpper == 'Z';
   bool get isRootProcess => user == 'root';
 
   String get formattedMemory {
