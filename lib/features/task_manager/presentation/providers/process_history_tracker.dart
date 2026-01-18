@@ -12,7 +12,11 @@ class ProcessHistoryTracker {
   final Map<String, ProcessHistory> _historyMap = {};
 
   /// Update with new process data, returns processes enriched with history
-  List<ProcessWithHistory> updateWithProcesses(List<AndroidProcess> processes) {
+  /// [cpuCores] is used to normalize CPU values to per-core average
+  List<ProcessWithHistory> updateWithProcesses(
+    List<AndroidProcess> processes, {
+    int cpuCores = 1,
+  }) {
     final currentPids = <String>{};
     final result = <ProcessWithHistory>[];
 
@@ -30,30 +34,47 @@ class ProcessHistoryTracker {
         _historyMap[process.pid] = history;
       }
 
-      // Parse CPU value
-      final cpuValue = double.tryParse(process.cpu) ?? 0;
+      // Parse and normalize CPU value (divide by cores to get per-core avg)
+      final rawCpu = double.tryParse(process.cpu) ?? 0;
+      final normalizedCpu = (rawCpu / cpuCores).clamp(0.0, 100.0);
 
-      if (cpuValue > 0) {
+      if (rawCpu > 0) {
         activeCount++;
-        if (cpuValue > maxCpu) maxCpu = cpuValue;
+        if (rawCpu > maxCpu) maxCpu = rawCpu;
       }
 
-      // Add new snapshot
+      // Add new snapshot with normalized CPU
       history.addSnapshot(
         ProcessSnapshot.fromProcess(
-          cpu: cpuValue,
+          cpu: normalizedCpu,
           memory: _parseMemoryPercentage(process.res),
         ),
       );
 
-      // Create enriched process
-      result.add(ProcessWithHistory.fromHistory(process, history));
+      // Create enriched process with normalized CPU in the process object
+      final normalizedProcess = AndroidProcess(
+        pid: process.pid,
+        user: process.user,
+        name: process.name,
+        cpu: normalizedCpu.toStringAsFixed(1),
+        mem: process.mem,
+        res: process.res,
+        vsz: process.vsz,
+        status: process.status,
+        threads: process.threads,
+        nice: process.nice,
+        priority: process.priority,
+        args: process.args,
+        startTime: process.startTime,
+      );
+
+      result.add(ProcessWithHistory.fromHistory(normalizedProcess, history));
     }
 
     // Debug log
     if (result.isNotEmpty) {
       debugPrint(
-        '[HistoryTracker] Processes: ${result.length}, Active (CPU>0): $activeCount, Max CPU: $maxCpu',
+        '[HistoryTracker] Processes: ${result.length}, Active: $activeCount, MaxRaw: $maxCpu, Cores: $cpuCores',
       );
     }
 

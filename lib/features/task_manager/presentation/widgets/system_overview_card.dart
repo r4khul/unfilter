@@ -36,6 +36,10 @@ class SystemOverviewCard extends ConsumerWidget {
     final String kernelVer = systemDetailsValues?.kernel ?? "...";
     final int cachedKb = systemDetailsValues?.cachedRealKb ?? 0;
     final int cachedMb = cachedKb ~/ 1024;
+    final int cpuCores = systemDetailsValues?.cpuCores ?? 1;
+
+    // CPU is already normalized in the history tracker, just clamp it
+    final double normalizedCpu = cpuPercentage.clamp(0, 100);
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 8, 20, 8),
@@ -57,6 +61,7 @@ class SystemOverviewCard extends ConsumerWidget {
             kernelVersion: kernelVer,
             isCharging: isCharging,
             batteryLevel: batteryLevel,
+            cpuCores: cpuCores,
           ),
 
           const SizedBox(height: 16),
@@ -64,8 +69,8 @@ class SystemOverviewCard extends ConsumerWidget {
           // Stats Row - CPU, RAM, Metrics inline
           Row(
             children: [
-              // CPU Gauge
-              _CompactCpuGauge(percentage: cpuPercentage),
+              // CPU Gauge - shows normalized percentage
+              _CompactCpuGauge(percentage: normalizedCpu),
               const SizedBox(width: 14),
 
               // RAM + Metrics
@@ -93,9 +98,9 @@ class SystemOverviewCard extends ConsumerWidget {
                         Expanded(
                           child: _MiniMetric(
                             icon: Icons.speed_rounded,
-                            value: "${cpuPercentage.toStringAsFixed(0)}%",
-                            label: "load",
-                            isWarning: cpuPercentage > 70,
+                            value: "${normalizedCpu.toStringAsFixed(0)}%",
+                            label: "avg",
+                            isWarning: normalizedCpu > 70,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -127,6 +132,7 @@ class _CompactHeader extends StatelessWidget {
   final String kernelVersion;
   final bool isCharging;
   final int batteryLevel;
+  final int cpuCores;
 
   const _CompactHeader({
     required this.deviceModel,
@@ -134,6 +140,7 @@ class _CompactHeader extends StatelessWidget {
     required this.kernelVersion,
     required this.isCharging,
     required this.batteryLevel,
+    required this.cpuCores,
   });
 
   @override
@@ -174,7 +181,7 @@ class _CompactHeader extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                "$androidVersion • K${kernelVersion.split('-').first}",
+                "$androidVersion • ${cpuCores}cores • K${kernelVersion.split('-').first}",
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
                   fontSize: 10,

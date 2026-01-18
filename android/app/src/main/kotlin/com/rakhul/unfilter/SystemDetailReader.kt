@@ -97,4 +97,8 @@ class SystemDetailReader {
         
         return "Linux ${android.os.Build.VERSION.RELEASE}"
     }
+
+    fun getCpuCoreCount(): Int {
+        return Runtime.getRuntime().availableProcessors()
+    }
 }

@@ -21,6 +21,7 @@ class TaskManagerData {
   final DateTime? processesLastUpdated;
   final ProcessFetchException? processError;
   final String? appsError;
+  final int cpuCores;
 
   const TaskManagerData({
     this.shellProcesses = const [],
@@ -32,6 +33,7 @@ class TaskManagerData {
     this.processesLastUpdated,
     this.processError,
     this.appsError,
+    this.cpuCores = 1,
   });
 
   bool get hasProcessError => processError != null;
@@ -45,6 +47,10 @@ final taskManagerViewModelProvider =
       // Use independent recentlyActiveAppsProvider instead of installedAppsProvider
       final activeAppsState = ref.watch(recentlyActiveAppsProvider);
       final processesState = ref.watch(activeProcessesProvider);
+      final systemDetails = ref.watch(systemDetailsProvider).asData?.value;
+
+      // Get CPU cores from system details (default to 1 if not available)
+      final cpuCores = systemDetails?.cpuCores ?? 1;
 
       final processListState = processesState.when(
         data: (state) => state,
@@ -85,9 +91,10 @@ final taskManagerViewModelProvider =
       final shellProcesses = processListState.processes;
       final activeApps = appsListState.apps;
 
-      // Update history tracker and get enriched process data
+      // Update history tracker with CPU cores for normalization
       final processesWithHistory = _historyTracker.updateWithProcesses(
         shellProcesses,
+        cpuCores: cpuCores,
       );
 
       final matches = _matchProcessesToApps(activeApps, shellProcesses);
@@ -103,6 +110,7 @@ final taskManagerViewModelProvider =
           processesLastUpdated: processListState.lastUpdated,
           processError: processListState.error,
           appsError: appsListState.error,
+          cpuCores: cpuCores,
         ),
       );
     });

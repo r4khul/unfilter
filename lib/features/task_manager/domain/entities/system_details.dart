@@ -9,11 +9,14 @@ class SystemDetails {
 
   final String kernel;
 
+  final int cpuCores;
+
   const SystemDetails({
     required this.memInfo,
     required this.cpuTemp,
     required this.gpuUsage,
     required this.kernel,
+    required this.cpuCores,
   });
 
   factory SystemDetails.fromMap(Map<Object?, Object?> map) {
@@ -34,6 +37,7 @@ class SystemDetails {
       cpuTemp: (map['cpuTemp'] as num?)?.toDouble() ?? 0.0,
       gpuUsage: map['gpuUsage']?.toString() ?? "N/A",
       kernel: map['kernel']?.toString() ?? "Unknown",
+      cpuCores: (map['cpuCores'] as int?) ?? 1,
     );
   }
 

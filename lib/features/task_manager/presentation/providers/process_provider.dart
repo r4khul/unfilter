@@ -43,6 +43,7 @@ SystemDetails _parseSystemDetails(dynamic result) {
     cpuTemp: 0,
     gpuUsage: "N/A",
     kernel: "",
+    cpuCores: 1,
   );
 }
 
@@ -81,6 +82,7 @@ Future<SystemDetails> _fetchSystemDetails() async {
       cpuTemp: 0,
       gpuUsage: "N/A",
       kernel: "",
+      cpuCores: 1,
     );
   } catch (e) {
     debugPrint('Error fetching system details: $e');
@@ -89,6 +91,7 @@ Future<SystemDetails> _fetchSystemDetails() async {
       cpuTemp: 0,
       gpuUsage: "N/A",
       kernel: "",
+      cpuCores: 1,
     );
   }
 }

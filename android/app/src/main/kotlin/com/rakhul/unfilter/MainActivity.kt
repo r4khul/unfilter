@@ -221,12 +221,14 @@ class MainActivity : FlutterActivity() {
                             val cpuTemp = systemReader.getCpuTemp()
                             val gpuUsage = systemReader.getGpuUsage()
                             val kernel = systemReader.getKernelVersion()
+                            val cpuCores = systemReader.getCpuCoreCount()
                             
                             val response = mapOf(
                                 "memInfo" to memInfo,
                                 "cpuTemp" to cpuTemp,
                                 "gpuUsage" to gpuUsage,
-                                "kernel" to kernel
+                                "kernel" to kernel,
+                                "cpuCores" to cpuCores
                             )
                             handler.post { result.success(response) }
                         } catch (e: Exception) {
