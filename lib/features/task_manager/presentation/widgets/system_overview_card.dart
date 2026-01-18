@@ -233,7 +233,7 @@ class _CompactCpuGauge extends StatelessWidget {
       width: size,
       height: size,
       child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0, end: percentage),
+        tween: Tween(begin: 0, end: percentage.clamp(0, 100)),
         duration: const Duration(milliseconds: 600),
         curve: Curves.easeOutQuart,
         builder: (context, value, _) {
@@ -311,7 +311,7 @@ class _RingPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     const startAngle = -math.pi / 2;
-    final sweepAngle = (percentage / 100) * 2 * math.pi;
+    final sweepAngle = (percentage.clamp(0, 100) / 100) * 2 * math.pi;
 
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
@@ -338,7 +338,8 @@ class _CompactRamBar extends StatelessWidget {
     required this.cachedMb,
   });
 
-  double get percentage => totalMb > 0 ? (usedMb / totalMb * 100) : 0;
+  double get percentage =>
+      totalMb > 0 ? (usedMb / totalMb * 100).clamp(0, 100) : 0;
 
   String _formatMem(int mb) =>
       mb >= 1024 ? '${(mb / 1024).toStringAsFixed(1)}G' : '${mb}M';

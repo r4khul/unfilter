@@ -101,8 +101,15 @@ class _SparklinePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (data.length < 2) return;
 
-    final maxValue = data.reduce((a, b) => a > b ? a : b).clamp(1.0, 100.0);
-    final minValue = data.reduce((a, b) => a < b ? a : b).clamp(0.0, 99.0);
+    // Clamp data values to 0-100 range (CPU can exceed 100% on multi-core)
+    final clampedData = data.map((v) => v.clamp(0.0, 100.0)).toList();
+
+    final maxValue = clampedData
+        .reduce((a, b) => a > b ? a : b)
+        .clamp(1.0, 100.0);
+    final minValue = clampedData
+        .reduce((a, b) => a < b ? a : b)
+        .clamp(0.0, 99.0);
     final range = (maxValue - minValue).clamp(1.0, 100.0);
 
     // Padding to avoid clipping
@@ -112,9 +119,9 @@ class _SparklinePainter extends CustomPainter {
 
     // Build points
     final points = <Offset>[];
-    for (var i = 0; i < data.length; i++) {
-      final x = padding + (i / (data.length - 1)) * drawWidth;
-      final normalized = (data[i] - minValue) / range;
+    for (var i = 0; i < clampedData.length; i++) {
+      final x = padding + (i / (clampedData.length - 1)) * drawWidth;
+      final normalized = (clampedData[i] - minValue) / range;
       final y = padding + drawHeight - (normalized * drawHeight);
       points.add(Offset(x, y));
     }

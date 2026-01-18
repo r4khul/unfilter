@@ -12,9 +12,13 @@ class ProcessManager {
     fun getRunningProcesses(): List<Map<String, Any?>> {
         val processes = mutableListOf<Map<String, Any?>>()
         try {
-            // Use sh -c top -b -n 1 for best compatibility
-            val process = Runtime.getRuntime().exec(arrayOf("sh", "-c", "top -b -n 1"))
+            // Run top with 2 iterations (-n 2) and 1 second delay (-d 1)
+            // The first iteration has no baseline for CPU calculation (shows 0%),
+            // so we discard it and only keep the second iteration's accurate data.
+            val process = Runtime.getRuntime().exec(arrayOf("sh", "-c", "top -b -n 2 -d 1"))
             val reader = BufferedReader(InputStreamReader(process.inputStream))
+            
+
             
             var line: String?
             var headers: List<String>? = null
@@ -23,7 +27,7 @@ class ProcessManager {
             var count = 0
             val maxProcesses = 400
             
-            while (reader.readLine().also { line = it } != null && count < maxProcesses) {
+            while (reader.readLine().also { line = it } != null) {
                 val trimmed = line?.trim() ?: continue
                 if (trimmed.isEmpty()) continue
                 
@@ -33,30 +37,58 @@ class ProcessManager {
                     continue
                 }
 
-                // Detect Header
+                // Detect Header - this marks start of a new iteration
                 if (trimmed.contains("PID") && (trimmed.contains("USER") || trimmed.contains("CPU"))) {
                     headers = trimmed.split("\\s+".toRegex())
                     headerIndexMap.clear()
+                    var hasMergedCpuColumn = false
                     headers.forEachIndexed { index, col -> 
-                        headerIndexMap[col.uppercase().replace("%", "")] = index 
+                        // Normalize column name: S[%CPU] -> CPU, %MEM -> MEM, etc.
+                        var normalized = col.uppercase()
+                            .replace("%", "")
+                            .replace("[", "")
+                            .replace("]", "")
+                        // Handle merged columns like "SCPU" -> extract CPU
+                        // Also detect if this is a merged S+CPU column (data will have them separate)
+                        if (normalized.length > 3 && normalized.endsWith("CPU")) {
+                            if (normalized.startsWith("S")) {
+                                hasMergedCpuColumn = true
+                            }
+                            normalized = "CPU"
+                        }
+                        if (normalized.length > 3 && normalized.endsWith("MEM")) {
+                            normalized = "MEM"
+                        }
+                        headerIndexMap[normalized] = index 
                     }
+                    // Store whether we have a merged CPU column (need offset when parsing data)
+                    headerIndexMap["_HAS_MERGED_CPU"] = if (hasMergedCpuColumn) 1 else 0
+
+                    // Clear previous iteration data - we only want the last (most accurate) iteration
+                    processes.clear()
+                    count = 0
                     continue
                 }
 
-                // Parse Process Line
-                if (headerIndexMap.isNotEmpty()) {
+                // Parse Process Line (limit to maxProcesses per iteration)
+                if (headerIndexMap.isNotEmpty() && count < maxProcesses) {
                     val parts = trimmed.split("\\s+".toRegex())
                     // Need at least PID, user, CPU, mem
                     if (parts.size >= headerIndexMap.size - 2) {
                         try {
+                            // Check if we need to apply offset for merged S[CPU] header
+                            val hasMergedCpu = (headerIndexMap["_HAS_MERGED_CPU"] as? Int) == 1
+                            val cpuOffset = if (hasMergedCpu) 1 else 0
+                            
                             // Find indices
                             val pidIdx = headerIndexMap["PID"]
                             val userIdx = headerIndexMap["USER"] ?: headerIndexMap["UID"]
-                            val cpuIdx = headerIndexMap["CPU"]
-                            val memIdx = headerIndexMap["MEM"]
-                            val resIdx = headerIndexMap["RES"] ?: headerIndexMap["RSS"]
+                            // CPU and subsequent columns need offset if header had merged S[CPU]
+                            val cpuIdx = headerIndexMap["CPU"]?.let { it + cpuOffset }
+                            val memIdx = headerIndexMap["MEM"]?.let { it + cpuOffset }
+                            val resIdx = (headerIndexMap["RES"] ?: headerIndexMap["RSS"])
                             val thrIdx = headerIndexMap["THR"] ?: headerIndexMap["S"] // Fallback
-                            val nameIdx = headerIndexMap["ARGS"] ?: headerIndexMap["NAME"] ?: headerIndexMap["COMMAND"] ?: (parts.size - 1)
+                            val nameIdx = (headerIndexMap["ARGS"] ?: headerIndexMap["NAME"] ?: headerIndexMap["COMMAND"])?.let { it + cpuOffset } ?: (parts.size - 1)
                             
                             if (pidIdx != null && pidIdx < parts.size) {
                                 val pidStr = parts[pidIdx]
@@ -70,6 +102,8 @@ class ProcessManager {
                                 var cpuStr = if (cpuIdx != null && cpuIdx < parts.size) parts[cpuIdx] else "0.0"
                                 cpuStr = cpuStr.replace("%", "")
                                 map["cpu"] = cpuStr
+                                
+
 
                                 // Parse MEM - strip %
                                 var memStr = if (memIdx != null && memIdx < parts.size) parts[memIdx] else "0.0"
@@ -106,13 +140,20 @@ class ProcessManager {
         
         // Fallback to simple ps if top failed completely
         if (processes.isEmpty()) {
+             Log.d(TAG, "top returned 0 processes, falling back to ps")
              return getProcessesViaPs()
         }
 
         // Sort by CPU usage
-        return processes.sortedByDescending { 
+        val sorted = processes.sortedByDescending { 
             (it["cpu"] as? String)?.toDoubleOrNull() ?: 0.0 
         }
+        
+        // Debug summary
+        val maxCpu = sorted.firstOrNull()?.let { (it["cpu"] as? String)?.toDoubleOrNull() } ?: 0.0
+        Log.d(TAG, "Returning ${sorted.size} processes, max CPU: $maxCpu")
+        
+        return sorted
     }
 
     private fun getProcessesViaPs(): List<Map<String, Any?>> {
