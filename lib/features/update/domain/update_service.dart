@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -14,15 +15,7 @@ import '../data/models/update_config_model.dart';
 import '../data/repositories/update_repository.dart';
 import '../presentation/providers/update_provider.dart' show UpdateErrorType;
 
-enum UpdateStatus {
-  upToDate,
-
-  softUpdate,
-
-  forceUpdate,
-
-  unknown,
-}
+enum UpdateStatus { upToDate, softUpdate, forceUpdate, unknown }
 
 class UpdateCheckResult {
   final UpdateStatus status;
@@ -56,6 +49,28 @@ class UpdateService {
       versionString = '$versionString+${packageInfo.buildNumber}';
     }
     return Version.parse(versionString);
+  }
+
+  static const MethodChannel _channel = MethodChannel(
+    'com.rakhul.unfilter/apps',
+  );
+
+  Future<String?> getDeviceAbi() async {
+    try {
+      final abi = await _channel.invokeMethod<String>('getDeviceAbi');
+      debugPrint('Device ABI detected: $abi');
+      return abi;
+    } catch (e) {
+      debugPrint('Failed to get device ABI: $e');
+      return null;
+    }
+  }
+
+  Future<String> getResolvedDownloadUrl(UpdateConfigModel config) async {
+    final deviceAbi = await getDeviceAbi();
+    final url = config.getDownloadUrlForAbi(deviceAbi);
+    debugPrint('Resolved download URL for ABI ($deviceAbi): $url');
+    return url;
   }
 
   Future<UpdateCheckResult> checkUpdate() async {

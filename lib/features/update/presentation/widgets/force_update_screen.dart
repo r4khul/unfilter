@@ -49,7 +49,7 @@ class ForceUpdateScreen extends ConsumerWidget {
                     ],
                     const SizedBox(height: UpdateSpacing.hero),
                     UpdateDownloadButton(
-                      url: result.config?.apkDirectDownloadUrl,
+                      config: result.config,
                       version:
                           result.config?.latestNativeVersion.toString() ??
                           'latest',

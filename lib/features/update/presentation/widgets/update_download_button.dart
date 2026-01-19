@@ -5,12 +5,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/models/update_config_model.dart';
 import '../providers/update_provider.dart';
 import '../../../../core/services/connectivity_service.dart';
 import 'constants.dart';
 
 class UpdateDownloadButton extends ConsumerStatefulWidget {
-  final String? url;
+  final UpdateConfigModel? config;
 
   final String version;
 
@@ -20,7 +21,7 @@ class UpdateDownloadButton extends ConsumerStatefulWidget {
 
   const UpdateDownloadButton({
     super.key,
-    this.url,
+    this.config,
     required this.version,
     this.isCompact = false,
     this.isFullWidth = false,
@@ -33,6 +34,7 @@ class UpdateDownloadButton extends ConsumerStatefulWidget {
 
 class _UpdateDownloadButtonState extends ConsumerState<UpdateDownloadButton> {
   bool _isCheckingConnectivity = false;
+  bool _isResolvingUrl = false;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,10 @@ class _UpdateDownloadButtonState extends ConsumerState<UpdateDownloadButton> {
               ? UpdateSizes.buttonHeightCompact
               : UpdateSizes.buttonHeight,
           child: ElevatedButton(
-            onPressed: (_isCheckingConnectivity || downloadState.isDownloading)
+            onPressed:
+                (_isCheckingConnectivity ||
+                    _isResolvingUrl ||
+                    downloadState.isDownloading)
                 ? null
                 : _handleDownload,
             style: _buildButtonStyle(theme, downloadState),
@@ -68,8 +73,8 @@ class _UpdateDownloadButtonState extends ConsumerState<UpdateDownloadButton> {
                 ? 'Connect to internet to download'
                 : 'Tap to try again',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                UpdateOpacity.veryHigh,
+              color: theme.colorScheme.onSurfaceVariant.withValues(
+                alpha: UpdateOpacity.veryHigh,
               ),
               fontSize: 12,
             ),
@@ -85,7 +90,7 @@ class _UpdateDownloadButtonState extends ConsumerState<UpdateDownloadButton> {
     return ElevatedButton.styleFrom(
       backgroundColor: bgColor,
       foregroundColor: Colors.white,
-      disabledBackgroundColor: bgColor.withOpacity(0.6),
+      disabledBackgroundColor: bgColor.withValues(alpha: 0.6),
       disabledForegroundColor: Colors.white70,
       elevation: 0,
       shadowColor: Colors.transparent,
@@ -163,8 +168,8 @@ class _UpdateDownloadButtonState extends ConsumerState<UpdateDownloadButton> {
             value: downloadState.progress,
             strokeWidth: 2.5,
             color: theme.colorScheme.onPrimary,
-            backgroundColor: theme.colorScheme.onPrimary.withOpacity(
-              UpdateOpacity.light,
+            backgroundColor: theme.colorScheme.onPrimary.withValues(
+              alpha: UpdateOpacity.light,
             ),
           ),
         ),
@@ -237,7 +242,7 @@ class _UpdateDownloadButtonState extends ConsumerState<UpdateDownloadButton> {
   }
 
   Future<void> _handleDownload() async {
-    if (widget.url == null) return;
+    if (widget.config == null) return;
 
     final notifier = ref.read(updateDownloadProvider.notifier);
     final downloadState = ref.read(updateDownloadProvider);
@@ -268,7 +273,29 @@ class _UpdateDownloadButtonState extends ConsumerState<UpdateDownloadButton> {
       notifier.reset();
     }
 
-    notifier.downloadAndInstall(widget.url!, widget.version);
+    setState(() => _isResolvingUrl = true);
+
+    try {
+      final serviceAsync = ref.read(updateServiceFutureProvider);
+      if (!serviceAsync.hasValue) {
+        setState(() => _isResolvingUrl = false);
+        return;
+      }
+
+      final service = serviceAsync.value!;
+      final resolvedUrl = await service.getResolvedDownloadUrl(widget.config!);
+
+      if (!mounted) return;
+      setState(() => _isResolvingUrl = false);
+
+      notifier.downloadAndInstall(resolvedUrl, widget.version);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isResolvingUrl = false);
+
+      final fallbackUrl = widget.config!.apkDirectDownloadUrl;
+      notifier.downloadAndInstall(fallbackUrl, widget.version);
+    }
   }
 
   void _showNetworkErrorSnackbar(
@@ -293,14 +320,16 @@ class _UpdateDownloadButtonState extends ConsumerState<UpdateDownloadButton> {
               ),
               decoration: BoxDecoration(
                 color: theme.brightness == Brightness.dark
-                    ? UpdateColors.darkCardBackground.withOpacity(0.95)
-                    : UpdateColors.lightSnackbarBackground.withOpacity(0.95),
+                    ? UpdateColors.darkCardBackground.withValues(alpha: 0.95)
+                    : UpdateColors.lightSnackbarBackground.withValues(
+                        alpha: 0.95,
+                      ),
                 borderRadius: BorderRadius.circular(
                   UpdateBorderRadius.standard,
                 ),
                 border: Border.all(
-                  color: theme.colorScheme.error.withOpacity(
-                    UpdateOpacity.medium,
+                  color: theme.colorScheme.error.withValues(
+                    alpha: UpdateOpacity.medium,
                   ),
                   width: 1,
                 ),
@@ -310,7 +339,7 @@ class _UpdateDownloadButtonState extends ConsumerState<UpdateDownloadButton> {
                   Container(
                     padding: const EdgeInsets.all(UpdateSpacing.sm),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.error.withOpacity(0.12),
+                      color: theme.colorScheme.error.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

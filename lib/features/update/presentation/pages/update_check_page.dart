@@ -177,7 +177,7 @@ class _UpdateCheckPageState extends ConsumerState<UpdateCheckPage>
     if (isUpdateAvailable) {
       return UpdateBottomActionBar(
         child: UpdateDownloadButton(
-          url: result.config?.apkDirectDownloadUrl,
+          config: result.config,
           version: result.config?.latestNativeVersion.toString() ?? 'latest',
           isFullWidth: true,
         ),

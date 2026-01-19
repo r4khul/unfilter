@@ -93,7 +93,7 @@ class _SoftUpdateBannerState extends ConsumerState<SoftUpdateBanner>
                   _buildHeader(theme),
                   const SizedBox(height: UpdateSpacing.lg),
                   UpdateDownloadButton(
-                    url: widget.result.config?.apkDirectDownloadUrl,
+                    config: widget.result.config,
                     version:
                         widget.result.config?.latestNativeVersion.toString() ??
                         'latest',

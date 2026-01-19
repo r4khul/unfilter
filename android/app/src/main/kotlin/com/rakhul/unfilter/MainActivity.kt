@@ -305,6 +305,10 @@ class MainActivity : FlutterActivity() {
                         result.error("INVALID_ARGUMENT", "Package name is required", null)
                     }
                 }
+                "getDeviceAbi" -> {
+                    val abi = android.os.Build.SUPPORTED_ABIS.firstOrNull() ?: "unknown"
+                    result.success(abi)
+                }
                 else -> result.notImplemented()
             }
         }
