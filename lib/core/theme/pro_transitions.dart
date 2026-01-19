@@ -169,34 +169,3 @@ class _ProPageTransition extends StatelessWidget {
     ];
   }
 }
-
-@Deprecated('Use PremiumModals.showDialog instead')
-Future<T?> showProDialog<T>({
-  required BuildContext context,
-  required WidgetBuilder builder,
-  bool barrierDismissible = true,
-  Color? barrierColor,
-}) {
-  return showGeneralDialog<T>(
-    context: context,
-    barrierDismissible: barrierDismissible,
-    barrierColor: barrierColor ?? Colors.black.withValues(alpha: 0.6),
-    barrierLabel: 'Dismiss',
-    transitionDuration: MotionTokens.dialog,
-    pageBuilder: (context, anim, secAnim) {
-      return RepaintBoundary(child: builder(context));
-    },
-    transitionBuilder: (context, animation, secondaryAnimation, child) {
-      final value = MotionTokens.overshoot.transform(animation.value);
-      final scale =
-          MotionTokens.modalStartScale +
-          ((1.0 - MotionTokens.modalStartScale) * value);
-      final opacity = (animation.value / 0.4).clamp(0.0, 1.0);
-
-      return Opacity(
-        opacity: opacity,
-        child: Transform.scale(scale: scale, child: child),
-      );
-    },
-  );
-}
