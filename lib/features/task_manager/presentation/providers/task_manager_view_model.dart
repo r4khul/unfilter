@@ -8,7 +8,6 @@ import '../../domain/entities/process_with_history.dart';
 import 'process_history_tracker.dart';
 import 'process_provider.dart';
 
-/// Global instance of the process history tracker
 final _historyTracker = ProcessHistoryTracker();
 
 class TaskManagerData {
@@ -44,12 +43,10 @@ class TaskManagerData {
 
 final taskManagerViewModelProvider =
     Provider.autoDispose<AsyncValue<TaskManagerData>>((ref) {
-      // Use independent recentlyActiveAppsProvider instead of installedAppsProvider
       final activeAppsState = ref.watch(recentlyActiveAppsProvider);
       final processesState = ref.watch(activeProcessesProvider);
       final systemDetails = ref.watch(systemDetailsProvider).asData?.value;
 
-      // Get CPU cores from system details (default to 1 if not available)
       final cpuCores = systemDetails?.cpuCores ?? 1;
 
       final processListState = processesState.when(
@@ -68,7 +65,6 @@ final taskManagerViewModelProvider =
         error: (e, _) => ActiveAppsState(error: e.toString()),
       );
 
-      // Show loading only if both are loading and have no data
       if (processListState.isRefreshing &&
           appsListState.isLoading &&
           !processListState.hasData &&
@@ -76,7 +72,6 @@ final taskManagerViewModelProvider =
         return const AsyncValue.loading();
       }
 
-      // If both have errors and no data, return error
       if (processListState.hasError &&
           appsListState.hasError &&
           !processListState.hasData &&
@@ -91,7 +86,6 @@ final taskManagerViewModelProvider =
       final shellProcesses = processListState.processes;
       final activeApps = appsListState.apps;
 
-      // Update history tracker with CPU cores for normalization
       final processesWithHistory = _historyTracker.updateWithProcesses(
         shellProcesses,
         cpuCores: cpuCores,

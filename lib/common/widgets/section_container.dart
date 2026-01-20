@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../constants/constants.dart';
 
-/// A reusable container with consistent padding and background styling.
 class SectionContainer extends StatelessWidget {
   final Widget child;
   final bool useAltBackground;

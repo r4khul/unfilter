@@ -1,7 +1,5 @@
 library;
 
-/// Unified opacity values used throughout the app.
-/// Consolidated from HomeOpacity, UpdateOpacity, AppDetailsOpacity.
 abstract final class AppOpacity {
   static const double verySubtle = 0.03;
 

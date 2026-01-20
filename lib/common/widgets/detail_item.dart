@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 
 import '../constants/constants.dart';
 
-/// A reusable key-value detail item with copy-on-long-press functionality.
 class DetailItem extends StatelessWidget {
   final String label;
   final String value;
@@ -80,7 +79,6 @@ class DetailItem extends StatelessWidget {
   }
 }
 
-/// A simple vertical divider for stats rows.
 class StatDivider extends StatelessWidget {
   const StatDivider({super.key});
 

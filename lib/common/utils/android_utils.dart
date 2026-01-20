@@ -1,6 +1,5 @@
 library;
 
-/// Get human-readable Android version name from SDK level.
 String getSdkVersionName(int sdk) {
   if (sdk >= 35) return "Android 15+";
   if (sdk == 34) return "Android 14";
@@ -20,7 +19,6 @@ String getSdkVersionName(int sdk) {
   return "API $sdk";
 }
 
-/// Format installer package name to human-readable store name.
 String formatInstallerName(String installer) {
   if (installer.contains('google') ||
       installer.contains('com.android.vending')) {

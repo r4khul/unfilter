@@ -28,7 +28,6 @@ class _AppDetailsPageState extends ConsumerState<AppDetailsPage> {
 
   DeviceApp get app => _currentApp;
 
-  /// Detects if the app data is minimal/incomplete (e.g., from Task Manager)
   bool get _isIncompleteData =>
       _currentApp.stack == 'Loading...' ||
       (_currentApp.minSdkVersion == 0 && _currentApp.targetSdkVersion == 0);
@@ -38,7 +37,6 @@ class _AppDetailsPageState extends ConsumerState<AppDetailsPage> {
     super.initState();
     _currentApp = widget.app;
 
-    // Auto-fetch full details if we received incomplete data
     if (_isIncompleteData) {
       _autoFetchDetails();
     }

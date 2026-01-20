@@ -133,7 +133,6 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
     final theme = Theme.of(context);
     final viewModelState = ref.watch(taskManagerViewModelProvider);
 
-    // Only show loading on initial load, not on refreshes
     final isLoading = _isLoadingStats && viewModelState.isLoading;
 
     return Scaffold(
@@ -141,7 +140,7 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
       body: TaskManagerStage(
         isLoading: isLoading,
         isRefreshing:
-            false, // Never show refresh indicator - data updates silently
+            false,
         child: RefreshIndicator(
           onRefresh: () async {
             await Future.wait([_refreshRam(), _refreshBattery()]);
@@ -167,7 +166,6 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
 
               const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
-              // Battery Impact Analysis Card
               const SliverToBoxAdapter(child: BatteryImpactCard()),
 
               const SliverToBoxAdapter(child: SizedBox(height: 10)),

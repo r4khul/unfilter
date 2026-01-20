@@ -4,8 +4,6 @@ import 'dart:typed_data';
 
 import '../../../apps/domain/entities/device_app.dart';
 
-/// Lightweight app info for Task Manager's active apps section.
-/// This is independent of the full DeviceApp model used in app scanning.
 class ActiveApp {
   final String packageName;
   final String appName;
@@ -38,9 +36,6 @@ class ActiveApp {
     );
   }
 
-  /// Converts to a minimal DeviceApp for direct navigation to AppDetailsPage.
-  /// This allows seamless navigation without an intermediate loading screen.
-  /// The user can use the resync button in AppDetailsPage to fetch full details.
   DeviceApp toDeviceApp() {
     return DeviceApp(
       appName: appName,

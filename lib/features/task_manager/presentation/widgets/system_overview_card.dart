@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/process_provider.dart';
 
-/// Compact, modern system overview card with monochromatic design.
 class SystemOverviewCard extends ConsumerWidget {
   final double cpuPercentage;
   final int usedRamMb;
@@ -38,7 +37,6 @@ class SystemOverviewCard extends ConsumerWidget {
     final int cachedMb = cachedKb ~/ 1024;
     final int cpuCores = systemDetailsValues?.cpuCores ?? 1;
 
-    // CPU is already normalized in the history tracker, just clamp it
     final double normalizedCpu = cpuPercentage.clamp(0, 100);
 
     return Container(
@@ -54,7 +52,6 @@ class SystemOverviewCard extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          // Compact Header
           _CompactHeader(
             deviceModel: deviceModel,
             androidVersion: androidVersion,
@@ -66,14 +63,11 @@ class SystemOverviewCard extends ConsumerWidget {
 
           const SizedBox(height: 16),
 
-          // Stats Row - CPU, RAM, Metrics inline
           Row(
             children: [
-              // CPU Gauge - shows normalized percentage
               _CompactCpuGauge(percentage: normalizedCpu),
               const SizedBox(width: 14),
 
-              // RAM + Metrics
               Expanded(
                 child: Column(
                   children: [
@@ -149,7 +143,6 @@ class _CompactHeader extends StatelessWidget {
 
     return Row(
       children: [
-        // Device Icon
         Container(
           width: 36,
           height: 36,
@@ -165,7 +158,6 @@ class _CompactHeader extends StatelessWidget {
         ),
         const SizedBox(width: 12),
 
-        // Device Info - Expanded to prevent overflow
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +185,6 @@ class _CompactHeader extends StatelessWidget {
           ),
         ),
 
-        // Charging indicator (compact)
         if (isCharging)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -247,7 +238,6 @@ class _CompactCpuGauge extends StatelessWidget {
           return Stack(
             alignment: Alignment.center,
             children: [
-              // Background
               CustomPaint(
                 size: const Size(size, size),
                 painter: _RingPainter(
@@ -256,7 +246,6 @@ class _CompactCpuGauge extends StatelessWidget {
                   strokeWidth: 5,
                 ),
               ),
-              // Progress
               CustomPaint(
                 size: const Size(size, size),
                 painter: _RingPainter(
@@ -265,7 +254,6 @@ class _CompactCpuGauge extends StatelessWidget {
                   strokeWidth: 5,
                 ),
               ),
-              // Center
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -358,7 +346,6 @@ class _CompactRamBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -407,7 +394,6 @@ class _CompactRamBar extends StatelessWidget {
         ),
         const SizedBox(height: 6),
 
-        // Progress bar
         ClipRRect(
           borderRadius: BorderRadius.circular(3),
           child: Container(

@@ -2,7 +2,6 @@ library;
 
 import 'package:flutter/material.dart';
 
-/// Get a color for a given tech stack.
 Color getStackColor(String stack, bool isDark) {
   switch (stack.toLowerCase()) {
     case 'flutter':
@@ -37,7 +36,6 @@ Color getStackColor(String stack, bool isDark) {
   }
 }
 
-/// Get the asset path for a tech stack icon.
 String getStackIconPath(String stack) {
   final stackLower = stack.toLowerCase();
   switch (stackLower) {

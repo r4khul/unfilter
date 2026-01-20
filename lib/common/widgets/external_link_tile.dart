@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/constants.dart';
 
-/// A tile that displays a label/value pair and opens an external URL on tap.
 class ExternalLinkTile extends StatelessWidget {
   final String label;
   final String value;

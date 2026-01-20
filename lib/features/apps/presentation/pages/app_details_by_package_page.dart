@@ -7,8 +7,6 @@ import '../../data/repositories/device_apps_repository.dart';
 import '../../domain/entities/device_app.dart';
 import 'app_details_page.dart';
 
-/// Wrapper page that loads app details by package name.
-/// Used when navigating from Task Manager where we only have the package name.
 class AppDetailsByPackagePage extends ConsumerStatefulWidget {
   final String packageName;
   final String? appName;

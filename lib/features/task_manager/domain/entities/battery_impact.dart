@@ -2,7 +2,6 @@ library;
 
 import 'dart:typed_data';
 
-/// Represents battery impact data for a single app.
 class AppBatteryImpact {
   final String packageName;
   final String appName;
@@ -53,7 +52,6 @@ class AppBatteryImpact {
     );
   }
 
-  /// Returns formatted foreground time string.
   String get formattedForegroundTime {
     final minutes = foregroundTimeMs ~/ 60000;
     if (minutes < 60) {
@@ -69,7 +67,6 @@ class AppBatteryImpact {
     return "${hours ~/ 24}d ${hours % 24}h";
   }
 
-  /// Returns a human-readable drain description.
   String get drainDescription {
     if (totalDrain < 1) return "Minimal";
     if (totalDrain < 3) return "Low";
@@ -78,10 +75,8 @@ class AppBatteryImpact {
     return "Very High";
   }
 
-  /// Returns formatted total drain as percentage string.
   String get formattedDrain => "${totalDrain.toStringAsFixed(1)}%";
 
-  /// Breakdown of drain sources for display.
   List<DrainBreakdownItem> get drainBreakdown => [
     DrainBreakdownItem(label: "CPU", value: cpuDrain, icon: "⚡"),
     DrainBreakdownItem(label: "Wakelock", value: wakelockDrain, icon: "🔔"),
@@ -89,7 +84,6 @@ class AppBatteryImpact {
   ];
 }
 
-/// A single item in the drain breakdown.
 class DrainBreakdownItem {
   final String label;
   final double value;
@@ -104,7 +98,6 @@ class DrainBreakdownItem {
   String get formatted => "${value.toStringAsFixed(1)}%";
 }
 
-/// Represents a single day's battery history for an app.
 class DailyBatteryUsage {
   final DateTime date;
   final int foregroundTimeMs;
@@ -136,7 +129,6 @@ class DailyBatteryUsage {
   }
 }
 
-/// Aggregated battery impact data.
 class BatteryImpactData {
   final List<AppBatteryImpact> apps;
   final List<AppBatteryImpact> vampires;
@@ -148,10 +140,8 @@ class BatteryImpactData {
     required this.lastUpdated,
   });
 
-  /// Total estimated drain from all tracked apps.
   double get totalTrackedDrain =>
       apps.fold(0.0, (sum, app) => sum + app.totalDrain);
 
-  /// Top 5 battery draining apps.
   List<AppBatteryImpact> get topDrainers => apps.take(5).toList();
 }

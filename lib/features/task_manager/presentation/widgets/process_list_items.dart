@@ -301,7 +301,6 @@ class ShellProcessItem extends StatelessWidget {
   }
 }
 
-/// Enhanced process item with sparkline visualization.
 class EnhancedProcessItem extends StatelessWidget {
   final ProcessWithHistory processWithHistory;
 
@@ -337,12 +336,11 @@ class EnhancedProcessItem extends StatelessWidget {
                     ),
               width: shouldGlow ? 1.5 : 1,
             ),
-            // Optimized shadow: only render for glowing items, reduce spread
             boxShadow: shouldGlow
                 ? [
                     BoxShadow(
                       color: _getIntensityColor(intensity).withOpacity(0.15),
-                      blurRadius: 4, // Reduced blur radius for performance
+                      blurRadius: 4,
                       spreadRadius: 0,
                     ),
                   ]
@@ -457,7 +455,6 @@ class EnhancedProcessItem extends StatelessWidget {
   }
 
   Widget _buildSparkline() {
-    // Always show sparkline - it handles minimal data gracefully
     return SparklineChart.forIntensity(
       data: processWithHistory.cpuHistory.isEmpty
           ? [processWithHistory.currentCpu]

@@ -4,26 +4,15 @@ import '../../domain/entities/android_process.dart';
 import '../../domain/entities/process_snapshot.dart';
 import '../../domain/entities/process_with_history.dart';
 
-/// Tracks process history across multiple refresh cycles.
-/// Maintains a map of PID -> ProcessHistory.
-///
-/// Performance optimizations:
-/// - Uses fixed-size circular buffer for history (no list resizing)
-/// - Lazy cleanup with batched removal
-/// - Minimal object allocations per update cycle
 class ProcessHistoryTracker {
   final Map<String, ProcessHistory> _historyMap = {};
 
-  // Reusable sets to avoid allocations per update
   final Set<String> _currentPids = {};
   final List<String> _toRemove = [];
 
-  // Cached DateTime for stale check
   DateTime _staleThreshold = DateTime.now();
   int _updateCount = 0;
 
-  /// Update with new process data, returns processes enriched with history
-  /// [cpuCores] is used to normalize CPU values to per-core average
   List<ProcessWithHistory> updateWithProcesses(
     List<AndroidProcess> processes, {
     int cpuCores = 1,
@@ -40,23 +29,19 @@ class ProcessHistoryTracker {
       final pid = process.pid;
       _currentPids.add(pid);
 
-      // Get or create history for this PID
       var history = _historyMap[pid];
       if (history == null) {
         history = ProcessHistory(pid: pid);
         _historyMap[pid] = history;
       }
 
-      // Parse and normalize CPU value efficiently
       final rawCpu = double.tryParse(process.cpu) ?? 0.0;
       final normalizedCpu = cpuCores > 1
           ? (rawCpu / cpuCores).clamp(0.0, 100.0)
           : rawCpu.clamp(0.0, 100.0);
 
-      // Add snapshot with normalized CPU (uses circular buffer internally)
       history.addSnapshotFast(normalizedCpu, _parseMemoryFast(process.res));
 
-      // Create normalized process only if CPU changed significantly
       final normalizedProcess = process.cpu == normalizedCpu.toStringAsFixed(1)
           ? process
           : AndroidProcess(
@@ -81,7 +66,6 @@ class ProcessHistoryTracker {
       );
     }
 
-    // Cleanup only every 5 updates to reduce overhead
     _updateCount++;
     if (_updateCount >= 5) {
       _updateCount = 0;
@@ -91,7 +75,6 @@ class ProcessHistoryTracker {
     return result;
   }
 
-  /// Fast memory parsing with minimal allocations
   double _parseMemoryFast(String memString) {
     if (memString.isEmpty) return 0.0;
 
@@ -117,11 +100,9 @@ class ProcessHistoryTracker {
         memMb = double.tryParse(memString) ?? 0.0;
     }
 
-    // Rough percentage (assuming 8GB total RAM)
     return (memMb / 8192 * 100).clamp(0.0, 100.0);
   }
 
-  /// Batched cleanup of stale processes
   void _cleanupStaleProcesses() {
     _staleThreshold = DateTime.now().subtract(const Duration(seconds: 30));
     _toRemove.clear();

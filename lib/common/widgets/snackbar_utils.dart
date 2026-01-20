@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 import '../constants/constants.dart';
 
-/// Shows a styled snackbar with an icon and message.
 void showPremiumSnackbar({
   required BuildContext context,
   required IconData icon,

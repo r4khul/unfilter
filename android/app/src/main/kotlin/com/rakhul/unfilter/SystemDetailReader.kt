@@ -14,7 +14,7 @@ class SystemDetailReader {
                 if (parts.size >= 2) {
                     val key = parts[0].replace(":", "")
                     val value = parts[1].toLongOrNull() ?: 0L
-                    info[key] = value // usually in kB
+                    info[key] = value
                 }
             }
         } catch (e: Exception) {
@@ -37,25 +37,22 @@ class SystemDetailReader {
                     val tempStr = file.readText().trim()
                     val temp = tempStr.toDoubleOrNull()
                     if (temp != null) {
-                        // Usually raw value is in millideGREES, check magnitude
                         if (temp > 1000) return temp / 1000.0
                         return temp
                     }
                 }
             } catch (e: Exception) {
-                // Try next
             }
         }
         return 0.0
     }
 
     fun getGpuUsage(): String {
-        // Highly device dependent. Attempting common paths for Adreno and Mali.
         val paths = listOf(
-            "/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage", // Adreno
+            "/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage",
             "/sys/class/kgsl/kgsl-3d0/gpubusy",
             "/sys/kernel/gpu/gpu_busy",
-            "/sys/module/mali/parameters/gpu_utilization", // Mali some versions
+            "/sys/module/mali/parameters/gpu_utilization",
             "/sys/devices/platform/gpusysfs/gpu_busy_level"
         )
 
@@ -64,7 +61,6 @@ class SystemDetailReader {
                 val file = File(path)
                 if (file.exists() && file.canRead()) {
                     val content = file.readText().trim()
-                    // Some return "12 %" or "123000" (freq) or "42 100" (used total)
                     return content
                 }
             } catch (e: Exception) {
@@ -75,7 +71,6 @@ class SystemDetailReader {
     }
 
     fun getKernelVersion(): String {
-        // First try the build property which doesn't require permission
         try {
             val version = System.getProperty("os.version")
             if (!version.isNullOrBlank() && version != "?") {
@@ -83,7 +78,6 @@ class SystemDetailReader {
             }
         } catch (_: Exception) {}
         
-        // Fallback: try /proc/version (may fail on newer Android)
         try {
             val file = File("/proc/version")
             if (file.exists() && file.canRead()) {
@@ -92,7 +86,6 @@ class SystemDetailReader {
                 }
             }
         } catch (_: Exception) {
-            // Silently ignore - permission denied on newer Android
         }
         
         return "Linux ${android.os.Build.VERSION.RELEASE}"

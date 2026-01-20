@@ -181,11 +181,9 @@ class DeviceAppsRepository {
 
   Future<void> clearCache() async {
     await _localDataSource.clearCache();
-    // Also clear the native Kotlin-side cache to ensure fresh data
     try {
       await platform.invokeMethod('clearScanCache');
     } catch (_) {
-      // Ignore errors from native cache clear
     }
   }
 }

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 import '../constants/constants.dart';
 
-/// A floating action button for scrolling back to top of a list.
 class BackToTopFab extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isVisible;

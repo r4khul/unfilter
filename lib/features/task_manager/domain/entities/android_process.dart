@@ -16,7 +16,6 @@ class AndroidProcess {
   final String? args;
   final String? startTime;
 
-  // Cached uppercase status for fast comparisons
   late final String _statusUpper;
 
   AndroidProcess({
@@ -37,7 +36,6 @@ class AndroidProcess {
     _statusUpper = status.toUpperCase();
   }
 
-  /// Empty placeholder for pre-allocation
   static final empty = AndroidProcess(pid: '0', user: '', name: '');
 
   factory AndroidProcess.fromMap(Map<Object?, Object?> map) {

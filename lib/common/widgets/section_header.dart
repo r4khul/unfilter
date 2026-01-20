@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../constants/constants.dart';
 
-/// A reusable section header widget with different style variants.
 class SectionHeader extends StatelessWidget {
   final String title;
   final SectionHeaderStyle style;

@@ -1,7 +1,5 @@
 library;
 
-/// Unified animation duration values used throughout the app.
-/// Consolidated from HomeAnimationDurations, UpdateAnimationDurations, AnalyticsAnimationDurations.
 abstract final class AppDurations {
   static const Duration fast = Duration(milliseconds: 200);
 

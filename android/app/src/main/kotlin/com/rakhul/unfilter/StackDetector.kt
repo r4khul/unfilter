@@ -7,7 +7,6 @@ import java.util.zip.ZipFile
 
 class StackDetector {
 
-    // Markers for deep scanning
     private val KOTLIN_METADATA_BYTES = "Lkotlin/Metadata;".toByteArray(Charsets.UTF_8)
     private val COMPOSE_MARKER_BYTES = "Landroidx/compose/ui/".toByteArray(Charsets.UTF_8)
 
@@ -37,14 +36,11 @@ class StackDetector {
 
         var hasPwa = false
 
-        // First pass: File names check (Fast)
         for (path in apkPaths) {
             val file = File(path)
             if (!file.exists() || !file.canRead()) continue
 
             try {
-                // If this is the main APK and we have a pre-opened Zip, use it.
-                // Otherwise open a new one.
                 if (preOpenedZip != null && path == apkPath) {
                     scanZipEntries(preOpenedZip, libs) { k -> isKotlin = k }
                         .let { res ->
@@ -81,11 +77,9 @@ class StackDetector {
                     }
                 }
             } catch (e: Exception) {
-                // Ignore errors reading bad APKs
             }
         }
 
-        // Determine Stack (Preliminary)
         var stack = "Native"
         if (hasPwa) stack = "PWA"
         else if (libs.contains("flutter") || hasFlutterAssets) stack = "Flutter"
@@ -95,23 +89,19 @@ class StackDetector {
         else if (hasXamarin) stack = "Xamarin"
         else if (hasNativeScript) stack = "NativeScript"
         else if (hasCapacitor) stack = "Capacitor"
-        else if (hasIonic) stack = "Ionic" // Check Ionic after Capacitor/Cordova as they might overlap
+        else if (hasIonic) stack = "Ionic"
         else if (hasCordova) stack = "Cordova"
         else if (hasCorona) stack = "Corona"
         
-        // Native Fallback Logic
         if (stack == "Native") {
             if (isKotlin) {
-                // Try to detect Compose if it's Kotlin
                 if (deepScanForString(apkPaths, COMPOSE_MARKER_BYTES, preOpenedZip)) {
                      stack = "Jetpack"
                 } else {
                      stack = "Kotlin"
                 }
             } else {
-                // Deep Scan: Check DEX files for Kotlin Metadata
                 if (deepScanForString(apkPaths, KOTLIN_METADATA_BYTES, preOpenedZip)) {
-                    // It is Kotlin, check for Compose
                      if (deepScanForString(apkPaths, COMPOSE_MARKER_BYTES, preOpenedZip)) {
                          stack = "Jetpack"
                      } else {
@@ -149,7 +139,6 @@ class StackDetector {
             val entry = entries.nextElement()
             val name = entry.name
             
-            // Kotlin & Compose Markers
             if (!result.isKotlin) {
                 if (name.endsWith(".kotlin_module") || 
                     name.startsWith("kotlin/") || 
@@ -160,7 +149,6 @@ class StackDetector {
                 }
             }
 
-            // Native Libraries
             if (name.startsWith("lib/") && name.endsWith(".so")) {
                 val parts = name.split("/")
                 if (parts.isNotEmpty()) {
@@ -172,7 +160,6 @@ class StackDetector {
                 }
             }
 
-            // Framework Assets & Markers
             if (name.contains("flutter_assets") || name.endsWith("libapp.so") || name.endsWith("app.so")) result.hasFlutterAssets = true
             else if (name.contains("index.android.bundle")) result.hasReactNativeBundle = true
             else if (name.contains("libmonodroid.so") || name.contains("assemblies/Mono.Android.dll")) result.hasXamarin = true
@@ -184,7 +171,6 @@ class StackDetector {
             else if (name.contains("libNativeScript.so") || name.contains("app/tns_modules")) result.hasNativeScript = true
             else if (name.contains("libcorona.so") || name.endsWith("main.lua")) result.hasCorona = true
             
-            // PWA/TWA Markers
              if (!result.hasPwa && (
                  name.startsWith("org/chromium/webapk") ||
                  name.contains("androidx/browser/trusted") ||
@@ -204,7 +190,7 @@ class StackDetector {
             if (!file.exists()) continue
             
             try {
-                if (preOpenedZip != null && path == apkPaths[0]) { // Check first path (Base APK) against pre-opened
+                if (preOpenedZip != null && path == apkPaths[0]) {
                     if (scanZipForBytes(preOpenedZip, pattern)) return true
                 } else {
                     ZipFile(file).use { zip ->
@@ -212,7 +198,6 @@ class StackDetector {
                     }
                 }
             } catch (e: Exception) { 
-                // Skip if read fails
             }
         }
         return false
@@ -222,7 +207,6 @@ class StackDetector {
         val entries = zip.entries()
         while (entries.hasMoreElements()) {
             val entry = entries.nextElement()
-            // Only check classes.dex, classes2.dex etc.
             if (entry.name.endsWith(".dex")) {
                  zip.getInputStream(entry).use { stream ->
                      if (scanStreamForBytes(stream, pattern)) {
@@ -235,7 +219,7 @@ class StackDetector {
     }
 
     private fun scanStreamForBytes(stream: InputStream, pattern: ByteArray): Boolean {
-        val bufferSize = 64 * 1024 // Increased to 64KB
+        val bufferSize = 64 * 1024
         val buffer = ByteArray(bufferSize)
         var bytesRead: Int
         
@@ -249,7 +233,6 @@ class StackDetector {
                 return true
             }
 
-            // Prepare tail for next iteration
             if (validBytes >= tailSize) {
                 System.arraycopy(buffer, validBytes - tailSize, buffer, 0, tailSize)
                 carryOverLength = tailSize
@@ -260,7 +243,6 @@ class StackDetector {
         return false
     }
     
-    // Optimized indexOf
     private fun indexOf(data: ByteArray, length: Int, pattern: ByteArray): Int {
         if (pattern.isEmpty()) return 0
         if (length < pattern.size) return -1

@@ -31,17 +31,13 @@ class UsageManager(private val context: Context) {
         val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val calendar = Calendar.getInstance()
         val endTime = calendar.timeInMillis
-        // Extended to 2 years to capture more historical usage data
         calendar.add(Calendar.YEAR, -2)
         val startTime = calendar.timeInMillis
         
         return usageStatsManager.queryAndAggregateUsageStats(startTime, endTime)
     }
 
-    /**
-     * Gets recently active apps (last 24 hours) with minimal data for Task Manager.
-     * This is a lightweight call that doesn't require a full app scan.
-     */
+    
     fun getRecentlyActiveApps(hoursAgo: Int = 24): List<Map<String, Any?>> {
         if (!hasPermission()) return emptyList()
         
@@ -57,7 +53,6 @@ class UsageManager(private val context: Context) {
             endTime
         )
         
-        // Group by package name and get the most recent usage
         val packageUsageMap = mutableMapOf<String, android.app.usage.UsageStats>()
         for (stats in usageStats) {
             val existing = packageUsageMap[stats.packageName]
@@ -66,17 +61,15 @@ class UsageManager(private val context: Context) {
             }
         }
         
-        // Filter to only apps used in the last N hours and sort by last used
         val recentApps = packageUsageMap.values
             .filter { it.lastTimeUsed > startTime && it.totalTimeInForeground > 0 }
             .sortedByDescending { it.lastTimeUsed }
-            .take(50) // Limit to prevent overwhelming the UI
+            .take(50)
         
         return recentApps.mapNotNull { stats ->
             try {
                 val appInfo = packageManager.getApplicationInfo(stats.packageName, 0)
                 
-                // Skip system apps without launcher intent
                 val launchIntent = packageManager.getLaunchIntentForPackage(stats.packageName)
                 if (launchIntent == null && (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0) {
                     return@mapNotNull null
@@ -98,7 +91,7 @@ class UsageManager(private val context: Context) {
                     "totalTimeInForeground" to stats.totalTimeInForeground
                 )
             } catch (e: PackageManager.NameNotFoundException) {
-                null // App may have been uninstalled
+                null
             } catch (e: Exception) {
                 null
             }
@@ -147,7 +140,6 @@ class UsageManager(private val context: Context) {
         val calendar = Calendar.getInstance()
         val endTime = calendar.timeInMillis
         
-        // Use install date if provided, otherwise default to 2 years
         val startTime = if (installTime != null && installTime > 0) {
             installTime
         } else {
@@ -180,7 +172,6 @@ class UsageManager(private val context: Context) {
         val result = mutableListOf<Map<String, Any>>()
         val todayCal = Calendar.getInstance()
         
-        // Calculate days since start (install date or 2 years)
         val daysSinceStart = ((endTime - startTime) / (24 * 60 * 60 * 1000)).toInt().coerceIn(1, 730)
 
         for (i in 0 until daysSinceStart) {

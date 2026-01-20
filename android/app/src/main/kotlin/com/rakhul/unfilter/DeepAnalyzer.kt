@@ -19,11 +19,9 @@ class DeepAnalyzer(private val context: Context) {
         val appInfo = pkg.applicationInfo ?: return emptyMap()
         val analysis = mutableMapOf<String, Any?>()
 
-        // 1. Installer Source
         val installer = getInstallerPackageName(pkg.packageName, pm)
         analysis["installerStore"] = installer ?: "Unknown"
 
-        // 2. Signing Info (SHA-1 & SHA-256)
         val signatures = getSignatures(pkg, pm)
         if (signatures.isNotEmpty()) {
             val cert = signatures[0]
@@ -31,13 +29,11 @@ class DeepAnalyzer(private val context: Context) {
             analysis["signingSha256"] = getFingerprint(cert, "SHA-256")
         }
 
-        // 3. Component Counts
         analysis["activitiesCount"] = pkg.activities?.size ?: 0
         analysis["servicesCount"] = pkg.services?.size ?: 0
         analysis["receiversCount"] = pkg.receivers?.size ?: 0
         analysis["providersCount"] = pkg.providers?.size ?: 0
 
-        // 4. Advanced Stack Version Detection
         val techVersions = mutableMapOf<String, String>()
         val apkPath = appInfo.sourceDir
         
@@ -55,12 +51,10 @@ class DeepAnalyzer(private val context: Context) {
             analysis["techVersions"] = techVersions
         }
         
-        // Backward compatibility for UI
         if (techVersions.containsKey("Kotlin")) {
             analysis["kotlinVersion"] = techVersions["Kotlin"]
         }
 
-        // 5. Split APKs
         val splitNames = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
              appInfo.splitNames?.toList() ?: emptyList<String>()
         } else {
@@ -68,26 +62,20 @@ class DeepAnalyzer(private val context: Context) {
         }
         analysis["splitApks"] = splitNames
 
-        // 6. Native Lib Architecture
         analysis["primaryCpuAbi"] = "Unknown"
 
         return analysis
     }
     
     private fun detectVersionsFromZip(zip: ZipFile, techVersions: MutableMap<String, String>) {
-        // Kotlin
         detectKotlinVersion(zip)?.let { techVersions["Kotlin"] = it }
         
-        // React Native
         detectReactNativeVersion(zip)?.let { techVersions["React Native"] = it }
         
-        // Unity
         detectUnityVersion(zip)?.let { techVersions["Unity"] = it }
         
-        // Flutter
         detectFlutterVersion(zip)?.let { techVersions["Flutter"] = it }
         
-        // Cordova/PhoneGap
         detectCordovaVersion(zip)?.let { techVersions["Cordova"] = it }
     }
 

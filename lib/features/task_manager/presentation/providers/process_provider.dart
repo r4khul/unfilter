@@ -14,7 +14,7 @@ const _channel = MethodChannel('com.rakhul.unfilter/apps');
 const _fetchTimeout = Duration(seconds: 10);
 const _refreshInterval = Duration(
   seconds: 3,
-); // Balance between real-time and stability
+);
 const _activeAppsRefreshInterval = Duration(seconds: 30);
 
 class ProcessFetchException implements Exception {
@@ -235,8 +235,6 @@ final activeProcessesProvider = StreamProvider.autoDispose<ProcessListState>((
   return controller.stream;
 });
 
-/// Independent provider for recently active apps.
-/// This fetches data directly from usage stats without requiring a full app scan.
 class ActiveAppsState {
   final List<ActiveApp> apps;
   final bool isLoading;
@@ -277,7 +275,6 @@ final recentlyActiveAppsProvider = StreamProvider.autoDispose<ActiveAppsState>((
         controller.add(ActiveAppsState(isLoading: false, error: e.toString()));
       }
 
-      // Refresh active apps less frequently than processes
       refreshTimer = Timer.periodic(_activeAppsRefreshInterval, (timer) async {
         if (controller.isClosed) {
           timer.cancel();

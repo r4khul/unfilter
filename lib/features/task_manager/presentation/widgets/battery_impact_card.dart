@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/battery_impact.dart';
 import '../providers/battery_impact_provider.dart';
 
-/// A card displaying battery impact analysis for apps.
 class BatteryImpactCard extends ConsumerStatefulWidget {
   const BatteryImpactCard({super.key});
 
@@ -36,7 +35,6 @@ class _BatteryImpactCardState extends ConsumerState<BatteryImpactCard> {
       ),
       child: Column(
         children: [
-          // Header
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
@@ -120,7 +118,6 @@ class _BatteryImpactCardState extends ConsumerState<BatteryImpactCard> {
             ),
           ),
 
-          // Expandable content
           AnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
             secondChild: batteryState.when(
@@ -202,14 +199,12 @@ class _BatteryImpactContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Divider
         Divider(
           height: 1,
           thickness: 1,
           color: theme.colorScheme.outline.withOpacity(0.1),
         ),
 
-        // Top Battery Drainers
         if (topDrainers.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -236,7 +231,6 @@ class _BatteryImpactContent extends StatelessWidget {
           ...topDrainers.map((app) => _AppBatteryItem(app: app)),
         ],
 
-        // Battery Vampires
         if (vampires.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -300,7 +294,6 @@ class _AppBatteryItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Row(
         children: [
-          // App icon
           Container(
             width: 40,
             height: 40,
@@ -326,7 +319,6 @@ class _AppBatteryItem extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // App info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,7 +343,6 @@ class _AppBatteryItem extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Drain breakdown mini-chips
                     _DrainMiniChips(app: app),
                   ],
                 ),
@@ -359,7 +350,6 @@ class _AppBatteryItem extends StatelessWidget {
             ),
           ),
 
-          // Total drain
           _DrainBadge(drain: app.totalDrain),
         ],
       ),
@@ -465,7 +455,6 @@ class _VampireAppItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // App icon
             Container(
               width: 36,
               height: 36,
@@ -491,7 +480,6 @@ class _VampireAppItem extends StatelessWidget {
             ),
             const SizedBox(width: 12),
 
-            // App info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,7 +514,6 @@ class _VampireAppItem extends StatelessWidget {
               ),
             ),
 
-            // Foreground time (low for vampires)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
@@ -549,7 +536,6 @@ class _VampireAppItem extends StatelessWidget {
   }
 }
 
-/// A compact summary widget for showing in the system overview.
 class BatteryImpactSummary extends ConsumerWidget {
   const BatteryImpactSummary({super.key});
 
@@ -609,7 +595,6 @@ class BatteryImpactSummary extends ConsumerWidget {
   }
 }
 
-/// Shows battery drain history trend for a specific app.
 class AppBatteryHistoryChart extends ConsumerWidget {
   final String packageName;
 

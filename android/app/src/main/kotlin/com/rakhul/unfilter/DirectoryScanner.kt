@@ -4,19 +4,14 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-/**
- * Safe, bounded directory scanner with depth limits and cancellation support.
- * Designed to prevent ANRs, OOMs, and excessive I/O.
- */
+
 class DirectoryScanner {
     
     companion object {
-        // Safety limits
         private const val MAX_TRAVERSAL_DEPTH = 5
         private const val MAX_FILES_TO_SCAN = 5000
-        private const val MAX_FILE_SIZE_TO_CATEGORIZE = 100 * 1024 * 1024L // 100 MB
+        private const val MAX_FILE_SIZE_TO_CATEGORIZE = 100 * 1024 * 1024L
         
-        // File extensions for categorization
         private val DATABASE_EXTENSIONS = setOf("db", "sqlite", "sqlite3", "realm", "db-shm", "db-wal")
         private val LOG_EXTENSIONS = setOf("log", "txt", "trace")
         private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "heic", "heif")
@@ -25,9 +20,7 @@ class DirectoryScanner {
         private val DOCUMENT_EXTENSIONS = setOf("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx")
     }
     
-    /**
-     * Result of directory scan with categorized sizes.
-     */
+    
     data class ScanResult(
         val totalSize: Long = 0L,
         val databasesSize: Long = 0L,
@@ -43,15 +36,7 @@ class DirectoryScanner {
         val limitReached: Boolean = false
     )
     
-    /**
-     * Scan directory with safety limits.
-     * 
-     * @param rootDir Directory to scan
-     * @param maxDepth Maximum traversal depth (default: MAX_TRAVERSAL_DEPTH)
-     * @param maxFiles Maximum files to scan (default: MAX_FILES_TO_SCAN)
-     * @param checkCancelled Lambda to check if scan should be cancelled
-     * @return ScanResult with categorized sizes
-     */
+    
     fun scanDirectory(
         rootDir: File,
         maxDepth: Int = MAX_TRAVERSAL_DEPTH,
@@ -98,7 +83,6 @@ class DirectoryScanner {
                 checkCancelled = checkCancelled
             )
         } catch (e: Exception) {
-            // Catch any unexpected errors, return what we have
         }
         
         val mediaSize = imagesSize.get() + videosSize.get() + audioSize.get() + documentsSize.get()
@@ -119,9 +103,7 @@ class DirectoryScanner {
         )
     }
     
-    /**
-     * Recursive scan implementation with all safety checks.
-     */
+    
     private fun scanRecursive(
         dir: File,
         depth: Int,
@@ -139,16 +121,12 @@ class DirectoryScanner {
         databaseFiles: MutableMap<String, Long>,
         checkCancelled: () -> Boolean
     ): Boolean {
-        // Safety check: depth limit
         if (depth > maxDepth) return true
         
-        // Safety check: file count limit
         if (fileCounter.get() >= maxFiles) return true
         
-        // Safety check: cancellation
         if (checkCancelled()) return true
         
-        // Safety check: can read directory
         if (!dir.canRead()) return false
         
         val files = try {
@@ -162,13 +140,11 @@ class DirectoryScanner {
         if (files == null) return false
         
         for (file in files) {
-            // Check limits on every iteration
             if (fileCounter.incrementAndGet() > maxFiles) return true
             if (checkCancelled()) return true
             
             try {
                 if (file.isDirectory) {
-                    // Recurse into subdirectory
                     val limitReached = scanRecursive(
                         dir = file,
                         depth = depth + 1,
@@ -188,10 +164,8 @@ class DirectoryScanner {
                     )
                     if (limitReached) return true
                 } else {
-                    // Process file
                     val fileSize = file.length()
                     
-                    // Safety: ignore extremely large files to prevent memory issues
                     if (fileSize > MAX_FILE_SIZE_TO_CATEGORIZE) {
                         totalSize.addAndGet(fileSize)
                         residualSize.addAndGet(fileSize)
@@ -200,14 +174,12 @@ class DirectoryScanner {
                     
                     totalSize.addAndGet(fileSize)
                     
-                    // Categorize by extension
                     val extension = file.extension.lowercase()
                     val fileName = file.name
                     
                     when {
                         DATABASE_EXTENSIONS.contains(extension) -> {
                             databasesSize.addAndGet(fileSize)
-                            // Store individual database file sizes
                             synchronized(databaseFiles) {
                                 databaseFiles[fileName] = fileSize
                             }
@@ -233,10 +205,8 @@ class DirectoryScanner {
                     }
                 }
             } catch (e: SecurityException) {
-                // Can't access this file, skip it
                 continue
             } catch (e: Exception) {
-                // Any other error, skip this file
                 continue
             }
         }
@@ -244,10 +214,7 @@ class DirectoryScanner {
         return false
     }
     
-    /**
-     * Quick size calculation without categorization.
-     * Faster for cases where we only need total size.
-     */
+    
     fun quickSizeCalculation(
         rootDir: File,
         maxDepth: Int = MAX_TRAVERSAL_DEPTH,
@@ -301,7 +268,6 @@ class DirectoryScanner {
                     file.length()
                 }
             } catch (e: Exception) {
-                // Skip this file
             }
         }
         

@@ -20,7 +20,6 @@ class MainActivity : FlutterActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var eventSink: EventChannel.EventSink? = null
     
-    // Scan synchronization - prevents race conditions
     private val scanLock = ReentrantLock()
     @Volatile private var scanInProgress = false
     @Volatile private var lastScanResult: List<Map<String, Any?>>? = null
@@ -69,13 +68,11 @@ class MainActivity : FlutterActivity() {
                     val includeDetails = call.argument<Boolean>("includeDetails") ?: true
                     
                     executor.execute {
-                        // For lite scans (includeDetails = false), ALWAYS fetch fresh data
-                        // These are used for change detection and must reflect current OS state
                         if (!includeDetails) {
                             try {
                                 val apps = appRepository.getInstalledApps(
                                     includeDetails = false,
-                                    onProgress = { _, _, _ -> }, // No progress for lite scans
+                                    onProgress = { _, _, _ -> },
                                     checkScanCancelled = { false }
                                 )
                                 handler.post { result.success(apps) }
@@ -85,16 +82,13 @@ class MainActivity : FlutterActivity() {
                             return@execute
                         }
                         
-                        // For full scans (includeDetails = true), use caching to prevent race conditions
                         scanLock.withLock {
-                            // If a full scan just completed, reuse it
                             val cachedResult = lastScanResult
                             if (cachedResult != null && lastScanIncludedDetails) {
                                 handler.post { result.success(cachedResult) }
                                 return@execute
                             }
                             
-                            // If a scan is already in progress, wait for it
                             if (scanInProgress) {
                                 var waited = 0
                                 while (scanInProgress && waited < 120000) {
@@ -180,7 +174,7 @@ class MainActivity : FlutterActivity() {
                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                        result.success(packageManager.canRequestPackageInstalls())
                    } else {
-                       result.success(true) // Always granted below Oreo
+                       result.success(true)
                    }
                 }
                 "requestInstallPermission" -> {
@@ -330,7 +324,6 @@ class MainActivity : FlutterActivity() {
             appRepository.shutdown()
             storageAnalyzer.shutdown()
         } catch (e: Exception) {
-            // Ignore
         }
     }
 }

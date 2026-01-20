@@ -1,7 +1,5 @@
 library;
 
-/// Unified spacing values used throughout the app.
-/// Consolidated from HomeSpacing, UpdateSpacing, AppDetailsSpacing, AnalyticsSpacing.
 abstract final class AppSpacing {
   static const double xs = 4.0;
 

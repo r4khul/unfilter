@@ -7,55 +7,39 @@ import android.os.Environment
 import java.io.File
 import java.util.concurrent.*
 
-/**
- * Advanced storage analyzer providing granular breakdown of app storage consumption.
- * Combines official APIs, safe file analysis, and MediaStore attribution.
- * 
- * Thread-safe, lifecycle-aware, and optimized for production use.
- */
+
 class StorageAnalyzer(private val context: Context) {
     
     private val packageManager: PackageManager = context.packageManager
     private val directoryScanner = DirectoryScanner()
     private val mediaAttributor = MediaAttributor(context)
     
-    // Bounded thread pool - max 2 concurrent storage analyses
     private val storageExecutor = Executors.newFixedThreadPool(2)
     
-    // LRU cache for results
     private val cache = object : LinkedHashMap<String, CachedBreakdown>(
-        100, // Initial capacity
-        0.75f, // Load factor
-        true // Access order (for LRU)
+        100,
+        0.75f,
+        true
     ) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CachedBreakdown>?): Boolean {
             return size > 100
         }
     }
     
-    // Active tasks for cancellation
     private val activeTasks = ConcurrentHashMap<String, Future<StorageBreakdown>>()
     
     companion object {
-        private const val PER_APP_TIMEOUT_MS = 10_000L // 10 seconds max per app
-        private const val MIN_SIZE_FOR_DEEP_SCAN = 10 * 1024 * 1024L // 10 MB
+        private const val PER_APP_TIMEOUT_MS = 10_000L
+        private const val MIN_SIZE_FOR_DEEP_SCAN = 10 * 1024 * 1024L
     }
     
-    /**
-     * Analyze storage breakdown for a package.
-     * 
-     * @param packageName Package to analyze
-     * @param detailed If true, performs deep file analysis; if false, uses only official APIs
-     * @param onResult Callback with result
-     * @param onError Callback with error
-     */
+    
     fun analyze(
         packageName: String,
         detailed: Boolean = false,
         onResult: (StorageBreakdown) -> Unit,
         onError: (String) -> Unit
     ) {
-        // Check cache first
         synchronized(cache) {
             val cached = cache[packageName]
             if (cached != null && cached.isValid()) {
@@ -64,7 +48,6 @@ class StorageAnalyzer(private val context: Context) {
             }
         }
         
-        // Submit analysis task
         val future = storageExecutor.submit(Callable {
             try {
                 val breakdown = if (detailed) {
@@ -73,7 +56,6 @@ class StorageAnalyzer(private val context: Context) {
                     analyzeBasic(packageName)
                 }
                 
-                // Cache result
                 synchronized(cache) {
                     cache[packageName] = CachedBreakdown(breakdown)
                 }
@@ -88,7 +70,6 @@ class StorageAnalyzer(private val context: Context) {
         
         activeTasks[packageName] = future
         
-        // Handle future result/timeout
         storageExecutor.submit {
             try {
                 val result = future.get(PER_APP_TIMEOUT_MS, TimeUnit.MILLISECONDS)
@@ -104,12 +85,8 @@ class StorageAnalyzer(private val context: Context) {
         }
     }
     
-    /**
-     * Synchronous analysis for cases where callback isn't needed.
-     * Used internally and for batch operations.
-     */
+    
     fun analyzeSync(packageName: String, detailed: Boolean = false): StorageBreakdown {
-        // Check cache
         synchronized(cache) {
             val cached = cache[packageName]
             if (cached != null && cached.isValid()) {
@@ -123,7 +100,6 @@ class StorageAnalyzer(private val context: Context) {
             analyzeBasic(packageName)
         }
         
-        // Cache it
         synchronized(cache) {
             cache[packageName] = CachedBreakdown(breakdown)
         }
@@ -131,14 +107,10 @@ class StorageAnalyzer(private val context: Context) {
         return breakdown
     }
     
-    /**
-     * Basic analysis using StorageStatsManager only.
-     * Fast, requires only Usage Stats permission.
-     */
+    
     private fun analyzeBasic(packageName: String): StorageBreakdown {
         val limitations = mutableListOf<String>()
         
-        // Attempt official API
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
                 val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) 
@@ -151,7 +123,7 @@ class StorageAnalyzer(private val context: Context) {
                 )
                 
                 val apkSize = stats.appBytes
-                val dataSize = stats.dataBytes - stats.cacheBytes // Data without cache
+                val dataSize = stats.dataBytes - stats.cacheBytes
                 val cacheSize = stats.cacheBytes
                 val externalCacheSize = stats.externalCacheBytes
                 val internalCacheSize = cacheSize - externalCacheSize
@@ -161,13 +133,13 @@ class StorageAnalyzer(private val context: Context) {
                 return StorageBreakdown(
                     packageName = packageName,
                     apkSize = apkSize,
-                    codeSize = 0L, // Not separately reported by API
+                    codeSize = 0L,
                     appDataInternal = dataSize,
                     cacheInternal = internalCacheSize,
                     cacheExternal = externalCacheSize,
                     totalExact = totalExact,
                     totalCombined = totalExact,
-                    confidenceLevel = 0.7f, // Good confidence for official API
+                    confidenceLevel = 0.7f,
                     limitations = listOf("Basic scan - enable detailed scan for breakdown")
                 )
                 
@@ -178,18 +150,13 @@ class StorageAnalyzer(private val context: Context) {
             }
         }
         
-        // Fallback: APK size only
         return getFallbackBreakdown(packageName, limitations)
     }
     
-    /**
-     * Detailed analysis combining APIs + file scanning + media attribution.
-     * Slower, but provides comprehensive breakdown.
-     */
+    
     private fun analyzeDetailed(packageName: String): StorageBreakdown {
         val limitations = mutableListOf<String>()
         
-        // Start with basic official API data
         var apkSize = 0L
         var appDataInternal = 0L
         var cacheInternal = 0L
@@ -219,7 +186,6 @@ class StorageAnalyzer(private val context: Context) {
             }
         }
         
-        // Fallback APK size if API failed
         if (apkSize == 0L) {
             try {
                 val appInfo = packageManager.getApplicationInfo(packageName, 0)
@@ -231,7 +197,6 @@ class StorageAnalyzer(private val context: Context) {
             }
         }
         
-        // Scan OBB directory
         var obbSize = 0L
         try {
             val obbDir = File(Environment.getExternalStorageDirectory(), "Android/obb/$packageName")
@@ -242,7 +207,6 @@ class StorageAnalyzer(private val context: Context) {
             limitations.add("OBB scan failed")
         }
         
-        // Scan external data directory
         var externalDataSize = 0L
         var databasesSize = 0L
         var logsSize = 0L
@@ -278,7 +242,6 @@ class StorageAnalyzer(private val context: Context) {
             limitations.add("External data scan failed")
         }
         
-        // MediaStore attribution (Android Q+)
         var mediaImages = 0L
         var mediaVideos = 0L
         var mediaAudio = 0L
@@ -290,7 +253,6 @@ class StorageAnalyzer(private val context: Context) {
                 val mediaAttribution = mediaAttributor.attributeMedia(packageName)
                 
                 if (mediaAttribution.accessible) {
-                    // Use MediaStore data, it's more accurate for shared storage
                     mediaImages = mediaAttribution.images
                     mediaVideos = mediaAttribution.videos
                     mediaAudio = mediaAttribution.audio
@@ -306,19 +268,16 @@ class StorageAnalyzer(private val context: Context) {
             limitations.add("Media attribution requires Android 10+")
         }
         
-        // Decide which media data to use: prefer MediaStore for shared storage
         val finalMediaImages = maxOf(mediaImages, imagesFromFiles)
         val finalMediaVideos = maxOf(mediaVideos, videosFromFiles)
         val finalMediaAudio = maxOf(mediaAudio, audioFromFiles)
         val finalMediaDocuments = maxOf(mediaDocuments, documentsFromFiles)
         val totalMedia = finalMediaImages + finalMediaVideos + finalMediaAudio + finalMediaDocuments
         
-        // Calculate totals
         val totalExact = apkSize + appDataInternal + cacheInternal + cacheExternal
         val totalEstimated = obbSize + externalDataSize + totalMedia
         val totalCombined = totalExact + totalEstimated
         
-        // Calculate confidence level based on what we could access
         val confidenceLevel = calculateConfidence(
             hasStorageStats = apkSize > 0 && appDataInternal >= 0,
             hasObb = obbSize > 0,
@@ -330,12 +289,12 @@ class StorageAnalyzer(private val context: Context) {
         return StorageBreakdown(
             packageName = packageName,
             apkSize = apkSize,
-            codeSize = 0L, // Would require APK parsing
+            codeSize = 0L,
             appDataInternal = appDataInternal,
             cacheInternal = cacheInternal,
             cacheExternal = cacheExternal,
             obbSize = obbSize,
-            externalDataSize = externalDataSize - databasesSize - logsSize - mediaFromFiles, // Remaining external data
+            externalDataSize = externalDataSize - databasesSize - logsSize - mediaFromFiles,
             mediaSize = totalMedia,
             databasesSize = databasesSize,
             logsSize = logsSize,
@@ -355,9 +314,7 @@ class StorageAnalyzer(private val context: Context) {
         )
     }
     
-    /**
-     * Fallback breakdown for when all else fails.
-     */
+    
     private fun getFallbackBreakdown(packageName: String, limitations: List<String>): StorageBreakdown {
         var apkSize = 0L
         
@@ -367,7 +324,6 @@ class StorageAnalyzer(private val context: Context) {
                 apkSize = File(appInfo.sourceDir).length()
             }
         } catch (e: Exception) {
-            // Even this failed
         }
         
         return StorageBreakdown.minimal(packageName, apkSize).copy(
@@ -375,9 +331,7 @@ class StorageAnalyzer(private val context: Context) {
         )
     }
     
-    /**
-     * Calculate confidence level based on data sources accessed.
-     */
+    
     private fun calculateConfidence(
         hasStorageStats: Boolean,
         hasObb: Boolean,
@@ -387,52 +341,41 @@ class StorageAnalyzer(private val context: Context) {
     ): Float {
         var confidence = 0.0f
         
-        if (hasStorageStats) confidence += 0.6f // Official API is most important
+        if (hasStorageStats) confidence += 0.6f
         if (hasObb) confidence += 0.1f
         if (hasExternalData) confidence += 0.15f
         if (hasMediaAttribution) confidence += 0.15f
         
-        // Reduce confidence for each limitation
         confidence -= (limitationsCount * 0.05f)
         
         return confidence.coerceIn(0.0f, 1.0f)
     }
     
-    /**
-     * Cancel analysis for a specific package.
-     */
+    
     fun cancelAnalysis(packageName: String) {
         activeTasks[packageName]?.cancel(true)
         activeTasks.remove(packageName)
     }
     
-    /**
-     * Cancel all running analyses.
-     */
+    
     fun cancelAll() {
         activeTasks.values.forEach { it.cancel(true) }
         activeTasks.clear()
     }
     
-    /**
-     * Clear cache.
-     */
+    
     fun clearCache() {
         synchronized(cache) {
             cache.clear()
         }
     }
     
-    /**
-     * Shutdown analyzer and cleanup resources.
-     * Should be called when no longer needed.
-     */
+    
     fun shutdown() {
         try {
             cancelAll()
             storageExecutor.shutdownNow()
         } catch (e: Exception) {
-            // Ignore shutdown errors
         }
     }
 }

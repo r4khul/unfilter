@@ -12,7 +12,7 @@ const _channel = MethodChannel('com.rakhul.unfilter/apps');
 const _fetchTimeout = Duration(seconds: 15);
 const _refreshInterval = Duration(
   minutes: 5,
-); // Battery data doesn't change rapidly
+);
 
 List<AppBatteryImpact> _parseBatteryImpactData(dynamic result) {
   if (result is List) {
@@ -81,7 +81,6 @@ Future<List<DailyBatteryUsage>> _fetchAppBatteryHistory(
   }
 }
 
-/// State for battery impact data.
 class BatteryImpactState {
   final List<AppBatteryImpact> apps;
   final List<AppBatteryImpact> vampires;
@@ -100,16 +99,12 @@ class BatteryImpactState {
   bool get hasData => apps.isNotEmpty;
   bool get hasError => error != null;
 
-  /// Total estimated drain from tracked apps.
   double get totalTrackedDrain =>
       apps.fold(0.0, (sum, app) => sum + app.totalDrain);
 
-  /// Top 5 battery draining apps.
   List<AppBatteryImpact> get topDrainers => apps.take(5).toList();
 }
 
-/// Provider for battery impact data.
-/// Fetches data on first access and refreshes periodically.
 final batteryImpactProvider = StreamProvider.autoDispose<BatteryImpactState>((
   ref,
 ) {
@@ -121,7 +116,6 @@ final batteryImpactProvider = StreamProvider.autoDispose<BatteryImpactState>((
       controller.add(const BatteryImpactState(isLoading: true));
 
       try {
-        // Fetch both in parallel
         final results = await Future.wait([
           _fetchBatteryImpactData(hoursBack: 24),
           _fetchBatteryVampires(),
@@ -141,7 +135,6 @@ final batteryImpactProvider = StreamProvider.autoDispose<BatteryImpactState>((
         );
       }
 
-      // Refresh periodically
       refreshTimer = Timer.periodic(_refreshInterval, (timer) async {
         if (controller.isClosed) {
           timer.cancel();
@@ -176,7 +169,6 @@ final batteryImpactProvider = StreamProvider.autoDispose<BatteryImpactState>((
   return controller.stream;
 });
 
-/// Provider for a specific app's battery history.
 final appBatteryHistoryProvider = FutureProvider.autoDispose
     .family<List<DailyBatteryUsage>, String>((ref, packageName) async {
       return _fetchAppBatteryHistory(packageName);

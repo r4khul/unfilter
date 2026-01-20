@@ -25,7 +25,6 @@ class AppRepository(private val context: Context) {
 
     private val deepAnalyzer = DeepAnalyzer(context)
     
-    // Bounded thread pool for deep scanning to prevent OOM and FD exhaustion
     private val scanExecutor = Executors.newFixedThreadPool(4)
 
     fun getInstalledApps(
@@ -33,7 +32,6 @@ class AppRepository(private val context: Context) {
         onProgress: (current: Int, total: Int, currentApp: String) -> Unit,
         checkScanCancelled: () -> Boolean
     ): List<Map<String, Any?>> {
-        // Optimize flags: 0 for lite mode, full needed flags for details
         var flags = 0
         if (includeDetails) {
             flags = PackageManager.GET_META_DATA or
@@ -44,10 +42,8 @@ class AppRepository(private val context: Context) {
                     (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES)
         }
 
-        // 1. Get all installed packages
         val packages = packageManager.getInstalledPackages(flags)
         
-        // 2. Pre-fetch launchable packages
         val launchIntent = android.content.Intent(android.content.Intent.ACTION_MAIN, null)
         launchIntent.addCategory(android.content.Intent.CATEGORY_LAUNCHER)
         val launchables = packageManager.queryIntentActivities(launchIntent, 0)
@@ -56,10 +52,6 @@ class AppRepository(private val context: Context) {
         val total = packages.size
         val usageMap = if (includeDetails) usageManager.getUsageMap() else emptyMap()
 
-        // 3. Parallel Execution for Detailed Scan (Android N+)
-        // This dramatically speeds up the Deep Analysis (ZIP/DEX scanning)
-        // 3. Parallel Execution for Detailed Scan (Android N+) with Bounded Executor
-        // Replaces usage of parallelStream() which is unbounded and causes OOM/FD limits.
         if (includeDetails) {
              val counter = AtomicInteger(0)
              val futures = mutableListOf<Future<Map<String, Any?>?>>()
@@ -92,20 +84,16 @@ class AppRepository(private val context: Context) {
                  }))
              }
 
-             // Collect results
              val results = mutableListOf<Map<String, Any?>>()
              for (future in futures) {
                  try {
                      val result = future.get()
                      if (result != null) results.add(result)
                  } catch (e: Exception) {
-                     // Ignore individual failures
                  }
              }
              return results
         } else {
-            // Fallback for older devices or cancelled scans (though stream handles cancel somewhat)
-            // Or lite mode (includeDetails = false)
             val appList = mutableListOf<Map<String, Any?>>()
             for ((index, pkg) in packages.withIndex()) {
                 if (checkScanCancelled()) break
@@ -140,7 +128,6 @@ class AppRepository(private val context: Context) {
                 PackageManager.GET_PROVIDERS or
                 (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES)
 
-        // Use bounded executor for details fetching as well
         val futures = mutableListOf<Future<Map<String, Any?>?>>()
         
         for (name in packageNames) {
@@ -184,8 +171,6 @@ class AppRepository(private val context: Context) {
         var providers = emptyList<String>()
 
         if (includeDetails) {
-            // Optimization: Open ZipFile once and share between detectors
-            // calculate apkPath
             val sourceDir = appInfo.sourceDir
             var zipFile: java.util.zip.ZipFile? = null
             try {
@@ -193,7 +178,6 @@ class AppRepository(private val context: Context) {
                     zipFile = java.util.zip.ZipFile(File(sourceDir))
                 }
             } catch (e: Exception) { 
-                // Ignore zip open errors
             }
 
             try {
@@ -202,7 +186,6 @@ class AppRepository(private val context: Context) {
                 libs = pair.second
 
                 usage = usageMap?.get(pkg.packageName)
-                // Pass the pre-opened zip file to DeepAnalyzer as well
                 deepData = deepAnalyzer.analyze(pkg, packageManager, zipFile)
 
                 try {
@@ -215,7 +198,6 @@ class AppRepository(private val context: Context) {
                 receivers = pkg.receivers?.map { it.name } ?: emptyList()
                 providers = pkg.providers?.map { it.name } ?: emptyList()
             } finally {
-                // Ensure ZipFile is closed
                 try {
                     zipFile?.close()
                 } catch (e: Exception) { }
@@ -224,7 +206,6 @@ class AppRepository(private val context: Context) {
 
         val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
 
-        // FETCH REAL STORAGE STATS (THE UNFILTERED TRUTH)
         var appSize = 0L
         var dataSize = 0L
         var cacheSize = 0L
@@ -232,9 +213,7 @@ class AppRepository(private val context: Context) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
-                // Requires Usage Stats permission, usually granted if we are fetching usage stats
                 val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as android.app.usage.StorageStatsManager
-                // UUID_DEFAULT is the internal storage uuid
                 val uuid = android.os.storage.StorageManager.UUID_DEFAULT
                 val stats = storageStatsManager.queryStatsForPackage(
                     uuid, 
@@ -247,7 +226,6 @@ class AppRepository(private val context: Context) {
                 cacheSize = stats.cacheBytes
                 externalCacheSize = stats.externalCacheBytes
             } catch (e: Exception) {
-                // Fallback
                 if (appInfo.sourceDir != null) appSize = File(appInfo.sourceDir).length()
             }
         } else {
@@ -290,7 +268,6 @@ class AppRepository(private val context: Context) {
                     else -> "tools"
                 }
             } else "unknown"),
-             // The "size" field is now the total (App + Data + Cache)
             "size" to totalSize,
             "appSize" to appSize,
             "dataSize" to dataSize,
@@ -300,7 +277,6 @@ class AppRepository(private val context: Context) {
             "dataDir" to (appInfo.dataDir ?: "")
         )
         
-        // Merge deep data
         map.putAll(deepData)
         
         return map
@@ -323,8 +299,6 @@ class AppRepository(private val context: Context) {
             
             if (bitmap == null) return ByteArray(0)
 
-            // Resize for performance - 96x96 is roughly 3KB per icon
-            // Use filter=true for better quality
             scaledBitmap = Bitmap.createScaledBitmap(bitmap, 96, 96, true)
 
             val stream = ByteArrayOutputStream()
@@ -333,9 +307,6 @@ class AppRepository(private val context: Context) {
         } catch (e: Exception) {
             return ByteArray(0)
         } finally {
-            // CRITICAL: Explicitly recycle bitmaps to prevent OOM
-            // We only recycle if we created a new bitmap (not a BitmapDrawable's internal one)
-            // or if it's the intermediate scaled bitmap.
             try {
                 if (scaledBitmap != null && scaledBitmap != bitmap) {
                     scaledBitmap.recycle()
@@ -344,7 +315,6 @@ class AppRepository(private val context: Context) {
                     bitmap.recycle()
                 }
             } catch (e: Exception) {
-                // Ignore recycle errors
             }
         }
     }
@@ -353,7 +323,6 @@ class AppRepository(private val context: Context) {
         try {
             scanExecutor.shutdownNow()
         } catch (e: Exception) {
-            // Ignore
         }
     }
 }

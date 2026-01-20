@@ -3,7 +3,6 @@ library;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// Monochromatic circular CPU gauge with percentage display.
 class CpuGauge extends StatelessWidget {
   final double percentage;
   final double size;
@@ -31,7 +30,6 @@ class CpuGauge extends StatelessWidget {
           return Stack(
             alignment: Alignment.center,
             children: [
-              // Background ring
               CustomPaint(
                 size: Size(size, size),
                 painter: _GaugePainter(
@@ -40,7 +38,6 @@ class CpuGauge extends StatelessWidget {
                   strokeWidth: strokeWidth,
                 ),
               ),
-              // Foreground ring
               CustomPaint(
                 size: Size(size, size),
                 painter: _GaugePainter(
@@ -49,7 +46,6 @@ class CpuGauge extends StatelessWidget {
                   strokeWidth: strokeWidth,
                 ),
               ),
-              // Center text
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -122,7 +118,6 @@ class _GaugePainter extends CustomPainter {
   }
 }
 
-/// Monochromatic horizontal memory usage bar.
 class MemoryBar extends StatelessWidget {
   final int usedMb;
   final int totalMb;
@@ -206,7 +201,6 @@ class MemoryBar extends StatelessWidget {
   }
 }
 
-/// Monochromatic temperature indicator badge.
 class TemperatureBadge extends StatelessWidget {
   final double temperature;
 
