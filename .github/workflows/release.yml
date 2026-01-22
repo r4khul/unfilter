@@ -1,0 +1,126 @@
+name: Build & Release Flutter APKs
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-release:
+    name: Build APKs & Create Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.2"
+          channel: "stable"
+          cache: true
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/android/app/unfilter-release.jks
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android/app/unfilter-release.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Build Split-per-ABI APKs
+        run: |
+          flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/debug-symbols
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android/app/unfilter-release.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Build Universal APK
+        run: |
+          flutter build apk --release --obfuscate --split-debug-info=build/debug-symbols
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android/app/unfilter-release.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Rename APKs
+        run: |
+          chmod +x rename_apks.sh
+          ./rename_apks.sh
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          # Extract data from version_config.json
+          RELEASE_NOTES=$(jq -r '.release_notes' version_config.json)
+
+          # Extract features array and format as bullet points
+          FEATURES=$(jq -r '.features | map("- " + .) | join("\n")' version_config.json)
+
+          # Extract fixes array and format as bullet points
+          FIXES=$(jq -r '.fixes | map("- " + .) | join("\n")' version_config.json)
+
+          # Build the complete release body
+          BODY="## Release Notes
+
+          ${RELEASE_NOTES}
+
+          ## Features
+
+          ${FEATURES}
+
+          ## Fixes
+
+          ${FIXES}
+
+          ---
+
+          ### Download Options
+
+          | APK | Description |
+          |-----|-------------|
+          | \`UnFilter_arm64-v8a.apk\` | For modern 64-bit devices (most phones from 2017+) |
+          | \`UnFilter_armeabi-v7a.apk\` | For older 32-bit ARM devices |
+          | \`UnFilter_x86_64.apk\` | For x86_64 devices (emulators, some tablets) |
+          | \`UnFilter_universal.apk\` | Works on all devices (larger size) |
+
+          > 💡 **Tip**: If unsure, download the **universal** APK. For smaller download size, choose the APK matching your device architecture."
+
+          # Write to file (handles multiline properly)
+          echo "$BODY" > release_body.md
+
+          # Also output for debugging
+          echo "Generated release notes:"
+          cat release_body.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: UnFilter ${{ github.ref_name }}
+          body_path: release_body.md
+          draft: false
+          prerelease: false
+          files: |
+            build/app/outputs/flutter-apk/UnFilter_arm64-v8a.apk
+            build/app/outputs/flutter-apk/UnFilter_armeabi-v7a.apk
+            build/app/outputs/flutter-apk/UnFilter_x86_64.apk
+            build/app/outputs/flutter-apk/UnFilter_universal.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
