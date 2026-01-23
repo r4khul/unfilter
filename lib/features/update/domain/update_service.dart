@@ -185,16 +185,25 @@ class UpdateService {
   }
 
   bool _isLowerThan(Version current, Version target) {
+    // Compare major.minor.patch first (pub_semver ignores build metadata for < and >)
     if (current < target) return true;
     if (current > target) return false;
 
-    if (current == target) {
-      final currentBuild = _parseBuildNumber(current.build);
-      final targetBuild = _parseBuildNumber(target.build);
-      if (currentBuild != null && targetBuild != null) {
-        return currentBuild < targetBuild;
-      }
+    // At this point, major.minor.patch are equal (e.g., both are 1.0.0)
+    // We need to compare build numbers (the +N part)
+    // Note: pub_semver's == operator DOES check build metadata,
+    // so 1.0.0+1 == 1.0.0+2 returns false. We must compare builds regardless.
+    final currentBuild = _parseBuildNumber(current.build);
+    final targetBuild = _parseBuildNumber(target.build);
+
+    // If target has a build number but current doesn't, current is older
+    if (currentBuild == null && targetBuild != null) return true;
+
+    // If both have build numbers, compare them
+    if (currentBuild != null && targetBuild != null) {
+      return currentBuild < targetBuild;
     }
+
     return false;
   }
 
