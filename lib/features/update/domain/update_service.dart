@@ -28,13 +28,28 @@ class UpdateCheckResult {
 
   final UpdateErrorType? errorType;
 
+  /// Cached version info for offline force update display
+  final String? cachedMinVersion;
+  final String? cachedLatestVersion;
+  final String? cachedReleasePageUrl;
+
   const UpdateCheckResult({
     required this.status,
     this.config,
     this.currentVersion,
     this.error,
     this.errorType,
+    this.cachedMinVersion,
+    this.cachedLatestVersion,
+    this.cachedReleasePageUrl,
   });
+
+  /// Returns the release page URL from config or cached data
+  String? get releasePageUrl => config?.releasePageUrl ?? cachedReleasePageUrl;
+
+  /// Returns the latest version string from config or cached data
+  String? get latestVersionString =>
+      config?.latestNativeVersion.toString() ?? cachedLatestVersion;
 }
 
 class UpdateService {

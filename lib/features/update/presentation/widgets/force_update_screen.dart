@@ -4,8 +4,10 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../domain/update_service.dart';
+import '../providers/update_provider.dart';
 import 'constants.dart';
 import 'update_download_button.dart';
 
@@ -13,6 +15,10 @@ class ForceUpdateScreen extends ConsumerWidget {
   final UpdateCheckResult result;
 
   const ForceUpdateScreen({super.key, required this.result});
+
+  bool get _isOffline => result.errorType == UpdateErrorType.offline;
+
+  String? get _releasePageUrl => result.releasePageUrl;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,13 +54,23 @@ class ForceUpdateScreen extends ConsumerWidget {
                       _buildReleaseNotesCard(theme),
                     ],
                     const SizedBox(height: UpdateSpacing.hero),
-                    UpdateDownloadButton(
-                      config: result.config,
-                      version:
-                          result.config?.latestNativeVersion.toString() ??
-                          'latest',
-                      isFullWidth: true,
-                    ),
+                    // Show download button only when online with config
+                    if (!_isOffline && result.config != null) ...[
+                      UpdateDownloadButton(
+                        config: result.config,
+                        version:
+                            result.config?.latestNativeVersion.toString() ??
+                            'latest',
+                        isFullWidth: true,
+                      ),
+                      const SizedBox(height: UpdateSpacing.md),
+                      _buildGitHubReleasesButton(theme, isSecondary: true),
+                    ] else ...[
+                      // Offline mode - show GitHub button as primary action
+                      _buildOfflineNotice(theme),
+                      const SizedBox(height: UpdateSpacing.standard),
+                      _buildGitHubReleasesButton(theme, isSecondary: false),
+                    ],
                   ],
                 ),
               ),
@@ -63,6 +79,119 @@ class ForceUpdateScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildOfflineNotice(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: UpdateSpacing.standard,
+        vertical: UpdateSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(UpdateBorderRadius.md),
+        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.wifi_off_rounded,
+            color: Colors.orange.shade700,
+            size: UpdateSizes.iconSizeSmall,
+          ),
+          const SizedBox(width: UpdateSpacing.sm),
+          Expanded(
+            child: Text(
+              'Connect to internet to download the update',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.orange.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGitHubReleasesButton(
+    ThemeData theme, {
+    required bool isSecondary,
+  }) {
+    final releaseUrl = _releasePageUrl;
+
+    if (releaseUrl == null) return const SizedBox.shrink();
+
+    if (isSecondary) {
+      final latestVersion = result.config?.latestNativeVersion;
+      final targetUrl = latestVersion != null
+          ? '$releaseUrl/tag/v$latestVersion'
+          : '$releaseUrl/latest';
+
+      // Compact text button for secondary action
+      return TextButton.icon(
+        onPressed: () => _launchReleases(targetUrl),
+        style: TextButton.styleFrom(
+          foregroundColor: theme.colorScheme.onSurfaceVariant,
+          padding: const EdgeInsets.symmetric(
+            horizontal: UpdateSpacing.standard,
+            vertical: UpdateSpacing.sm,
+          ),
+        ),
+        icon: Icon(
+          Icons.info_outline_rounded,
+          size: UpdateSizes.iconSizeSmall,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+        label: Text(
+          'Find out why this update is required',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
+
+    final latestVersion = result.config?.latestNativeVersion;
+    final targetUrl = latestVersion != null
+        ? '$releaseUrl/tag/v$latestVersion'
+        : '$releaseUrl/latest';
+
+    // Primary button for offline state
+    return SizedBox(
+      width: double.infinity,
+      height: UpdateSizes.buttonHeight,
+      child: OutlinedButton.icon(
+        onPressed: () => _launchReleases(targetUrl),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: theme.colorScheme.primary,
+          side: BorderSide(
+            color: theme.colorScheme.primary.withOpacity(0.5),
+            width: 1.5,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(UpdateBorderRadius.standard),
+          ),
+        ),
+        icon: const Icon(Icons.open_in_new_rounded, size: UpdateSizes.iconSize),
+        label: const Text(
+          'Download from GitHub',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'UncutSans',
+            letterSpacing: -0.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchReleases(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Widget _buildAmbientGlow(ThemeData theme) {
@@ -162,8 +291,7 @@ class ForceUpdateScreen extends ConsumerWidget {
           Expanded(
             child: _VersionColumn(
               label: 'Required',
-              version:
-                  result.config?.latestNativeVersion.toString() ?? 'Latest',
+              version: result.latestVersionString ?? 'Latest',
               isHighlight: true,
             ),
           ),

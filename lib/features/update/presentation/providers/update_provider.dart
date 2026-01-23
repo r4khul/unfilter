@@ -53,11 +53,35 @@ final updateServiceFutureProvider = FutureProvider<UpdateService>((ref) async {
   return UpdateService(repo);
 });
 
+const String _kCachedForceUpdateKey = 'cached_force_update_status';
+const String _kCachedMinVersionKey = 'cached_min_supported_version';
+const String _kCachedLatestVersionKey = 'cached_latest_version';
+const String _kCachedReleasePageUrlKey = 'cached_release_page_url';
+
 final updateCheckProvider = FutureProvider<UpdateCheckResult>((ref) async {
   final connectivity = ref.read(connectivityServiceProvider);
   final status = await connectivity.checkConnectivity();
+  final prefs = await ref.watch(sharedPreferencesProvider.future);
 
   if (status == ConnectivityStatus.offline) {
+    // Check if we have a cached force update status
+    final cachedForceUpdate = prefs.getBool(_kCachedForceUpdateKey) ?? false;
+    if (cachedForceUpdate) {
+      final cachedMinVersion = prefs.getString(_kCachedMinVersionKey);
+      final cachedLatestVersion = prefs.getString(_kCachedLatestVersionKey);
+      final cachedReleasePageUrl = prefs.getString(_kCachedReleasePageUrlKey);
+
+      // Return a force update result with cached data
+      return UpdateCheckResult(
+        status: UpdateStatus.forceUpdate,
+        error: 'Update required. Connect to internet to download the update.',
+        errorType: UpdateErrorType.offline,
+        cachedMinVersion: cachedMinVersion,
+        cachedLatestVersion: cachedLatestVersion,
+        cachedReleasePageUrl: cachedReleasePageUrl,
+      );
+    }
+
     return const UpdateCheckResult(
       status: UpdateStatus.unknown,
       error: 'No internet connection. Please connect to WiFi or mobile data.',
@@ -66,7 +90,38 @@ final updateCheckProvider = FutureProvider<UpdateCheckResult>((ref) async {
   }
 
   final service = await ref.watch(updateServiceFutureProvider.future);
-  return service.checkUpdate();
+  final result = await service.checkUpdate();
+
+  // Cache the force update status for offline access
+  if (result.status == UpdateStatus.forceUpdate) {
+    await prefs.setBool(_kCachedForceUpdateKey, true);
+    if (result.config?.minSupportedNativeVersion != null) {
+      await prefs.setString(
+        _kCachedMinVersionKey,
+        result.config!.minSupportedNativeVersion.toString(),
+      );
+    }
+    if (result.config?.latestNativeVersion != null) {
+      await prefs.setString(
+        _kCachedLatestVersionKey,
+        result.config!.latestNativeVersion.toString(),
+      );
+    }
+    if (result.config?.releasePageUrl != null) {
+      await prefs.setString(
+        _kCachedReleasePageUrlKey,
+        result.config!.releasePageUrl,
+      );
+    }
+  } else {
+    // Clear cached force update if no longer needed
+    await prefs.remove(_kCachedForceUpdateKey);
+    await prefs.remove(_kCachedMinVersionKey);
+    await prefs.remove(_kCachedLatestVersionKey);
+    await prefs.remove(_kCachedReleasePageUrlKey);
+  }
+
+  return result;
 });
 
 final currentVersionProvider = FutureProvider<Version>((ref) async {
