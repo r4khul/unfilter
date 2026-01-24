@@ -33,56 +33,17 @@ It scans your installed applications and detects if they are built with native t
 
 ## Gallery
 
-### Home & Menu
-
-<p float="left">
-  <img src="docs/assets/home-black.jpg" width="45%" />
-  <img src="docs/assets/home-white.jpg" width="45%" /> 
-</p>
-<p float="left">
-  <img src="docs/assets/menu-black.jpg" width="45%" />
-  <img src="docs/assets/menu-white.jpg" width="45%" /> 
-</p>
-
-### Discovery (Search & Filter)
-
-<p float="left">
-  <img src="docs/assets/search-black.jpg" width="45%" />
-  <img src="docs/assets/search-white.jpg" width="45%" /> 
-</p>
-<p float="left">
-  <img src="docs/assets/filter-stack-bottomsheet-black.jpg" width="45%" />
-  <img src="docs/assets/filter-stack-bottomsheet-white.jpg" width="45%" /> 
-</p>
-
-### Task Manager & Updates
-
-<p float="left">
-  <img src="docs/assets/task-manager-black.jpg" width="45%" />
-  <img src="docs/assets/task-manager-white.jpg" width="45%" /> 
-</p>
-<p float="left">
-  <img src="docs/assets/update-black.jpg" width="45%" />
-  <img src="docs/assets/update-white.jpg" width="45%" /> 
-</p>
-
-### Analytics (Storage & Usage)
-
-<p float="left">
-  <img src="docs/assets/storage-insights-black.jpg" width="45%" />
-  <img src="docs/assets/storage-insights-white.jpg" width="45%" /> 
-</p>
-<p float="left">
-  <img src="docs/assets/usage-statistics-black.jpg" width="45%" />
-  <img src="docs/assets/usage-statistics-white.jpg" width="45%" /> 
-</p>
-
-### App Inspection
-
-<p float="left">
-  <img src="docs/assets/app-details-black.jpg" width="45%" />
-  <img src="docs/assets/app-details-white.jpg" width="45%" /> 
-</p>
+| Feature                                       |                                Light Mode                                |                                Dark Mode                                 |
+| :-------------------------------------------- | :----------------------------------------------------------------------: | :----------------------------------------------------------------------: |
+| **Home**<br>Main dashboard with app overview. |           <img src="docs/assets/home-white.jpg" width="250" />           |           <img src="docs/assets/home-black.jpg" width="250" />           |
+| **Menu**<br>Navigation and settings.          |           <img src="docs/assets/menu-white.jpg" width="250" />           |           <img src="docs/assets/menu-black.jpg" width="250" />           |
+| **Search**<br>Instant app lookup.             |          <img src="docs/assets/search-white.jpg" width="250" />          |          <img src="docs/assets/search-black.jpg" width="250" />          |
+| **Filters**<br>Sort by technology.            | <img src="docs/assets/filter-stack-bottomsheet-white.jpg" width="250" /> | <img src="docs/assets/filter-stack-bottomsheet-black.jpg" width="250" /> |
+| **Task Manager**<br>Monitor live processes.   |       <img src="docs/assets/task-manager-white.jpg" width="250" />       |       <img src="docs/assets/task-manager-black.jpg" width="250" />       |
+| **Updates**<br>App update management.         |          <img src="docs/assets/update-white.jpg" width="250" />          |          <img src="docs/assets/update-black.jpg" width="250" />          |
+| **Storage**<br>Deep storage analysis.         |     <img src="docs/assets/storage-insights-white.jpg" width="250" />     |     <img src="docs/assets/storage-insights-black.jpg" width="250" />     |
+| **Statistics**<br>Device usage metrics.       |     <img src="docs/assets/usage-statistics-white.jpg" width="250" />     |     <img src="docs/assets/usage-statistics-black.jpg" width="250" />     |
+| **App Details**<br>In-depth inspection.       |       <img src="docs/assets/app-details-white.jpg" width="250" />        |       <img src="docs/assets/app-details-black.jpg" width="250" />        |
 
 ## Installation
 
