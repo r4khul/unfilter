@@ -1,21 +1,93 @@
 ![Unfilter Banner](docs/assets/unfilter-banner.png)
 
-## Unfilter - The Real Truth Of Apps 
+# Unfilter
 
-Unfilter is a simple tool I built to help you see what's under the hood of the apps on your phone.
+<div align="center">
 
-As a developer (or just a curious techie), you might often wonder, _"Is this app built with Flutter? Or is it React Native?"_. Unfilter answers that question for you instantly.
+<a href="https://github.com/r4khul/unfilter/releases">
+  <img src="https://img.shields.io/github/downloads/r4khul/unfilter/total?style=for-the-badge&logo=android&label=Downloads&color=3DDC84" alt="Total Downloads"/>
+</a>
+<a href="https://github.com/r4khul/unfilter/releases/latest">
+  <img src="https://img.shields.io/github/v/release/r4khul/unfilter?style=for-the-badge&logo=github&label=Latest&color=007AFF" alt="Latest Version"/>
+</a>
+<a href="https://github.com/r4khul/unfilter/stargazers">
+  <img src="https://img.shields.io/github/stars/r4khul/unfilter?style=for-the-badge&logo=star&logoColor=white&label=Stars&color=FFD700" alt="Stars"/>
+</a>
+<a href="https://github.com/r4khul/unfilter/blob/main/LICENSE">
+  <img src="https://img.shields.io/github/license/r4khul/unfilter?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=orange" alt="License"/>
+</a>
 
-## What does it actually do?
+</div>
 
-It scans all the apps installed on your device and "unfilters" the technology behind them.
+Unfilter uncovers the technology stack behind the apps on your phone.
 
-- **See the Tech Stack:** It tells you if an app uses **Flutter**, **React Native**, **Jetpack Compose**, **Unity**, and many others.
-- **Deep Dive:** You can click on any app to see more details like its package name, version, and exactly how much storage it's using.
-- **Clean & Simple:** I designed it to be really easy to use and look good while doing it.
+It scans your installed applications and detects if they are built with native tools or cross-platform frameworks like Flutter, React Native, Kotlin Multiplatform, Unity, and more.
 
-## Who is this for?
+## Capabilities
 
-If you are learning to code, it's super cool to see what frameworks popular apps are using. If you are just curious about your device, it gives you a nice overview of your installed apps and system stats.
+- **Stack Detection**: Identifies the development framework (Flutter, React Native, etc).
+- **Task Manager**: Real-time view of active processes and memory usage.
+- **Storage & Usage**: Detailed analysis of app size, cache, and daily screen time.
+- **System Info**: Overview of device sensor data, battery health, and hardware specs.
+- **Clean UI**: Minimalist design with full dark and light mode support.
 
-Enjoy exploring!
+## Gallery
+
+### Home & Menu
+
+<p float="left">
+  <img src="docs/assets/home-black.jpg" width="45%" />
+  <img src="docs/assets/home-white.jpg" width="45%" /> 
+</p>
+<p float="left">
+  <img src="docs/assets/menu-black.jpg" width="45%" />
+  <img src="docs/assets/menu-white.jpg" width="45%" /> 
+</p>
+
+### Discovery (Search & Filter)
+
+<p float="left">
+  <img src="docs/assets/search-black.jpg" width="45%" />
+  <img src="docs/assets/search-white.jpg" width="45%" /> 
+</p>
+<p float="left">
+  <img src="docs/assets/filter-stack-bottomsheet-black.jpg" width="45%" />
+  <img src="docs/assets/filter-stack-bottomsheet-white.jpg" width="45%" /> 
+</p>
+
+### Task Manager & Updates
+
+<p float="left">
+  <img src="docs/assets/task-manager-black.jpg" width="45%" />
+  <img src="docs/assets/task-manager-white.jpg" width="45%" /> 
+</p>
+<p float="left">
+  <img src="docs/assets/update-black.jpg" width="45%" />
+  <img src="docs/assets/update-white.jpg" width="45%" /> 
+</p>
+
+### Analytics (Storage & Usage)
+
+<p float="left">
+  <img src="docs/assets/storage-insights-black.jpg" width="45%" />
+  <img src="docs/assets/storage-insights-white.jpg" width="45%" /> 
+</p>
+<p float="left">
+  <img src="docs/assets/usage-statistics-black.jpg" width="45%" />
+  <img src="docs/assets/usage-statistics-white.jpg" width="45%" /> 
+</p>
+
+### App Inspection
+
+<p float="left">
+  <img src="docs/assets/app-details-black.jpg" width="45%" />
+  <img src="docs/assets/app-details-white.jpg" width="45%" /> 
+</p>
+
+## Installation
+
+![How to Install](docs/assets/how-to-install.png)
+
+## Download
+
+Get the latest APK from the releases section.
