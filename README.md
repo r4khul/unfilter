@@ -8,13 +8,13 @@
   <img src="https://img.shields.io/github/downloads/r4khul/unfilter/total?style=for-the-badge&logo=android&label=Downloads&color=3DDC84" alt="Total Downloads"/>
 </a>
 <a href="https://github.com/r4khul/unfilter/releases/latest">
-  <img src="https://img.shields.io/github/v/release/r4khul/unfilter?style=for-the-badge&logo=github&label=Latest&color=007AFF" alt="Latest Version"/>
+  <img src="https://img.shields.io/github/v/release/r4khul/unfilter?style=for-the-badge&logo=flutter&logoColor=white&label=Latest&color=007AFF" alt="Latest Version"/>
 </a>
 <a href="https://github.com/r4khul/unfilter/stargazers">
-  <img src="https://img.shields.io/github/stars/r4khul/unfilter?style=for-the-badge&logo=star&logoColor=white&label=Stars&color=FFD700" alt="Stars"/>
+  <img src="https://img.shields.io/github/stars/r4khul/unfilter?style=for-the-badge&logo=github&color=FFD700" alt="Stars"/>
 </a>
 <a href="https://github.com/r4khul/unfilter/blob/main/LICENSE">
-  <img src="https://img.shields.io/github/license/r4khul/unfilter?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=orange" alt="License"/>
+  <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge&logo=opensourceinitiative&logoColor=white" alt="License"/>
 </a>
 
 </div>
@@ -33,17 +33,50 @@ It scans your installed applications and detects if they are built with native t
 
 ## Gallery
 
-| Feature                                       |                                Light Mode                                |                                Dark Mode                                 |
-| :-------------------------------------------- | :----------------------------------------------------------------------: | :----------------------------------------------------------------------: |
-| **Home**<br>Main dashboard with app overview. |           <img src="docs/assets/home-white.jpg" width="250" />           |           <img src="docs/assets/home-black.jpg" width="250" />           |
-| **Menu**<br>Navigation and settings.          |           <img src="docs/assets/menu-white.jpg" width="250" />           |           <img src="docs/assets/menu-black.jpg" width="250" />           |
-| **Search**<br>Instant app lookup.             |          <img src="docs/assets/search-white.jpg" width="250" />          |          <img src="docs/assets/search-black.jpg" width="250" />          |
-| **Filters**<br>Sort by technology.            | <img src="docs/assets/filter-stack-bottomsheet-white.jpg" width="250" /> | <img src="docs/assets/filter-stack-bottomsheet-black.jpg" width="250" /> |
-| **Task Manager**<br>Monitor live processes.   |       <img src="docs/assets/task-manager-white.jpg" width="250" />       |       <img src="docs/assets/task-manager-black.jpg" width="250" />       |
-| **Updates**<br>App update management.         |          <img src="docs/assets/update-white.jpg" width="250" />          |          <img src="docs/assets/update-black.jpg" width="250" />          |
-| **Storage**<br>Deep storage analysis.         |     <img src="docs/assets/storage-insights-white.jpg" width="250" />     |     <img src="docs/assets/storage-insights-black.jpg" width="250" />     |
-| **Statistics**<br>Device usage metrics.       |     <img src="docs/assets/usage-statistics-white.jpg" width="250" />     |     <img src="docs/assets/usage-statistics-black.jpg" width="250" />     |
-| **App Details**<br>In-depth inspection.       |       <img src="docs/assets/app-details-white.jpg" width="250" />        |       <img src="docs/assets/app-details-black.jpg" width="250" />        |
+<table width="100%">
+  <tr>
+    <td align="center" valign="top" width="33.33%">
+      <b>Home</b><br><sub>App overview</sub><br>
+      <img src="docs/assets/home-white.jpg" width="40%" align="middle" alt="Light" />&nbsp;│&nbsp;<img src="docs/assets/home-black.jpg" width="40%" align="middle" alt="Dark" />
+    </td>
+    <td align="center" valign="top" width="33.33%">
+      <b>Menu</b><br><sub>Navigation</sub><br>
+      <img src="docs/assets/menu-white.jpg" width="40%" align="middle" alt="Light" />&nbsp;│&nbsp;<img src="docs/assets/menu-black.jpg" width="40%" align="middle" alt="Dark" />
+    </td>
+    <td align="center" valign="top" width="33.33%">
+      <b>Search</b><br><sub>App lookup</sub><br>
+      <img src="docs/assets/search-white.jpg" width="40%" align="middle" alt="Light" />&nbsp;│&nbsp;<img src="docs/assets/search-black.jpg" width="40%" align="middle" alt="Dark" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="33.33%">
+      <b>Filters</b><br><sub>Sort by stack</sub><br>
+      <img src="docs/assets/filter-stack-bottomsheet-white.jpg" width="40%" align="middle" alt="Light" />&nbsp;│&nbsp;<img src="docs/assets/filter-stack-bottomsheet-black.jpg" width="40%" align="middle" alt="Dark" />
+    </td>
+    <td align="center" valign="top" width="33.33%">
+      <b>Task Manager</b><br><sub>Live processes</sub><br>
+      <img src="docs/assets/task-manager-white.jpg" width="40%" align="middle" alt="Light" />&nbsp;│&nbsp;<img src="docs/assets/task-manager-black.jpg" width="40%" align="middle" alt="Dark" />
+    </td>
+    <td align="center" valign="top" width="33.33%">
+      <b>Updates</b><br><sub>App updates</sub><br>
+      <img src="docs/assets/update-white.jpg" width="40%" align="middle" alt="Light" />&nbsp;│&nbsp;<img src="docs/assets/update-black.jpg" width="40%" align="middle" alt="Dark" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="33.33%">
+      <b>Storage</b><br><sub>Storage analysis</sub><br>
+      <img src="docs/assets/storage-insights-white.jpg" width="40%" align="middle" alt="Light" />&nbsp;│&nbsp;<img src="docs/assets/storage-insights-black.jpg" width="40%" align="middle" alt="Dark" />
+    </td>
+    <td align="center" valign="top" width="33.33%">
+      <b>Statistics</b><br><sub>Usage metrics</sub><br>
+      <img src="docs/assets/usage-statistics-white.jpg" width="40%" align="middle" alt="Light" />&nbsp;│&nbsp;<img src="docs/assets/usage-statistics-black.jpg" width="40%" align="middle" alt="Dark" />
+    </td>
+    <td align="center" valign="top" width="33.33%">
+      <b>App Details</b><br><sub>Inspection</sub><br>
+      <img src="docs/assets/app-details-white.jpg" width="40%" align="middle" alt="Light" />&nbsp;│&nbsp;<img src="docs/assets/app-details-black.jpg" width="40%" align="middle" alt="Dark" />
+    </td>
+  </tr>
+</table>
 
 ## Installation
 
