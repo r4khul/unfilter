@@ -1,0 +1,77 @@
+name: Bug Report
+description: Create a report to help us improve
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the issue...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: I expected...
+    validations:
+      required: true
+  - type: input
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+      placeholder: Paste images here...
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: App Version
+      description: Which version of the app are you using?
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device Info
+      description: What device are you using?
+      placeholder: Pixel 6, Samsung S21, etc.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Android Version
+      description: What Android version are you running?
+      placeholder: Android 12, 13, 14...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste any relevant logs or stack traces here.
+      render: shell
+    validations:
+      required: false
