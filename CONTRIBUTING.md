@@ -27,7 +27,7 @@ Unsure where to begin contributing to UnFilter? You can start by looking through
 - [Good First Issues](https://github.com/r4khul/findstack/labels/good%20first%20issue) - issues which should only require a few lines of code, and a test or two.
 - [Help Wanted](https://github.com/r4khul/findstack/labels/help%20wanted) - issues which should be a bit more involved than `good first issue`.
 
-## 🛠 Development Setup
+## Development Setup
 
 1. **Fork and Clone** the repository.
 
@@ -47,7 +47,7 @@ Unsure where to begin contributing to UnFilter? You can start by looking through
    flutter run
    ```
 
-## 🎨 Style Guide
+## Style Guide
 
 - We follow the [Effective Dart](https://dart.dev/guides/language/effective-dart) style guide.
 - Ensure your code is formatted before committing:
@@ -59,7 +59,7 @@ Unsure where to begin contributing to UnFilter? You can start by looking through
   flutter analyze
   ```
 
-## 📝 Pull Request Process
+## Pull Request Process
 
 1. Create a new branch for your feature or fix (e.g., `feat/add-search`, `fix/login-bug`).
 2. Commit your changes with clear, descriptive messages.
