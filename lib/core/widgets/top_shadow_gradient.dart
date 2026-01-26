@@ -19,7 +19,7 @@ class TopShadowGradient extends StatelessWidget {
       right: 0,
       child: IgnorePointer(
         child: Container(
-          height: 150, // Increased from 120 for more spread
+          height: 200, // Increased height to prevent abrupt cut-off
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -30,7 +30,7 @@ class TopShadowGradient extends StatelessWidget {
                       Colors.black.withOpacity(0.85), // Increased from 0.6
                       Colors.black.withOpacity(0.65), // Increased from 0.4
                       Colors.black.withOpacity(0.4), // Increased from 0.2
-                      Colors.black.withOpacity(0.15), // Increased from 0.05
+                      Colors.black.withOpacity(0.1), // Reduced from 0.15
                       Colors.transparent,
                     ]
                   : [
@@ -38,16 +38,11 @@ class TopShadowGradient extends StatelessWidget {
                       Colors.white.withOpacity(0.75), // Increased from 0.5
                       Colors.white.withOpacity(0.55), // Increased from 0.35
                       Colors.white.withOpacity(0.35), // Increased from 0.2
-                      Colors.white.withOpacity(0.12), // Increased from 0.05
+                      Colors.white.withOpacity(0.1), // Reduced from 0.12
                       Colors.transparent,
                     ],
-              stops: const [
-                0.0,
-                0.25,
-                0.55,
-                0.8,
-                1.0,
-              ], // Adjusted for better spread
+              // Adjusted stops to ensure fully transparent well before the bottom edge
+              stops: const [0.0, 0.2, 0.45, 0.7, 1.0],
             ),
           ),
         ),
