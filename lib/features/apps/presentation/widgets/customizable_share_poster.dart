@@ -476,6 +476,8 @@ class CustomizableSharePoster extends StatelessWidget {
       case 'jetpack compose':
       case 'jetpack':
         return 'assets/vectors/icon_jetpack.svg';
+      case 'unity':
+        return 'assets/vectors/icon_unity.svg';
       default:
         return 'assets/vectors/icon_android.svg';
     }

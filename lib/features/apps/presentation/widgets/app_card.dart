@@ -62,6 +62,8 @@ class AppCard extends StatelessWidget {
       case 'jetpack compose':
       case 'jetpack':
         return 'assets/vectors/icon_jetpack.svg';
+      case 'unity':
+        return 'assets/vectors/icon_unity.svg';
       default:
         return 'assets/vectors/icon_android.svg';
     }
@@ -223,9 +225,7 @@ class AppCard extends StatelessWidget {
                                   BoxShadow(
                                     color: isDark
                                         ? Colors.black.withOpacity(0.60)
-                                        : Colors.grey.withOpacity(
-                                            0.2,
-                                          ),
+                                        : Colors.grey.withOpacity(0.2),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
