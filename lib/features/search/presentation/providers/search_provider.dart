@@ -45,7 +45,8 @@ final filteredAppsProvider = Provider<List<DeviceApp>>((ref) {
       return apps.where((app) {
         final matchesQuery =
             app.appName.toLowerCase().contains(query) ||
-            app.packageName.toLowerCase().contains(query);
+            app.packageName.toLowerCase().contains(query) ||
+            app.stack.toLowerCase().contains(query);
         final matchesCategory = category == null || app.category == category;
 
         bool matchesStack = true;

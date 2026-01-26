@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -83,8 +84,7 @@ class _HomePageState extends ConsumerState<HomePage>
       if (ref.read(installedAppsProvider).isLoading) {
         await ref.read(installedAppsProvider.future);
       }
-    } catch (_) {
-    }
+    } catch (_) {}
 
     if (!mounted) return;
 
@@ -162,19 +162,22 @@ class _HomePageState extends ConsumerState<HomePage>
     final appsAsync = ref.watch(installedAppsProvider);
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      endDrawer: const AppDrawer(),
-      floatingActionButton: BackToTopFab(
-        isVisible: _showBackToTop,
-        onPressed: _scrollToTop,
-      ),
-      body: AnimatedSwitcher(
-        duration: HomeAnimationDurations.standard,
-        child: appsAsync.when(
-          data: (apps) => _buildAppsList(apps, isLoading: apps.isEmpty),
-          loading: () => _buildAppsList(_dummyApps, isLoading: true),
-          error: (err, stack) => _buildErrorState(theme, err),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: theme.appBarTheme.systemOverlayStyle!,
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        endDrawer: const AppDrawer(),
+        floatingActionButton: BackToTopFab(
+          isVisible: _showBackToTop,
+          onPressed: _scrollToTop,
+        ),
+        body: AnimatedSwitcher(
+          duration: HomeAnimationDurations.standard,
+          child: appsAsync.when(
+            data: (apps) => _buildAppsList(apps, isLoading: apps.isEmpty),
+            loading: () => _buildAppsList(_dummyApps, isLoading: true),
+            error: (err, stack) => _buildErrorState(theme, err),
+          ),
         ),
       ),
     );
