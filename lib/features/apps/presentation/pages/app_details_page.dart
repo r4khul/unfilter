@@ -3,7 +3,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../home/presentation/widgets/premium_sliver_app_bar.dart';
+import '../../../home/presentation/widgets/premium_app_bar.dart';
+import '../../../../core/widgets/top_shadow_gradient.dart';
 import '../../domain/entities/device_app.dart';
 import '../providers/app_detail_provider.dart';
 import '../providers/apps_provider.dart';
@@ -150,13 +151,10 @@ class _AppDetailsPageState extends ConsumerState<AppDetailsPage> {
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
-              PremiumSliverAppBar(
-                title: "App Details",
-                scrollController: _scrollController,
-                onResync: (_isResyncing || _isInitialLoading)
-                    ? null
-                    : _handleResync,
-                onShare: _openShareDialog,
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+                ),
               ),
               SliverToBoxAdapter(
                 child: Padding(
@@ -203,6 +201,15 @@ class _AppDetailsPageState extends ConsumerState<AppDetailsPage> {
                 ),
               ),
             ],
+          ),
+          const TopShadowGradient(),
+          PremiumAppBar(
+            title: "App Details",
+            scrollController: _scrollController,
+            onResync: (_isResyncing || _isInitialLoading)
+                ? null
+                : _handleResync,
+            onShare: _openShareDialog,
           ),
           if (_isInitialLoading)
             Positioned(

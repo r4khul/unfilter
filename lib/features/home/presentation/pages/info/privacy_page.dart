@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/external_link_tile.dart';
 import '../../widgets/github_cta_card.dart';
-import '../../widgets/premium_sliver_app_bar.dart';
+import '../../widgets/premium_app_bar.dart';
+import '../../../../../core/widgets/top_shadow_gradient.dart';
 
 class PrivacyPage extends StatefulWidget {
   const PrivacyPage({super.key});
@@ -26,68 +27,81 @@ class _PrivacyPageState extends State<PrivacyPage> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          PremiumSliverAppBar(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(theme),
+                      const SizedBox(height: 16),
+                      _buildIntroText(theme),
+                      const SizedBox(height: 24),
+                      const ExternalLinkTile(
+                        label: 'Detailed Policy',
+                        value: 'Check Here',
+                        url: 'https://github.com/r4khul/unfilter',
+                      ),
+                      const SizedBox(height: 48),
+                      const _PolicySection(
+                        title: 'Local Processing',
+                        content:
+                            'Every scan, every match, every bit of analysis runs '
+                            "right on your phone. We couldn't peek at your apps "
+                            'even if we wanted to—we built it that way.',
+                        icon: Icons.phonelink_lock_rounded,
+                      ),
+                      const _PolicySection(
+                        title: 'Minimal Permissions',
+                        content:
+                            'We ask for exactly two things: permission to see what '
+                            'apps you have installed, and storage access for '
+                            "digging into native libraries. That's it.",
+                        icon: Icons.verified_user_rounded,
+                      ),
+                      const _PolicySection(
+                        title: 'No Tracking',
+                        content:
+                            'No analytics. No ad SDKs. No crash reporters phoning '
+                            'home. What you do inside the app stays between you '
+                            'and your phone.',
+                        icon: Icons.do_not_disturb_on_rounded,
+                      ),
+                      const _PolicySection(
+                        title: 'Limited Networking',
+                        content:
+                            'The only time we hit the internet? To check for '
+                            "updates and grab the GitHub star count. That's it—"
+                            'nothing about you leaves this app.',
+                        icon: Icons.wifi_rounded,
+                      ),
+                      const SizedBox(height: 20),
+                      const GithubCtaCard(),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const TopShadowGradient(),
+          PremiumAppBar(
             title: 'Privacy Policy',
             scrollController: _scrollController,
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(theme),
-                  const SizedBox(height: 16),
-                  _buildIntroText(theme),
-                  const SizedBox(height: 24),
-                  const ExternalLinkTile(
-                    label: 'Detailed Policy',
-                    value: 'Check Here',
-                    url: 'https://github.com/r4khul/unfilter',
-                  ),
-                  const SizedBox(height: 48),
-                  const _PolicySection(
-                    title: 'Local Processing',
-                    content:
-                        'Every scan, every match, every bit of analysis runs '
-                        "right on your phone. We couldn't peek at your apps "
-                        'even if we wanted to—we built it that way.',
-                    icon: Icons.phonelink_lock_rounded,
-                  ),
-                  const _PolicySection(
-                    title: 'Minimal Permissions',
-                    content:
-                        'We ask for exactly two things: permission to see what '
-                        'apps you have installed, and storage access for '
-                        "digging into native libraries. That's it.",
-                    icon: Icons.verified_user_rounded,
-                  ),
-                  const _PolicySection(
-                    title: 'No Tracking',
-                    content:
-                        'No analytics. No ad SDKs. No crash reporters phoning '
-                        'home. What you do inside the app stays between you '
-                        'and your phone.',
-                    icon: Icons.do_not_disturb_on_rounded,
-                  ),
-                  const _PolicySection(
-                    title: 'Limited Networking',
-                    content:
-                        'The only time we hit the internet? To check for '
-                        "updates and grab the GitHub star count. That's it—"
-                        'nothing about you leaves this app.',
-                    icon: Icons.wifi_rounded,
-                  ),
-                  const SizedBox(height: 20),
-                  const GithubCtaCard(),
-                  const SizedBox(height: 32),
-                ],
-              ),
-            ),
           ),
         ],
       ),

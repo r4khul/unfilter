@@ -10,7 +10,9 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../apps/domain/entities/device_app.dart';
 import '../../../apps/presentation/providers/apps_provider.dart';
-import '../../../home/presentation/widgets/premium_sliver_app_bar.dart';
+
+import '../../../home/presentation/widgets/premium_app_bar.dart';
+import '../../../../core/widgets/top_shadow_gradient.dart';
 import '../../../home/presentation/widgets/usage_stats_share_poster.dart';
 import '../widgets/analytics_empty_state.dart';
 import '../widgets/analytics_pie_chart.dart';
@@ -103,45 +105,65 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
   }
 
   Widget _buildEmptyState(bool hasPermission) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        PremiumSliverAppBar(
+    return Stack(
+      children: [
+        CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+              ),
+            ),
+            SliverFillRemaining(
+              child: UsagePermissionCard(hasPermission: hasPermission),
+            ),
+          ],
+        ),
+        const TopShadowGradient(),
+        PremiumAppBar(
           title: 'Usage Statistics',
           scrollController: _scrollController,
-        ),
-        SliverFillRemaining(
-          child: UsagePermissionCard(hasPermission: hasPermission),
         ),
       ],
     );
   }
 
   Widget _buildSearchEmptyState(ThemeData theme) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        PremiumSliverAppBar(
+    return Stack(
+      children: [
+        CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                child: AnalyticsSearchBar(
+                  controller: _searchController,
+                  searchQuery: _searchQuery,
+                  hintText: 'Search usage stats...',
+                  onChanged: (val) => setState(() => _searchQuery = val),
+                  onClear: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                ),
+              ),
+            ),
+            const SliverFillRemaining(
+              child: AnalyticsEmptyState(message: 'No apps match your search'),
+            ),
+          ],
+        ),
+        const TopShadowGradient(),
+        PremiumAppBar(
           title: 'Usage Statistics',
           scrollController: _scrollController,
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-            child: AnalyticsSearchBar(
-              controller: _searchController,
-              searchQuery: _searchQuery,
-              hintText: 'Search usage stats...',
-              onChanged: (val) => setState(() => _searchQuery = val),
-              onClear: () {
-                _searchController.clear();
-                setState(() => _searchQuery = '');
-              },
-            ),
-          ),
-        ),
-        const SliverFillRemaining(
-          child: AnalyticsEmptyState(message: 'No apps match your search'),
         ),
       ],
     );
@@ -168,9 +190,10 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
           controller: _scrollController,
           physics: const BouncingScrollPhysics(),
           slivers: [
-            PremiumSliverAppBar(
-              title: 'Usage Statistics',
-              scrollController: _scrollController,
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+              ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 10)),
             _buildSearchBarSliver(),
@@ -183,6 +206,11 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
             _buildAppListSliver(topApps, totalUsage, theme),
           ],
+        ),
+        const TopShadowGradient(),
+        PremiumAppBar(
+          title: 'Usage Statistics',
+          scrollController: _scrollController,
         ),
       ],
     );

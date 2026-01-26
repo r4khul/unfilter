@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../apps/domain/entities/device_app.dart';
 import '../../../apps/presentation/providers/apps_provider.dart';
-import '../../../home/presentation/widgets/premium_sliver_app_bar.dart';
+import '../../../home/presentation/widgets/premium_app_bar.dart';
+import '../../../../core/widgets/top_shadow_gradient.dart';
 import '../widgets/analytics_empty_state.dart';
 import '../widgets/analytics_pie_chart.dart';
 import '../widgets/analytics_search_bar.dart';
@@ -70,29 +71,39 @@ class _StorageInsightsPageState extends ConsumerState<StorageInsightsPage> {
   }
 
   Widget _buildEmptyState(ThemeData theme, String message) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        PremiumSliverAppBar(
+    return Stack(
+      children: [
+        CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                child: AnalyticsSearchBar(
+                  controller: _searchController,
+                  searchQuery: _searchQuery,
+                  hintText: 'Search storage...',
+                  onChanged: (val) => setState(() => _searchQuery = val),
+                  onClear: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                ),
+              ),
+            ),
+            SliverFillRemaining(child: AnalyticsEmptyState(message: message)),
+          ],
+        ),
+        const TopShadowGradient(),
+        PremiumAppBar(
           title: 'Storage Insights',
           scrollController: _scrollController,
         ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-            child: AnalyticsSearchBar(
-              controller: _searchController,
-              searchQuery: _searchQuery,
-              hintText: 'Search storage...',
-              onChanged: (val) => setState(() => _searchQuery = val),
-              onClear: () {
-                _searchController.clear();
-                setState(() => _searchQuery = '');
-              },
-            ),
-          ),
-        ),
-        SliverFillRemaining(child: AnalyticsEmptyState(message: message)),
       ],
     );
   }
@@ -110,24 +121,34 @@ class _StorageInsightsPageState extends ConsumerState<StorageInsightsPage> {
     );
     final otherSizeForChart = totalSize - topSizeForChart;
 
-    return CustomScrollView(
-      controller: _scrollController,
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        PremiumSliverAppBar(
+    return Stack(
+      children: [
+        CustomScrollView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 10)),
+            _buildSearchBarSliver(),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            _buildStatsCardSliver(totalSize, appCodeSize, dataSize, cacheSize),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            _buildFilterSliver(),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            _buildChartSliver(topAppsForChart, otherSizeForChart, totalSize),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            _buildAppListSliver(validApps, totalSize, theme),
+          ],
+        ),
+        const TopShadowGradient(),
+        PremiumAppBar(
           title: 'Storage Insights',
           scrollController: _scrollController,
         ),
-        const SliverToBoxAdapter(child: SizedBox(height: 10)),
-        _buildSearchBarSliver(),
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        _buildStatsCardSliver(totalSize, appCodeSize, dataSize, cacheSize),
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        _buildFilterSliver(),
-        const SliverToBoxAdapter(child: SizedBox(height: 16)),
-        _buildChartSliver(topAppsForChart, otherSizeForChart, totalSize),
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        _buildAppListSliver(validApps, totalSize, theme),
       ],
     );
   }

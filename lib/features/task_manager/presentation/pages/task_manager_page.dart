@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:system_info2/system_info2.dart';
 
-import '../../../home/presentation/widgets/premium_sliver_app_bar.dart';
+import '../../../home/presentation/widgets/premium_app_bar.dart';
+import '../../../../core/widgets/top_shadow_gradient.dart';
 import '../../domain/entities/active_app.dart';
 import '../../domain/entities/process_with_history.dart';
 import '../providers/task_manager_view_model.dart';
@@ -139,63 +140,77 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: TaskManagerStage(
-        isLoading: isLoading,
-        isRefreshing: false,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.wait([_refreshRam(), _refreshBattery()]);
-          },
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
+      body: Stack(
+        children: [
+          TaskManagerStage(
+            isLoading: isLoading,
+            isRefreshing: false,
+            child: RefreshIndicator(
+              edgeOffset: 120,
+              onRefresh: () async {
+                await Future.wait([_refreshRam(), _refreshBattery()]);
+              },
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
+                ),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height:
+                          46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: SystemOverviewCard(
+                      cpuPercentage: _calculateTotalCpu(viewModelState),
+                      usedRamMb: _totalRam - _freeRam,
+                      totalRamMb: _totalRam,
+                      batteryLevel: _batteryLevel,
+                      isCharging: _batteryState == BatteryState.charging,
+                      deviceModel: _deviceModel,
+                      androidVersion: _androidVersion,
+                    ),
+                  ),
+
+                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+                  const SliverToBoxAdapter(child: BatteryImpactCard()),
+
+                  const SliverToBoxAdapter(child: SizedBox(height: 10)),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: TaskManagerSpacing.lg,
+                      ),
+                      child: TaskManagerSearchBar(
+                        controller: _searchController,
+                        searchQuery: _searchQuery,
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                      ),
+                    ),
+                  ),
+
+                  _buildProcessList(viewModelState, theme),
+
+                  const SliverPadding(
+                    padding: EdgeInsets.only(
+                      bottom: TaskManagerSpacing.listBottom,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            slivers: [
-              PremiumSliverAppBar(
-                title: "Task Manager",
-                scrollController: _scrollController,
-              ),
-
-              SliverToBoxAdapter(
-                child: SystemOverviewCard(
-                  cpuPercentage: _calculateTotalCpu(viewModelState),
-                  usedRamMb: _totalRam - _freeRam,
-                  totalRamMb: _totalRam,
-                  batteryLevel: _batteryLevel,
-                  isCharging: _batteryState == BatteryState.charging,
-                  deviceModel: _deviceModel,
-                  androidVersion: _androidVersion,
-                ),
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 8)),
-
-              const SliverToBoxAdapter(child: BatteryImpactCard()),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 10)),
-
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: TaskManagerSpacing.lg,
-                  ),
-                  child: TaskManagerSearchBar(
-                    controller: _searchController,
-                    searchQuery: _searchQuery,
-                    onChanged: (val) => setState(() => _searchQuery = val),
-                  ),
-                ),
-              ),
-
-              _buildProcessList(viewModelState, theme),
-
-              const SliverPadding(
-                padding: EdgeInsets.only(bottom: TaskManagerSpacing.listBottom),
-              ),
-            ],
           ),
-        ),
+          const TopShadowGradient(),
+          PremiumAppBar(
+            title: "Task Manager",
+            scrollController: _scrollController,
+          ),
+        ],
       ),
     );
   }

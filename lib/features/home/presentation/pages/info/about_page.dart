@@ -5,7 +5,8 @@ import '../../../../../core/navigation/navigation.dart';
 import '../../../../update/presentation/providers/update_provider.dart';
 import '../../widgets/external_link_tile.dart';
 import '../../widgets/github_cta_card.dart';
-import '../../widgets/premium_sliver_app_bar.dart';
+import '../../widgets/premium_app_bar.dart';
+import '../../../../../core/widgets/top_shadow_gradient.dart';
 
 class AboutPage extends ConsumerStatefulWidget {
   const AboutPage({super.key});
@@ -31,38 +32,48 @@ class _AboutPageState extends ConsumerState<AboutPage> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          PremiumSliverAppBar(
-            title: 'About',
-            scrollController: _scrollController,
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _HeroSection(isDark: isDark, versionAsync: versionAsync),
-                  const SizedBox(height: 32),
-                  _buildDescription(theme),
-                  const SizedBox(height: 32),
-                  const _HowItWorksCard(),
-                  const SizedBox(height: 32),
-                  const _CreditsSection(),
-                  const SizedBox(height: 32),
-                  const _ConnectSection(),
-                  const SizedBox(height: 16),
-                  const GithubCtaCard(),
-                  const SizedBox(height: 48),
-                  _buildCopyright(theme),
-                  const SizedBox(height: 24),
-                ],
+      body: Stack(
+        children: [
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+                ),
               ),
-            ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _HeroSection(isDark: isDark, versionAsync: versionAsync),
+                      const SizedBox(height: 32),
+                      _buildDescription(theme),
+                      const SizedBox(height: 32),
+                      const _HowItWorksCard(),
+                      const SizedBox(height: 32),
+                      const _CreditsSection(),
+                      const SizedBox(height: 32),
+                      const _ConnectSection(),
+                      const SizedBox(height: 16),
+                      const GithubCtaCard(),
+                      const SizedBox(height: 48),
+                      _buildCopyright(theme),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
+          const TopShadowGradient(),
+          PremiumAppBar(title: 'About', scrollController: _scrollController),
         ],
       ),
     );

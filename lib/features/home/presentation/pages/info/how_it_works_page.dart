@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../widgets/external_link_tile.dart';
-import '../../widgets/premium_sliver_app_bar.dart';
+import '../../widgets/premium_app_bar.dart';
+import '../../../../../core/widgets/top_shadow_gradient.dart';
 
 class HowItWorksPage extends StatefulWidget {
   const HowItWorksPage({super.key});
@@ -25,61 +26,74 @@ class _HowItWorksPageState extends State<HowItWorksPage> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          PremiumSliverAppBar(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(theme),
+                      const SizedBox(height: 16),
+                      _buildIntroText(theme),
+                      const SizedBox(height: 20),
+                      const ExternalLinkTile(
+                        label: 'Open Source',
+                        value: 'View',
+                        url: 'https://github.com/r4khul/unfilter',
+                      ),
+                      const SizedBox(height: 30),
+                      const _StepCard(
+                        step: '01',
+                        title: 'Deep Scan',
+                        description:
+                            "We dig through each app's package info and native "
+                            "libraries sitting right on your phone. Nothing leaves "
+                            "your device.",
+                        icon: Icons.radar_rounded,
+                      ),
+                      const _StepCard(
+                        step: '02',
+                        title: 'Signature Matching',
+                        description:
+                            'We run those files against a local database of 50+ '
+                            'frameworks—Flutter, React Native, Unity, you name '
+                            'it—to find matches.',
+                        icon: Icons.fingerprint_rounded,
+                      ),
+                      const _StepCard(
+                        step: '03',
+                        title: 'Zero Cloud',
+                        description:
+                            'Start to finish, every scan happens locally. Your app '
+                            "data stays on your phone—we literally can't see it.",
+                        icon: Icons.cloud_off_rounded,
+                        isLast: true,
+                      ),
+                      const SizedBox(height: 48),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const TopShadowGradient(),
+          PremiumAppBar(
             title: 'How it works',
             scrollController: _scrollController,
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(theme),
-                  const SizedBox(height: 16),
-                  _buildIntroText(theme),
-                  const SizedBox(height: 20),
-                  const ExternalLinkTile(
-                    label: 'Open Source',
-                    value: 'View',
-                    url: 'https://github.com/r4khul/unfilter',
-                  ),
-                  const SizedBox(height: 30),
-                  const _StepCard(
-                    step: '01',
-                    title: 'Deep Scan',
-                    description:
-                        "We dig through each app's package info and native "
-                        "libraries sitting right on your phone. Nothing leaves "
-                        "your device.",
-                    icon: Icons.radar_rounded,
-                  ),
-                  const _StepCard(
-                    step: '02',
-                    title: 'Signature Matching',
-                    description:
-                        'We run those files against a local database of 50+ '
-                        'frameworks—Flutter, React Native, Unity, you name '
-                        'it—to find matches.',
-                    icon: Icons.fingerprint_rounded,
-                  ),
-                  const _StepCard(
-                    step: '03',
-                    title: 'Zero Cloud',
-                    description:
-                        'Start to finish, every scan happens locally. Your app '
-                        "data stays on your phone—we literally can't see it.",
-                    icon: Icons.cloud_off_rounded,
-                    isLast: true,
-                  ),
-                  const SizedBox(height: 48),
-                ],
-              ),
-            ),
           ),
         ],
       ),

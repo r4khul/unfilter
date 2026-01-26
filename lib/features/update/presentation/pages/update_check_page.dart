@@ -11,8 +11,9 @@ import '../widgets/connectivity_dialog.dart';
 import '../widgets/update_check_states.dart';
 import '../widgets/update_bottom_action_bar.dart';
 import '../widgets/update_download_button.dart';
-import '../../../home/presentation/widgets/premium_sliver_app_bar.dart';
+import '../../../home/presentation/widgets/premium_app_bar.dart';
 import '../../../../core/services/connectivity_service.dart';
+import '../../../../core/widgets/top_shadow_gradient.dart';
 
 class UpdateCheckPage extends ConsumerStatefulWidget {
   const UpdateCheckPage({super.key});
@@ -112,32 +113,42 @@ class _UpdateCheckPageState extends ConsumerState<UpdateCheckPage>
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       extendBody: true,
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          PremiumSliverAppBar(
-            title: "System Update",
-            scrollController: _scrollController,
-          ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: UpdateSpacing.xl,
-                ),
-                child: updateAsync.when(
-                  loading: () => UpdateCheckLoadingState(
-                    pulseController: _pulseController,
-                  ),
-                  error: (e, stack) =>
-                      UpdateCheckErrorState(error: e.toString()),
-                  data: (result) => _buildResultContent(result),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 46.0 + (8.0 * 2) + MediaQuery.of(context).padding.top,
                 ),
               ),
-            ),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: UpdateSpacing.xl,
+                    ),
+                    child: updateAsync.when(
+                      loading: () => UpdateCheckLoadingState(
+                        pulseController: _pulseController,
+                      ),
+                      error: (e, stack) =>
+                          UpdateCheckErrorState(error: e.toString()),
+                      data: (result) => _buildResultContent(result),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const TopShadowGradient(),
+          PremiumAppBar(
+            title: "System Update",
+            scrollController: _scrollController,
           ),
         ],
       ),
