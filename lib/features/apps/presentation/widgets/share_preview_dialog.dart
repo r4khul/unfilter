@@ -323,19 +323,30 @@ class _ThemeToggle extends StatelessWidget {
           return GestureDetector(
             onTap: configNotifier.togglePosterDarkMode,
             behavior: HitTestBehavior.opaque,
-            child: AnimatedContainer(
+            child: TweenAnimationBuilder<double>(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: config.posterDarkMode
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: theme.colorScheme.onSurface.withOpacity(0.1),
-                ),
-              ),
+              tween: Tween(begin: 0.0, end: config.posterDarkMode ? 1.0 : 0.0),
+              builder: (context, value, child) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Color.lerp(
+                      Colors.black.withOpacity(0.05),
+                      Colors.white.withOpacity(0.1),
+                      value,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: theme.colorScheme.onSurface.withOpacity(0.1),
+                    ),
+                  ),
+                  child: child,
+                );
+              },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -468,21 +479,32 @@ class _OptionChip extends StatelessWidget {
       child: GestureDetector(
         onTap: option.onToggle,
         behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
+        child: TweenAnimationBuilder<double>(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: option.isEnabled
-                ? theme.colorScheme.primary.withOpacity(isDark ? 0.2 : 0.1)
-                : theme.colorScheme.onSurface.withOpacity(0.04),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: option.isEnabled
-                  ? theme.colorScheme.primary.withOpacity(0.4)
-                  : theme.colorScheme.onSurface.withOpacity(0.08),
-            ),
-          ),
+          tween: Tween(begin: 0.0, end: option.isEnabled ? 1.0 : 0.0),
+          builder: (context, value, child) {
+            final bgColor = Color.lerp(
+              theme.colorScheme.onSurface.withOpacity(0.04),
+              theme.colorScheme.primary.withOpacity(isDark ? 0.2 : 0.1),
+              value,
+            );
+            final borderColor = Color.lerp(
+              theme.colorScheme.onSurface.withOpacity(0.08),
+              theme.colorScheme.primary.withOpacity(0.4),
+              value,
+            );
+
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: borderColor!),
+              ),
+              child: child,
+            );
+          },
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
