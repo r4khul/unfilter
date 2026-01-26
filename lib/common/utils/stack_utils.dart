@@ -42,7 +42,7 @@ String getStackIconPath(String stack) {
     case 'flutter':
       return 'assets/vectors/icon_flutter.svg';
     case 'react native':
-      return 'assets/vectors/icon_react.svg';
+      return 'assets/vectors/icon_reactnative.svg';
     case 'kotlin':
       return 'assets/vectors/icon_kotlin.svg';
     case 'jetpack compose':
@@ -58,15 +58,9 @@ String getStackIconPath(String stack) {
       return 'assets/vectors/icon_cordova.svg';
     case 'xamarin':
       return 'assets/vectors/icon_xamarin.svg';
-    case 'nativescript':
-      return 'assets/vectors/icon_nativescript.svg';
     case 'unity':
       return 'assets/vectors/icon_unity.svg';
-    case 'godot':
-      return 'assets/vectors/icon_godot.svg';
-    case 'corona':
-      return 'assets/vectors/icon_corona.svg';
     default:
-      return 'assets/vectors/icon_native.svg';
+      return 'assets/vectors/icon_android.svg';
   }
 }
