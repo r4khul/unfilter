@@ -25,6 +25,8 @@ class TechStackFilter extends ConsumerWidget {
       {'name': TechStacks.ionic, 'icon': 'assets/vectors/icon_ionic.svg'},
       {'name': TechStacks.xamarin, 'icon': 'assets/vectors/icon_xamarin.svg'},
       {'name': TechStacks.pwa, 'icon': 'assets/vectors/icon_pwa.svg'},
+      {'name': TechStacks.unity, 'icon': 'assets/vectors/icon_unity.svg'},
+      {'name': TechStacks.cordova, 'icon': 'assets/vectors/icon_cordova.svg'},
     ];
 
     void showStackSelector() {

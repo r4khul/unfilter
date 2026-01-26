@@ -25,4 +25,6 @@ class TechStacks {
   static const ionic = 'Ionic';
   static const xamarin = 'Xamarin';
   static const jetpack = 'Jetpack';
+  static const unity = 'Unity';
+  static const cordova = 'Cordova';
 }
