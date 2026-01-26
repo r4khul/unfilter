@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../domain/entities/device_app.dart';
 import 'customizable_share_poster.dart';
 import 'share_options_config.dart';
+import 'share_config_notifier.dart';
 
 class SharePreviewDialog extends StatefulWidget {
   final DeviceApp app;
@@ -34,8 +35,7 @@ class SharePreviewDialog extends StatefulWidget {
 class _SharePreviewDialogState extends State<SharePreviewDialog>
     with SingleTickerProviderStateMixin {
   final GlobalKey _posterKey = GlobalKey();
-
-  ShareOptionsConfig _config = const ShareOptionsConfig();
+  late final ShareConfigNotifier _configNotifier;
   bool _isSharing = false;
 
   late final AnimationController _entranceController;
@@ -45,6 +45,8 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
   @override
   void initState() {
     super.initState();
+    _configNotifier = ShareConfigNotifier();
+
     _entranceController = AnimationController(
       duration: const Duration(milliseconds: 350),
       vsync: this,
@@ -67,13 +69,8 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
   @override
   void dispose() {
     _entranceController.dispose();
+    _configNotifier.dispose();
     super.dispose();
-  }
-
-  void _updateConfig(ShareOptionsConfig newConfig) {
-    if (_config != newConfig) {
-      setState(() => _config = newConfig);
-    }
   }
 
   Future<void> _handleShare() async {
@@ -114,7 +111,10 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
       if (mounted) navigator.pop();
 
       await SharePlus.instance.share(
-        ShareParams(files: [XFile(file.path)], text: _buildShareText()),
+        ShareParams(
+          files: [XFile(file.path)],
+          text: _buildShareText(_configNotifier.value),
+        ),
       );
     } catch (e) {
       debugPrint("Share error: $e");
@@ -135,16 +135,16 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
     await WidgetsBinding.instance.endOfFrame;
   }
 
-  String _buildShareText() {
+  String _buildShareText(ShareOptionsConfig config) {
     final buffer = StringBuffer();
     buffer.writeln("${widget.app.appName} just got exposed 🔍");
     buffer.writeln();
     buffer.writeln("Built with: ${widget.app.stack}");
 
-    if (_config.showVersion) {
+    if (config.showVersion) {
       buffer.writeln("Version: ${widget.app.version}");
     }
-    if (_config.showSize) {
+    if (config.showSize) {
       buffer.writeln("Size: ${_formatBytes(widget.app.size)}");
     }
 
@@ -184,271 +184,360 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
           ),
         );
       },
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(
-            sigmaX: isDark ? 30 : 15,
-            sigmaY: isDark ? 30 : 15,
-          ),
-          child: Container(
-            height: screenHeight * 0.85,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF0D0D0D).withOpacity(0.95)
-                  : const Color(0xFFF8F8F8).withOpacity(0.95),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(28),
-              ),
-              border: Border.all(
+      child: RepaintBoundary(
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          child: _BackdropContainer(
+            isDark: isDark,
+            child: Container(
+              height: screenHeight * 0.85,
+              decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.black.withOpacity(0.05),
+                    ? const Color(0xFF0D0D0D).withOpacity(0.95)
+                    : const Color(0xFFF8F8F8).withOpacity(0.95),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.08)
+                      : Colors.black.withOpacity(0.05),
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                _buildHeader(theme, isDark),
-
-                _buildOptionsRow(theme, isDark),
-
-                Expanded(child: _buildPreviewSection(theme, isDark)),
-
-                _buildShareButton(theme, isDark),
-              ],
+              child: Column(
+                children: [
+                  _DialogHeader(configNotifier: _configNotifier),
+                  _OptionsRow(app: widget.app, configNotifier: _configNotifier),
+                  Expanded(
+                    child: _PreviewSection(
+                      posterKey: _posterKey,
+                      app: widget.app,
+                      configNotifier: _configNotifier,
+                    ),
+                  ),
+                  _ShareButton(isSharing: _isSharing, onShare: _handleShare),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildHeader(ThemeData theme, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.close_rounded,
-                    size: 18,
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  "Customize & Share",
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ),
-              _buildThemeToggle(theme, isDark),
-            ],
-          ),
-        ],
+class _BackdropContainer extends StatelessWidget {
+  final bool isDark;
+  final Widget child;
+
+  const _BackdropContainer({required this.isDark, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(
+          sigmaX: isDark ? 30 : 15,
+          sigmaY: isDark ? 30 : 15,
+        ),
+        child: child,
       ),
     );
   }
+}
 
-  Widget _buildThemeToggle(ThemeData theme, bool isDark) {
-    return GestureDetector(
-      onTap: () => _updateConfig(
-        _config.copyWith(posterDarkMode: !_config.posterDarkMode),
-      ),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: _config.posterDarkMode
-              ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: theme.colorScheme.onSurface.withOpacity(0.1),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+class _DialogHeader extends StatelessWidget {
+  final ShareConfigNotifier configNotifier;
+
+  const _DialogHeader({required this.configNotifier});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return RepaintBoundary(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+        child: Column(
           children: [
-            Icon(
-              _config.posterDarkMode
-                  ? Icons.dark_mode_rounded
-                  : Icons.light_mode_rounded,
-              size: 16,
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              _config.posterDarkMode ? "Dark" : "Light",
-              style: TextStyle(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurface.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(2),
               ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurface.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    "Customize & Share",
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+                _ThemeToggle(configNotifier: configNotifier),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildOptionsRow(ThemeData theme, bool isDark) {
-    final options = <_OptionData>[
-      _OptionData(
-        "Version",
-        Icons.info_outline_rounded,
-        _config.showVersion,
-        () => _config.copyWith(showVersion: !_config.showVersion),
-      ),
-      _OptionData(
-        "SDK",
-        Icons.developer_mode_rounded,
-        _config.showSdk,
-        () => _config.copyWith(showSdk: !_config.showSdk),
-      ),
-      _OptionData(
-        "Usage",
-        Icons.access_time_rounded,
-        _config.showUsage,
-        () => _config.copyWith(showUsage: !_config.showUsage),
-      ),
-      _OptionData(
-        "Install Date",
-        Icons.calendar_today_rounded,
-        _config.showInstallDate,
-        () => _config.copyWith(showInstallDate: !_config.showInstallDate),
-      ),
-      _OptionData(
-        "Size",
-        Icons.storage_rounded,
-        _config.showSize,
-        () => _config.copyWith(showSize: !_config.showSize),
-      ),
-      if (widget.app.installerStore != 'Unknown')
-        _OptionData(
-          "Source",
-          Icons.store_rounded,
-          _config.showSource,
-          () => _config.copyWith(showSource: !_config.showSource),
-        ),
-      if (widget.app.techVersions.isNotEmpty)
-        _OptionData(
-          "Tech",
-          Icons.code_rounded,
-          _config.showTechVersions,
-          () => _config.copyWith(showTechVersions: !_config.showTechVersions),
-        ),
-      _OptionData(
-        "Components",
-        Icons.widgets_rounded,
-        _config.showComponents,
-        () => _config.copyWith(showComponents: !_config.showComponents),
-      ),
-      if (widget.app.splitApks.isNotEmpty)
-        _OptionData(
-          "Splits",
-          Icons.extension_rounded,
-          _config.showSplitApks,
-          () => _config.copyWith(showSplitApks: !_config.showSplitApks),
-        ),
-    ];
+class _ThemeToggle extends StatelessWidget {
+  final ShareConfigNotifier configNotifier;
 
-    return SizedBox(
-      height: 36,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: options.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final opt = options[index];
-          return _buildOptionChip(opt, theme, isDark);
+  const _ThemeToggle({required this.configNotifier});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return RepaintBoundary(
+      child: ValueListenableBuilder<ShareOptionsConfig>(
+        valueListenable: configNotifier,
+        builder: (context, config, _) {
+          return GestureDetector(
+            onTap: configNotifier.togglePosterDarkMode,
+            behavior: HitTestBehavior.opaque,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: config.posterDarkMode
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: theme.colorScheme.onSurface.withOpacity(0.1),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    config.posterDarkMode
+                        ? Icons.dark_mode_rounded
+                        : Icons.light_mode_rounded,
+                    size: 16,
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    config.posterDarkMode ? "Dark" : "Light",
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         },
       ),
     );
   }
+}
 
-  Widget _buildOptionChip(_OptionData opt, ThemeData theme, bool isDark) {
-    return GestureDetector(
-      onTap: () => _updateConfig(opt.toggle()),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: opt.isEnabled
-              ? theme.colorScheme.primary.withOpacity(isDark ? 0.2 : 0.1)
-              : theme.colorScheme.onSurface.withOpacity(0.04),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: opt.isEnabled
-                ? theme.colorScheme.primary.withOpacity(0.4)
-                : theme.colorScheme.onSurface.withOpacity(0.08),
+class _OptionsRow extends StatelessWidget {
+  final DeviceApp app;
+  final ShareConfigNotifier configNotifier;
+
+  const _OptionsRow({required this.app, required this.configNotifier});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ShareOptionsConfig>(
+      valueListenable: configNotifier,
+      builder: (context, config, _) {
+        final options = <_OptionData>[
+          _OptionData(
+            "Version",
+            Icons.info_outline_rounded,
+            config.showVersion,
+            configNotifier.toggleVersion,
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (opt.isEnabled) ...[
+          _OptionData(
+            "SDK",
+            Icons.developer_mode_rounded,
+            config.showSdk,
+            configNotifier.toggleSdk,
+          ),
+          _OptionData(
+            "Usage",
+            Icons.access_time_rounded,
+            config.showUsage,
+            configNotifier.toggleUsage,
+          ),
+          _OptionData(
+            "Install Date",
+            Icons.calendar_today_rounded,
+            config.showInstallDate,
+            configNotifier.toggleInstallDate,
+          ),
+          _OptionData(
+            "Size",
+            Icons.storage_rounded,
+            config.showSize,
+            configNotifier.toggleSize,
+          ),
+          if (app.installerStore != 'Unknown')
+            _OptionData(
+              "Source",
+              Icons.store_rounded,
+              config.showSource,
+              configNotifier.toggleSource,
+            ),
+          if (app.techVersions.isNotEmpty)
+            _OptionData(
+              "Tech",
+              Icons.code_rounded,
+              config.showTechVersions,
+              configNotifier.toggleTechVersions,
+            ),
+          _OptionData(
+            "Components",
+            Icons.widgets_rounded,
+            config.showComponents,
+            configNotifier.toggleComponents,
+          ),
+          if (app.splitApks.isNotEmpty)
+            _OptionData(
+              "Splits",
+              Icons.extension_rounded,
+              config.showSplitApks,
+              configNotifier.toggleSplitApks,
+            ),
+        ];
+
+        return SizedBox(
+          height: 36,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: options.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              return _OptionChip(option: options[index]);
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _OptionChip extends StatelessWidget {
+  final _OptionData option;
+
+  const _OptionChip({required this.option});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: option.onToggle,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: option.isEnabled
+                ? theme.colorScheme.primary.withOpacity(isDark ? 0.2 : 0.1)
+                : theme.colorScheme.onSurface.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: option.isEnabled
+                  ? theme.colorScheme.primary.withOpacity(0.4)
+                  : theme.colorScheme.onSurface.withOpacity(0.08),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (option.isEnabled) ...[
+                Icon(
+                  Icons.check_rounded,
+                  size: 14,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 4),
+              ],
               Icon(
-                Icons.check_rounded,
+                option.icon,
                 size: 14,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(width: 4),
-            ],
-            Icon(
-              opt.icon,
-              size: 14,
-              color: opt.isEnabled
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurface.withOpacity(0.5),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              opt.label,
-              style: TextStyle(
-                color: opt.isEnabled
+                color: option.isEnabled
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurface.withOpacity(0.6),
-                fontSize: 12,
-                fontWeight: opt.isEnabled ? FontWeight.w600 : FontWeight.w500,
+                    : theme.colorScheme.onSurface.withOpacity(0.5),
               ),
-            ),
-          ],
+              const SizedBox(width: 6),
+              Text(
+                option.label,
+                style: TextStyle(
+                  color: option.isEnabled
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurface.withOpacity(0.6),
+                  fontSize: 12,
+                  fontWeight: option.isEnabled
+                      ? FontWeight.w600
+                      : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildPreviewSection(ThemeData theme, bool isDark) {
+class _PreviewSection extends StatelessWidget {
+  final GlobalKey posterKey;
+  final DeviceApp app;
+  final ShareConfigNotifier configNotifier;
+
+  const _PreviewSection({
+    required this.posterKey,
+    required this.app,
+    required this.configNotifier,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       decoration: BoxDecoration(
@@ -468,12 +557,14 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
           child: Center(
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: RepaintBoundary(
-                key: _posterKey,
-                child: CustomizableSharePoster(
-                  app: widget.app,
-                  config: _config,
-                ),
+              child: ValueListenableBuilder<ShareOptionsConfig>(
+                valueListenable: configNotifier,
+                builder: (context, config, _) {
+                  return RepaintBoundary(
+                    key: posterKey,
+                    child: CustomizableSharePoster(app: app, config: config),
+                  );
+                },
               ),
             ),
           ),
@@ -481,71 +572,87 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
       ),
     );
   }
+}
 
-  Widget _buildShareButton(ThemeData theme, bool isDark) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-        child: GestureDetector(
-          onTap: _isSharing ? null : _handleShare,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              gradient: _isSharing
-                  ? null
-                  : LinearGradient(
-                      colors: isDark
-                          ? [const Color(0xFFFFFFFF), const Color(0xFFE8E8E8)]
-                          : [const Color(0xFF1A1A1A), const Color(0xFF000000)],
-                    ),
-              color: _isSharing
-                  ? theme.colorScheme.onSurface.withOpacity(0.1)
-                  : null,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: _isSharing
-                  ? null
-                  : [
-                      BoxShadow(
-                        color: (isDark ? Colors.white : Colors.black)
-                            .withOpacity(0.1),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
+class _ShareButton extends StatelessWidget {
+  final bool isSharing;
+  final VoidCallback onShare;
+
+  const _ShareButton({required this.isSharing, required this.onShare});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return RepaintBoundary(
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: GestureDetector(
+            onTap: isSharing ? null : onShare,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                gradient: isSharing
+                    ? null
+                    : LinearGradient(
+                        colors: isDark
+                            ? [const Color(0xFFFFFFFF), const Color(0xFFE8E8E8)]
+                            : [
+                                const Color(0xFF1A1A1A),
+                                const Color(0xFF000000),
+                              ],
                       ),
-                    ],
-            ),
-            child: Center(
-              child: _isSharing
-                  ? SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.ios_share_rounded,
-                          size: 20,
-                          color: isDark ? Colors.black : Colors.white,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          "Share Image",
-                          style: TextStyle(
-                            color: isDark ? Colors.black : Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.3,
-                          ),
+                color: isSharing
+                    ? theme.colorScheme.onSurface.withOpacity(0.1)
+                    : null,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: isSharing
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: (isDark ? Colors.white : Colors.black)
+                              .withOpacity(0.1),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
                         ),
                       ],
-                    ),
+              ),
+              child: Center(
+                child: isSharing
+                    ? SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.ios_share_rounded,
+                            size: 20,
+                            color: isDark ? Colors.black : Colors.white,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            "Share Image",
+                            style: TextStyle(
+                              color: isDark ? Colors.black : Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
         ),
@@ -558,7 +665,7 @@ class _OptionData {
   final String label;
   final IconData icon;
   final bool isEnabled;
-  final ShareOptionsConfig Function() toggle;
+  final VoidCallback onToggle;
 
-  const _OptionData(this.label, this.icon, this.isEnabled, this.toggle);
+  const _OptionData(this.label, this.icon, this.isEnabled, this.onToggle);
 }
