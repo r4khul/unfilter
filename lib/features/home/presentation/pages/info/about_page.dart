@@ -7,11 +7,24 @@ import '../../widgets/external_link_tile.dart';
 import '../../widgets/github_cta_card.dart';
 import '../../widgets/premium_sliver_app_bar.dart';
 
-class AboutPage extends ConsumerWidget {
+class AboutPage extends ConsumerStatefulWidget {
   const AboutPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AboutPage> createState() => _AboutPageState();
+}
+
+class _AboutPageState extends ConsumerState<AboutPage> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final versionAsync = ref.watch(currentVersionProvider);
@@ -19,9 +32,13 @@ class AboutPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
+        controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          const PremiumSliverAppBar(title: 'About'),
+          PremiumSliverAppBar(
+            title: 'About',
+            scrollController: _scrollController,
+          ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

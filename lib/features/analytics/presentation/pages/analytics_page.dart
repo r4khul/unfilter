@@ -34,6 +34,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey _sharePosterKey = GlobalKey();
+  final ScrollController _scrollController = ScrollController();
   bool _isSharing = false;
 
   @override
@@ -46,6 +47,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -102,8 +104,12 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
 
   Widget _buildEmptyState(bool hasPermission) {
     return CustomScrollView(
+      controller: _scrollController,
       slivers: [
-        const PremiumSliverAppBar(title: 'Usage Statistics'),
+        PremiumSliverAppBar(
+          title: 'Usage Statistics',
+          scrollController: _scrollController,
+        ),
         SliverFillRemaining(
           child: UsagePermissionCard(hasPermission: hasPermission),
         ),
@@ -113,8 +119,12 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
 
   Widget _buildSearchEmptyState(ThemeData theme) {
     return CustomScrollView(
+      controller: _scrollController,
       slivers: [
-        const PremiumSliverAppBar(title: 'Usage Statistics'),
+        PremiumSliverAppBar(
+          title: 'Usage Statistics',
+          scrollController: _scrollController,
+        ),
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -155,9 +165,13 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
         _buildHiddenSharePoster(topApps, totalUsage),
 
         CustomScrollView(
+          controller: _scrollController,
           physics: const BouncingScrollPhysics(),
           slivers: [
-            const PremiumSliverAppBar(title: 'Usage Statistics'),
+            PremiumSliverAppBar(
+              title: 'Usage Statistics',
+              scrollController: _scrollController,
+            ),
             const SliverToBoxAdapter(child: SizedBox(height: 10)),
             _buildSearchBarSliver(),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),

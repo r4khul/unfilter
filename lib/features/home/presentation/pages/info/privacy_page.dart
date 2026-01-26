@@ -4,8 +4,21 @@ import '../../widgets/external_link_tile.dart';
 import '../../widgets/github_cta_card.dart';
 import '../../widgets/premium_sliver_app_bar.dart';
 
-class PrivacyPage extends StatelessWidget {
+class PrivacyPage extends StatefulWidget {
   const PrivacyPage({super.key});
+
+  @override
+  State<PrivacyPage> createState() => _PrivacyPageState();
+}
+
+class _PrivacyPageState extends State<PrivacyPage> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,9 +27,13 @@ class PrivacyPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
+        controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          const PremiumSliverAppBar(title: 'Privacy Policy'),
+          PremiumSliverAppBar(
+            title: 'Privacy Policy',
+            scrollController: _scrollController,
+          ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

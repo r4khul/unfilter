@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
@@ -10,12 +11,15 @@ class PremiumSliverAppBar extends StatefulWidget {
 
   final List<Widget>? actions;
 
+  final ScrollController? scrollController;
+
   const PremiumSliverAppBar({
     super.key,
     required this.title,
     this.onResync,
     this.onShare,
     this.actions,
+    this.scrollController,
   });
 
   @override
@@ -26,11 +30,49 @@ class _PremiumSliverAppBarState extends State<PremiumSliverAppBar> {
   OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
   bool _isMenuOpen = false;
+  bool _isVisible = true;
+  Timer? _scrollStopTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.scrollController?.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(PremiumSliverAppBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scrollController != widget.scrollController) {
+      oldWidget.scrollController?.removeListener(_onScroll);
+      widget.scrollController?.addListener(_onScroll);
+    }
+  }
 
   @override
   void dispose() {
+    widget.scrollController?.removeListener(_onScroll);
+    _scrollStopTimer?.cancel();
     _removeOverlay(fromDispose: true);
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!mounted) return;
+
+    // Immediately hide on scroll - snappy response
+    if (_isVisible) {
+      setState(() => _isVisible = false);
+    }
+
+    // Cancel any pending show timer
+    _scrollStopTimer?.cancel();
+
+    // Show after scroll stops - reduced from 500ms to 250ms for snappier feel
+    _scrollStopTimer = Timer(const Duration(milliseconds: 250), () {
+      if (mounted && !_isVisible) {
+        setState(() => _isVisible = true);
+      }
+    });
   }
 
   void _removeOverlay({bool fromDispose = false}) {
@@ -165,18 +207,25 @@ class _PremiumSliverAppBarState extends State<PremiumSliverAppBar> {
       toolbarHeight: totalHeight,
       collapsedHeight: totalHeight,
       expandedHeight: totalHeight,
-      flexibleSpace: Container(
-        margin: EdgeInsets.only(
-          top: marginV + topPadding,
-          left: 16,
-          right: 16,
-          bottom: marginV,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-            child: _buildAppBarContent(theme, isDark),
+      flexibleSpace: AnimatedOpacity(
+        opacity: _isVisible ? 1.0 : 0.0,
+        duration: const Duration(
+          milliseconds: 150,
+        ), // Reduced from 300ms for snappier feel
+        curve: Curves.easeOut, // More natural and performant curve
+        child: Container(
+          margin: EdgeInsets.only(
+            top: marginV + topPadding,
+            left: 16,
+            right: 16,
+            bottom: marginV,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              child: _buildAppBarContent(theme, isDark),
+            ),
           ),
         ),
       ),

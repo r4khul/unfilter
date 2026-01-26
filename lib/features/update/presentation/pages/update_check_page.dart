@@ -24,6 +24,7 @@ class UpdateCheckPage extends ConsumerStatefulWidget {
 class _UpdateCheckPageState extends ConsumerState<UpdateCheckPage>
     with SingleTickerProviderStateMixin {
   bool _isManuallyChecking = false;
+  final ScrollController _scrollController = ScrollController();
 
   late AnimationController _pulseController;
 
@@ -50,6 +51,7 @@ class _UpdateCheckPageState extends ConsumerState<UpdateCheckPage>
   @override
   void dispose() {
     _pulseController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -111,9 +113,13 @@ class _UpdateCheckPageState extends ConsumerState<UpdateCheckPage>
       backgroundColor: theme.scaffoldBackgroundColor,
       extendBody: true,
       body: CustomScrollView(
+        controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          const PremiumSliverAppBar(title: "System Update"),
+          PremiumSliverAppBar(
+            title: "System Update",
+            scrollController: _scrollController,
+          ),
           SliverFillRemaining(
             hasScrollBody: false,
             child: SafeArea(

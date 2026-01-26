@@ -24,10 +24,12 @@ class _StorageInsightsPageState extends ConsumerState<StorageInsightsPage> {
   int _showTopCount = 5;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -69,8 +71,12 @@ class _StorageInsightsPageState extends ConsumerState<StorageInsightsPage> {
 
   Widget _buildEmptyState(ThemeData theme, String message) {
     return CustomScrollView(
+      controller: _scrollController,
       slivers: [
-        const PremiumSliverAppBar(title: 'Storage Insights'),
+        PremiumSliverAppBar(
+          title: 'Storage Insights',
+          scrollController: _scrollController,
+        ),
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
@@ -105,9 +111,13 @@ class _StorageInsightsPageState extends ConsumerState<StorageInsightsPage> {
     final otherSizeForChart = totalSize - topSizeForChart;
 
     return CustomScrollView(
+      controller: _scrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
-        const PremiumSliverAppBar(title: 'Storage Insights'),
+        PremiumSliverAppBar(
+          title: 'Storage Insights',
+          scrollController: _scrollController,
+        ),
         const SliverToBoxAdapter(child: SizedBox(height: 10)),
         _buildSearchBarSliver(),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),

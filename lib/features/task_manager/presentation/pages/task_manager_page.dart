@@ -32,6 +32,7 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
 
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   int _totalRam = 0;
   int _freeRam = 0;
@@ -53,6 +54,7 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
   void dispose() {
     _refreshTimer?.cancel();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -139,18 +141,21 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
       backgroundColor: theme.scaffoldBackgroundColor,
       body: TaskManagerStage(
         isLoading: isLoading,
-        isRefreshing:
-            false,
+        isRefreshing: false,
         child: RefreshIndicator(
           onRefresh: () async {
             await Future.wait([_refreshRam(), _refreshBattery()]);
           },
           child: CustomScrollView(
+            controller: _scrollController,
             physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics(),
             ),
             slivers: [
-              const PremiumSliverAppBar(title: "Task Manager"),
+              PremiumSliverAppBar(
+                title: "Task Manager",
+                scrollController: _scrollController,
+              ),
 
               SliverToBoxAdapter(
                 child: SystemOverviewCard(

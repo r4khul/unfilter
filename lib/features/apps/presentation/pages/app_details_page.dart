@@ -23,6 +23,7 @@ class AppDetailsPage extends ConsumerStatefulWidget {
 class _AppDetailsPageState extends ConsumerState<AppDetailsPage> {
   bool _isResyncing = false;
   bool _isInitialLoading = false;
+  final ScrollController _scrollController = ScrollController();
 
   late DeviceApp _currentApp;
 
@@ -40,6 +41,12 @@ class _AppDetailsPageState extends ConsumerState<AppDetailsPage> {
     if (_isIncompleteData) {
       _autoFetchDetails();
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _autoFetchDetails() async {
@@ -140,10 +147,12 @@ class _AppDetailsPageState extends ConsumerState<AppDetailsPage> {
       body: Stack(
         children: [
           CustomScrollView(
+            controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
               PremiumSliverAppBar(
                 title: "App Details",
+                scrollController: _scrollController,
                 onResync: (_isResyncing || _isInitialLoading)
                     ? null
                     : _handleResync,

@@ -3,8 +3,21 @@ import 'package:flutter/material.dart';
 import '../../widgets/external_link_tile.dart';
 import '../../widgets/premium_sliver_app_bar.dart';
 
-class HowItWorksPage extends StatelessWidget {
+class HowItWorksPage extends StatefulWidget {
   const HowItWorksPage({super.key});
+
+  @override
+  State<HowItWorksPage> createState() => _HowItWorksPageState();
+}
+
+class _HowItWorksPageState extends State<HowItWorksPage> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +26,13 @@ class HowItWorksPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
+        controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          const PremiumSliverAppBar(title: 'How it works'),
+          PremiumSliverAppBar(
+            title: 'How it works',
+            scrollController: _scrollController,
+          ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
