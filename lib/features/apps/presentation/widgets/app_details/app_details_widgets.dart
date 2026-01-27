@@ -8,6 +8,7 @@ export 'common_widgets.dart';
 export 'constants.dart';
 export 'deep_insights_section.dart';
 export 'developer_section.dart';
+export 'framework_info.dart';
 export 'native_libs_section.dart';
 export 'permissions_section.dart';
 export 'snackbar_utils.dart';
