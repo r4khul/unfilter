@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/entities/device_app.dart';
 import 'common_widgets.dart';
 import 'constants.dart';
+import 'premium_modal_header.dart';
 
 class PermissionsSection extends StatelessWidget {
   final DeviceApp app;
@@ -93,42 +94,15 @@ class PermissionsSection extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildHandle(theme),
-              _buildSheetHeader(context, theme),
+              PremiumModalHeader(
+                title: "Permissions",
+                icon: Icons.security_rounded,
+                onClose: () => Navigator.pop(context),
+              ),
               Expanded(child: _buildPermissionsList(controller, theme)),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHandle(ThemeData theme) {
-    return Center(
-      child: Container(
-        width: 40,
-        height: 4,
-        margin: const EdgeInsets.symmetric(vertical: AppDetailsSpacing.md),
-        decoration: BoxDecoration(
-          color: theme.dividerColor,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSheetHeader(BuildContext context, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.all(AppDetailsSpacing.standard),
-      child: Row(
-        children: [
-          Text("Permissions", style: theme.textTheme.headlineSmall),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.keyboard_arrow_down),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
       ),
     );
   }
