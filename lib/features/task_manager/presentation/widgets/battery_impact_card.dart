@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../apps/presentation/widgets/app_details/premium_modal_header.dart';
 import '../../domain/entities/battery_impact.dart';
 import '../providers/battery_impact_provider.dart';
 
@@ -16,7 +17,61 @@ class BatteryImpactCard extends ConsumerStatefulWidget {
 }
 
 class _BatteryImpactCardState extends ConsumerState<BatteryImpactCard> {
-  bool _isExpanded = false;
+  void _showBatteryDetails(
+    BuildContext context,
+    AsyncValue<BatteryImpactState> batteryState,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (_, controller) {
+          final theme = Theme.of(context);
+          return Container(
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              children: [
+                PremiumModalHeader(
+                  title: "Battery Impact",
+                  icon: Icons.battery_alert_rounded,
+                  onClose: () => Navigator.pop(context),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: controller,
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: batteryState.when(
+                      data: (state) => _BatteryImpactContent(state: state),
+                      loading: () => const Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (error, _) => Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          "Error: $error",
+                          style: TextStyle(color: theme.colorScheme.error),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,121 +88,85 @@ class _BatteryImpactCardState extends ConsumerState<BatteryImpactCard> {
           width: 1,
         ),
       ),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          theme.colorScheme.error.withOpacity(0.2),
-                          theme.colorScheme.error.withOpacity(0.1),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+      child: InkWell(
+        onTap: () => _showBatteryDetails(context, batteryState),
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      theme.colorScheme.error.withOpacity(0.2),
+                      theme.colorScheme.error.withOpacity(0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.battery_alert_rounded,
+                  size: 18,
+                  color: theme.colorScheme.error,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Battery Impact",
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.2,
                       ),
-                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      Icons.battery_alert_rounded,
-                      size: 18,
-                      color: theme.colorScheme.error,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Battery Impact",
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.2,
+                    const SizedBox(height: 2),
+                    batteryState.when(
+                      data: (state) => Text(
+                        state.hasData
+                            ? "${state.apps.length} apps analyzed • ${state.totalTrackedDrain.toStringAsFixed(1)}% total"
+                            : "Tap to view battery details",
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                            0.7,
                           ),
+                          fontSize: 10,
                         ),
-                        const SizedBox(height: 2),
-                        batteryState.when(
-                          data: (state) => Text(
-                            state.hasData
-                                ? "${state.apps.length} apps analyzed • ${state.totalTrackedDrain.toStringAsFixed(1)}% total"
-                                : "Analyzing battery usage...",
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant
-                                  .withOpacity(0.7),
-                              fontSize: 10,
-                            ),
+                      ),
+                      loading: () => Text(
+                        "Loading battery data...",
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                            0.7,
                           ),
-                          loading: () => Text(
-                            "Loading battery data...",
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant
-                                  .withOpacity(0.7),
-                              fontSize: 10,
-                            ),
-                          ),
-                          error: (_, __) => Text(
-                            "Unable to load data",
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.error,
-                              fontSize: 10,
-                            ),
-                          ),
+                          fontSize: 10,
                         ),
-                      ],
+                      ),
+                      error: (_, __) => Text(
+                        "Unable to load data",
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.error,
+                          fontSize: 10,
+                        ),
+                      ),
                     ),
-                  ),
-                  AnimatedRotation(
-                    turns: _isExpanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          AnimatedCrossFade(
-            firstChild: const SizedBox.shrink(),
-            secondChild: batteryState.when(
-              data: (state) => _BatteryImpactContent(state: state),
-              loading: () => const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(
-                  child: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+                  ],
                 ),
               ),
-              error: (error, _) => Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  "Error: $error",
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
-                ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
-            ),
-            crossFadeState: _isExpanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 250),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -199,12 +218,6 @@ class _BatteryImpactContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Divider(
-          height: 1,
-          thickness: 1,
-          color: theme.colorScheme.outline.withOpacity(0.1),
-        ),
-
         if (topDrainers.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
