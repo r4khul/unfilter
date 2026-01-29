@@ -240,8 +240,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                         ),
                         const SizedBox(height: 20),
                         TextButton(
-                          onPressed: () =>
-                              _launchURL('https://rakhul.com/privacy'),
+                          onPressed: () => _launchURL(
+                            'https://gist.github.com/r4khul/cd8f4828a89dcbd1bae661eed659e1c3',
+                          ),
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,

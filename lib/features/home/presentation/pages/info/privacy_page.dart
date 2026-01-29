@@ -54,7 +54,8 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       const ExternalLinkTile(
                         label: 'Detailed Policy',
                         value: 'Check Here',
-                        url: 'https://github.com/r4khul/unfilter',
+                        url:
+                            'https://gist.github.com/r4khul/cd8f4828a89dcbd1bae661eed659e1c3',
                       ),
                       const SizedBox(height: 48),
                       const _PolicySection(
