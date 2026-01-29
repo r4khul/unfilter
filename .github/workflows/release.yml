@@ -26,9 +26,9 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.32.2"
-          channel: "stable"
+          channel: "stable" # Use the latest stable version automatically
           cache: true
+          # flutter-version: "3.32.2"  <-- REMOVED: This was forcing the old Dart SDK
 
       - name: Decode Keystore
         run: |
