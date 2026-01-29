@@ -583,7 +583,7 @@ class UserAppItem extends StatelessWidget {
           ),
         ),
         Text(
-          "RSS: ${process.res}",
+          "RSS: ${process.formattedMemory}",
           style: theme.textTheme.labelSmall?.copyWith(
             fontSize: TaskManagerFontSizes.xs,
             color: theme.colorScheme.onSurfaceVariant,

@@ -91,7 +91,11 @@ final taskManagerViewModelProvider =
         cpuCores: cpuCores,
       );
 
-      final matches = _matchProcessesToApps(activeApps, shellProcesses);
+      final normalizedProcesses = processesWithHistory
+          .map((p) => p.process)
+          .toList();
+
+      final matches = _matchProcessesToApps(activeApps, normalizedProcesses);
 
       return AsyncValue.data(
         TaskManagerData(

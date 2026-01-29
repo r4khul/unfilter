@@ -28,93 +28,22 @@ class TaskManagerPage extends ConsumerStatefulWidget {
 }
 
 class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
-  final Battery _battery = Battery();
-  Timer? _refreshTimer;
+  final GlobalKey<_SystemMonitorHeaderState> _headerKey = GlobalKey();
 
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  int _totalRam = 0;
-  int _freeRam = 0;
-  int _batteryLevel = 0;
-  BatteryState _batteryState = BatteryState.unknown;
-  String _deviceModel = "Unknown Device";
-  String _androidVersion = "";
-
-  bool _isLoadingStats = true;
-
   @override
   void initState() {
     super.initState();
-    _initSystemStats();
-    _startRefreshTimer();
   }
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _startRefreshTimer() {
-    _refreshTimer = Timer.periodic(TaskManagerDurations.refreshInterval, (
-      timer,
-    ) {
-      _refreshRam();
-      _refreshBattery();
-    });
-  }
-
-  Future<void> _initSystemStats() async {
-    await Future.wait([_refreshRam(), _refreshBattery(), _getDeviceInfo()]);
-
-    if (mounted) {
-      setState(() => _isLoadingStats = false);
-    }
-  }
-
-  Future<void> _refreshRam() async {
-    try {
-      const int mb = 1024 * 1024;
-      _totalRam = SysInfo.getTotalPhysicalMemory() ~/ mb;
-      _freeRam = SysInfo.getFreePhysicalMemory() ~/ mb;
-      if (mounted) setState(() {});
-    } catch (e) {
-      debugPrint('Error refreshing RAM: $e');
-    }
-  }
-
-  Future<void> _refreshBattery() async {
-    try {
-      final level = await _battery.batteryLevel;
-      final state = await _battery.batteryState;
-      if (mounted) {
-        setState(() {
-          _batteryLevel = level;
-          _batteryState = state;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error refreshing battery: $e');
-    }
-  }
-
-  Future<void> _getDeviceInfo() async {
-    try {
-      final deviceInfo = DeviceInfoPlugin();
-      final androidInfo = await deviceInfo.androidInfo;
-      if (mounted) {
-        setState(() {
-          _deviceModel = "${androidInfo.brand} ${androidInfo.model}";
-          _androidVersion = "Android ${androidInfo.version.release}";
-        });
-      }
-    } catch (e) {
-      debugPrint('Error getting device info: $e');
-    }
   }
 
   double _calculateTotalCpu(AsyncValue<TaskManagerData> viewModelState) {
@@ -136,7 +65,8 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
     final theme = Theme.of(context);
     final viewModelState = ref.watch(taskManagerViewModelProvider);
 
-    final isLoading = _isLoadingStats && viewModelState.isLoading;
+    // Only care about process loading for the main stage state
+    final isLoading = viewModelState.isLoading;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -148,7 +78,10 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
             child: RefreshIndicator(
               edgeOffset: 120,
               onRefresh: () async {
-                await Future.wait([_refreshRam(), _refreshBattery()]);
+                ref.invalidate(taskManagerViewModelProvider);
+                final headerRefresh =
+                    _headerKey.currentState?.refresh() ?? Future.value();
+                await headerRefresh;
               },
               child: CustomScrollView(
                 controller: _scrollController,
@@ -164,14 +97,11 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
                   ),
 
                   SliverToBoxAdapter(
-                    child: SystemOverviewCard(
-                      cpuPercentage: _calculateTotalCpu(viewModelState),
-                      usedRamMb: _totalRam - _freeRam,
-                      totalRamMb: _totalRam,
-                      batteryLevel: _batteryLevel,
-                      isCharging: _batteryState == BatteryState.charging,
-                      deviceModel: _deviceModel,
-                      androidVersion: _androidVersion,
+                    child: RepaintBoundary(
+                      child: _SystemMonitorHeader(
+                        key: _headerKey,
+                        cpuPercentage: _calculateTotalCpu(viewModelState),
+                      ),
                     ),
                   ),
 
@@ -415,6 +345,127 @@ class _ProcessErrorBanner extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SystemMonitorHeader extends StatefulWidget {
+  final double cpuPercentage;
+
+  const _SystemMonitorHeader({super.key, required this.cpuPercentage});
+
+  @override
+  State<_SystemMonitorHeader> createState() => _SystemMonitorHeaderState();
+}
+
+class _SystemMonitorHeaderState extends State<_SystemMonitorHeader>
+    with WidgetsBindingObserver {
+  final Battery _battery = Battery();
+  Timer? _refreshTimer;
+
+  int _totalRam = 0;
+  int _freeRam = 0;
+  int _batteryLevel = 0;
+  BatteryState _batteryState = BatteryState.unknown;
+  String _deviceModel = "Device";
+  String _androidVersion = "";
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initStats();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _stopTimer();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _stopTimer();
+    } else if (state == AppLifecycleState.resumed) {
+      _refreshDynamicStats();
+      _startTimer();
+    }
+  }
+
+  void _startTimer() {
+    _stopTimer(); // specific safety
+    _refreshTimer = Timer.periodic(TaskManagerDurations.refreshInterval, (_) {
+      _refreshDynamicStats();
+    });
+  }
+
+  void _stopTimer() {
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+  }
+
+  Future<void> refresh() async {
+    await _refreshDynamicStats();
+  }
+
+  Future<void> _initStats() async {
+    await Future.wait([_refreshDynamicStats(), _getDeviceInfo()]);
+    if (mounted) setState(() => _initialized = true);
+  }
+
+  Future<void> _refreshDynamicStats() async {
+    if (!mounted) return;
+    try {
+      const int mb = 1024 * 1024;
+      // These are relatively fast calls
+      final totalRam = SysInfo.getTotalPhysicalMemory() ~/ mb;
+      final freeRam = SysInfo.getFreePhysicalMemory() ~/ mb;
+
+      final level = await _battery.batteryLevel;
+      final state = await _battery.batteryState;
+
+      if (mounted) {
+        setState(() {
+          _totalRam = totalRam;
+          _freeRam = freeRam;
+          _batteryLevel = level;
+          _batteryState = state;
+        });
+      }
+    } catch (e) {
+      debugPrint("Stats error: $e");
+    }
+  }
+
+  Future<void> _getDeviceInfo() async {
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      final androidInfo = await deviceInfo.androidInfo;
+      if (mounted) {
+        setState(() {
+          _deviceModel = "${androidInfo.brand} ${androidInfo.model}";
+          _androidVersion = "Android ${androidInfo.version.release}";
+        });
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // If not initialized, we can pass default 0s, SystemOverviewCard handles it gracefully or likely just shows 0.
+    return SystemOverviewCard(
+      cpuPercentage: widget.cpuPercentage,
+      usedRamMb: _totalRam - _freeRam,
+      totalRamMb: _totalRam,
+      batteryLevel: _batteryLevel,
+      isCharging: _batteryState == BatteryState.charging,
+      deviceModel: _deviceModel,
+      androidVersion: _androidVersion,
     );
   }
 }

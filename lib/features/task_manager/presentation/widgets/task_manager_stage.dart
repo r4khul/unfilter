@@ -17,14 +17,42 @@ class TaskManagerStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return _buildLoadingState(context);
-    }
-
     return Stack(
       children: [
-        child,
-        if (isRefreshing)
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 800),
+          switchInCurve: Curves.easeOutQuart,
+          switchOutCurve: Curves.easeInQuad,
+          layoutBuilder: (currentChild, previousChildren) {
+            return Stack(
+              alignment: Alignment.topCenter,
+              children: <Widget>[
+                ...previousChildren,
+                if (currentChild != null) currentChild,
+              ],
+            );
+          },
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            final isEntering = child.key == const ValueKey('content');
+
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: isEntering
+                      ? const Offset(0, 0.05)
+                      : const Offset(0, -0.02),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            );
+          },
+          child: isLoading
+              ? _buildLoadingState(context)
+              : KeyedSubtree(key: const ValueKey('content'), child: child),
+        ),
+        if (isRefreshing && !isLoading)
           Positioned(
             top: 0,
             left: 0,
@@ -36,6 +64,14 @@ class TaskManagerStage extends StatelessWidget {
   }
 
   Widget _buildLoadingState(BuildContext context) {
+    // Assign a key to the loading state to ensure AnimatedSwitcher recognizes it as a different widget
+    return KeyedSubtree(
+      key: const ValueKey('loading'),
+      child: _buildSkeleton(context),
+    );
+  }
+
+  Widget _buildSkeleton(BuildContext context) {
     final theme = Theme.of(context);
 
     return CustomScrollView(
