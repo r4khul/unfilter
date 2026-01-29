@@ -85,3 +85,30 @@ It scans your installed applications and detects if they are built with native t
 ## Download
 
 Get the latest APK from the releases section.
+
+## Development
+
+To set up the project locally and build from source:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/r4khul/findstack.git
+   ```
+2. **Install dependencies**:
+   ```bash
+   flutter pub get
+   ```
+3. **Run the app**:
+   ```bash
+   flutter run
+   ```
+
+For more detailed instructions, check the [Contributing Guide](CONTRIBUTING.md).
+
+## Project Documents
+
+- [**Contributing Guide**](CONTRIBUTING.md): Guidelines for contributing to Unfilter.
+- [**Code of Conduct**](CODE_OF_CONDUCT.md): Our community standards and expectations.
+- [**Security Policy**](SECURITY.md): How to report security vulnerabilities.
+- [**Changelog**](CHANGELOG.md): Detailed history of changes and versions.
+- [**License**](LICENSE): The MIT License.
