@@ -63,8 +63,8 @@ class _PremiumAppBarState extends State<PremiumAppBar> {
     // Cancel any pending show timer
     _scrollStopTimer?.cancel();
 
-    // Show after scroll stops - snappy 250ms delay
-    _scrollStopTimer = Timer(const Duration(milliseconds: 250), () {
+    // Show after scroll stops - buttery smooth re-entry
+    _scrollStopTimer = Timer(const Duration(milliseconds: 120), () {
       if (mounted && !_isVisible) {
         setState(() => _isVisible = true);
       }
@@ -192,16 +192,19 @@ class _PremiumAppBarState extends State<PremiumAppBar> {
     const marginV = 8.0;
     final totalHeight = contentHeight + (marginV * 2) + topPadding;
 
-    // Return a Positioned widget that sits at the top of the Stack
-    return Positioned(
-      top: 0,
+    // AnimatedPositioned for buttery smooth entry/exit
+    // Combined with AnimatedOpacity for the premium fade effect
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutQuart,
+      top: _isVisible ? 0 : -24, // Minimal slide for "floating" feel
       left: 0,
       right: 0,
       height: totalHeight,
       child: AnimatedOpacity(
         opacity: _isVisible ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutQuart,
         child: Container(
           margin: EdgeInsets.only(
             top: marginV + topPadding,
