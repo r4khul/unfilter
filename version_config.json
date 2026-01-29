@@ -1,5 +1,5 @@
 {
-  "latest_native_version": "1.0.0+2",
+  "latest_native_version": "1.1.0+3",
   "min_supported_native_version": "1.0.0+1",
   "release_page_url": "https://github.com/r4khul/unfilter/releases",
   "apk_direct_download_url": "https://github.com/r4khul/unfilter/releases/latest/download/UnFilter_universal.apk",
@@ -9,12 +9,17 @@
     "x86_64": "https://github.com/r4khul/unfilter/releases/latest/download/UnFilter_x86_64.apk"
   },
   "use_per_abi": true,
-  "release_notes": "Initial release with robust OTA update support.",
+  "release_notes": "V1.1.0: Advanced Search, Battery Analysis, and UI Polish.",
   "force_update": false,
   "features": [
-    "Deep app analysis with tech stack detection",
-    "Beautiful modern UI with dark mode support",
-    "OTA update system with connectivity checks"
+    "Advanced Search: Filter by Tech Stack, Name, & Package",
+    "Battery Impact Analysis in Task Manager",
+    "View App Privacy Policies",
+    "Streamlined Issue Reporting Templates"
   ],
-  "fixes": ["Initial release - no fixes yet"]
+  "fixes": [
+    "Square bottom sheets for consistent UI",
+    "Seamless system overlay integration",
+    "Enhanced Documentation & License"
+  ]
 }
