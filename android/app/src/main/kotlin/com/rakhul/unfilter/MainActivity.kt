@@ -40,7 +40,7 @@ class MainActivity : FlutterActivity() {
 
         usageManager = UsageManager(this)
         processManager = ProcessManager()
-        systemReader = SystemDetailReader()
+        systemReader = SystemDetailReader(this)
         storageAnalyzer = StorageAnalyzer(this)
         batteryAnalyzer = BatteryAnalyzer(this)
         

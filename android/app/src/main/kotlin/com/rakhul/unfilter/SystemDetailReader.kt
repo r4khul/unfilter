@@ -1,10 +1,14 @@
 package com.rakhul.unfilter
 
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
 import java.io.File
 import java.io.BufferedReader
 import java.io.FileReader
 
-class SystemDetailReader {
+class SystemDetailReader(private val context: Context) {
 
     fun getMemInfo(): Map<String, Long> {
         val info = mutableMapOf<String, Long>()
@@ -24,27 +28,73 @@ class SystemDetailReader {
     }
 
     fun getCpuTemp(): Double {
-        val paths = listOf(
-            "/sys/class/thermal/thermal_zone0/temp",
-            "/sys/class/thermal/thermal_zone1/temp",
-            "/sys/devices/virtual/thermal/thermal_zone0/temp"
-        )
+        var maxTemp = 0.0
         
-        for (path in paths) {
+        // Expanded search for thermal zones
+        for (i in 0..20) {
+            val path = "/sys/class/thermal/thermal_zone$i"
             try {
-                val file = File(path)
-                if (file.exists() && file.canRead()) {
-                    val tempStr = file.readText().trim()
-                    val temp = tempStr.toDoubleOrNull()
-                    if (temp != null) {
-                        if (temp > 1000) return temp / 1000.0
-                        return temp
+                val dir = File(path)
+                if (dir.exists() && dir.isDirectory) {
+                    val typeFile = File(dir, "type")
+                    val tempFile = File(dir, "temp")
+                    
+                    if (tempFile.exists() && tempFile.canRead()) {
+                        val type = if (typeFile.exists() && typeFile.canRead()) {
+                            typeFile.readText().trim().lowercase()
+                        } else {
+                            ""
+                        }
+                        
+                        // Skip battery thermal zones in this pass
+                        if (type.contains("batt") || type.contains("battery") || type.contains("chg")) {
+                            continue
+                        }
+
+                        val tempStr = tempFile.readText().trim()
+                        val rawTemp = tempStr.toDoubleOrNull()
+                        
+                        if (rawTemp != null && rawTemp > 0) {
+                            val normalized = if (rawTemp > 1000) rawTemp / 1000.0 else rawTemp
+                            
+                            // High priority types
+                            if (type.contains("cpu") || 
+                                type.contains("soc") || 
+                                type.contains("processor") ||
+                                type.contains("ap_therm") ||
+                                type.contains("mtk_ts_cpu")) {
+                                return normalized
+                            }
+                            
+                            // Keep track of the highest non-battery temp as fallback
+                            if (normalized > maxTemp) {
+                                maxTemp = normalized
+                            }
+                        }
                     }
                 }
             } catch (e: Exception) {
+                // Ignore permissions/IO errors for specific zones
             }
         }
-        return 0.0
+        
+        // If we still found nothing, fallback to battery temperature
+        if (maxTemp <= 0) {
+            return getBatteryTemp()
+        }
+        
+        return maxTemp
+    }
+
+    private fun getBatteryTemp(): Double {
+        try {
+            val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val tempInt = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
+            // Battery temp is usually in deci-digits (e.g. 300 for 30.0C)
+            return tempInt / 10.0
+        } catch (e: Exception) {
+            return 0.0
+        }
     }
 
     fun getGpuUsage(): String {
