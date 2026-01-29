@@ -23,6 +23,7 @@ class SharePreviewDialog extends StatefulWidget {
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withOpacity(0.7),
       enableDrag: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       useSafeArea: true,
       builder: (context) => SharePreviewDialog(app: app),
     );
@@ -185,39 +186,27 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
         );
       },
       child: RepaintBoundary(
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          child: _BackdropContainer(
-            isDark: isDark,
-            child: Container(
-              height: screenHeight * 0.85,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF0D0D0D).withOpacity(0.95)
-                    : const Color(0xFFF8F8F8).withOpacity(0.95),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(28),
-                ),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.08)
-                      : Colors.black.withOpacity(0.05),
-                ),
-              ),
-              child: Column(
-                children: [
-                  _DialogHeader(configNotifier: _configNotifier),
-                  _OptionsRow(app: widget.app, configNotifier: _configNotifier),
-                  Expanded(
-                    child: _PreviewSection(
-                      posterKey: _posterKey,
-                      app: widget.app,
-                      configNotifier: _configNotifier,
-                    ),
+        child: _BackdropContainer(
+          isDark: isDark,
+          child: Container(
+            height: screenHeight * 0.85,
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: BorderRadius.zero,
+            ),
+            child: Column(
+              children: [
+                _DialogHeader(configNotifier: _configNotifier),
+                _OptionsRow(app: widget.app, configNotifier: _configNotifier),
+                Expanded(
+                  child: _PreviewSection(
+                    posterKey: _posterKey,
+                    app: widget.app,
+                    configNotifier: _configNotifier,
                   ),
-                  _ShareButton(isSharing: _isSharing, onShare: _handleShare),
-                ],
-              ),
+                ),
+                _ShareButton(isSharing: _isSharing, onShare: _handleShare),
+              ],
             ),
           ),
         ),

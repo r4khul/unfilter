@@ -165,16 +165,15 @@ class AppHeaderCard extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.5,
         minChildSize: 0.3,
         maxChildSize: 0.7,
         builder: (_, controller) => Container(
           decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDetailsBorderRadius.xl),
-            ),
+            color: theme.scaffoldBackgroundColor,
+            borderRadius: BorderRadius.zero,
           ),
           child: Column(
             children: [

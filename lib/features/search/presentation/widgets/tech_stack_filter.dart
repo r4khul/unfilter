@@ -2,6 +2,7 @@ import 'package:unfilter/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:unfilter/features/apps/presentation/widgets/app_details/premium_modal_header.dart';
 import '../providers/tech_stack_provider.dart';
 
 class TechStackFilter extends ConsumerWidget {
@@ -42,33 +43,23 @@ class TechStackFilter extends ConsumerWidget {
         context: context,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         builder: (context) => Container(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.85,
           ),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            color: theme.scaffoldBackgroundColor,
+            borderRadius: BorderRadius.zero,
           ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.dividerColor.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "Filter by Tech Used",
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                PremiumModalHeader(
+                  title: "Filter by Tech",
+                  icon: Icons.filter_alt_rounded,
+                  onClose: () => Navigator.pop(context),
                 ),
                 const SizedBox(height: 24),
                 GridView.builder(

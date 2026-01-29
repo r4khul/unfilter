@@ -109,16 +109,15 @@ class NativeLibsSection extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.6,
         minChildSize: 0.4,
         maxChildSize: 0.9,
         builder: (_, controller) => Container(
           decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDetailsBorderRadius.xl),
-            ),
+            color: theme.scaffoldBackgroundColor,
+            borderRadius: BorderRadius.zero,
           ),
           child: Column(
             children: [
