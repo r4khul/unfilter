@@ -21,10 +21,12 @@ class TechStacks {
   static const reactNative = 'React Native';
   static const kotlin = 'Kotlin';
   static const java = 'Java';
-  static const pwa = 'PWA';
   static const ionic = 'Ionic';
   static const xamarin = 'Xamarin';
   static const jetpack = 'Jetpack';
   static const unity = 'Unity';
   static const cordova = 'Cordova';
+  static const capacitor = 'Capacitor';
+  static const godot = 'Godot';
+  static const nativeScript = 'NativeScript';
 }

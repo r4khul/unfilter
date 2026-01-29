@@ -34,7 +34,7 @@ class StackDetector {
         var hasNativeScript = false
         var hasCorona = false
 
-        var hasPwa = false
+
 
         for (path in apkPaths) {
             val file = File(path)
@@ -54,7 +54,7 @@ class StackDetector {
                             if (res.hasCordova) hasCordova = true
                             if (res.hasNativeScript) hasNativeScript = true
                             if (res.hasCorona) hasCorona = true
-                            if (res.hasPwa) hasPwa = true
+
                             if (res.isKotlin) isKotlin = true
                         }
                 } else {
@@ -71,7 +71,7 @@ class StackDetector {
                                 if (res.hasCordova) hasCordova = true
                                 if (res.hasNativeScript) hasNativeScript = true
                                 if (res.hasCorona) hasCorona = true
-                                if (res.hasPwa) hasPwa = true
+
                                 if (res.isKotlin) isKotlin = true
                             }
                     }
@@ -81,8 +81,7 @@ class StackDetector {
         }
 
         var stack = "Native"
-        if (hasPwa) stack = "PWA"
-        else if (libs.contains("flutter") || hasFlutterAssets) stack = "Flutter"
+        if (libs.contains("flutter") || hasFlutterAssets) stack = "Flutter"
         else if (libs.contains("reactnativejni") || libs.contains("hermes") || hasReactNativeBundle) stack = "React Native"
         else if (libs.contains("unity") || hasUnity) stack = "Unity"
         else if (libs.contains("godot_android") || hasGodot) stack = "Godot"
@@ -127,8 +126,7 @@ class StackDetector {
         var hasCapacitor: Boolean = false,
         var hasCordova: Boolean = false,
         var hasNativeScript: Boolean = false,
-        var hasCorona: Boolean = false,
-        var hasPwa: Boolean = false
+        var hasCorona: Boolean = false
     )
 
     private fun scanZipEntries(zip: ZipFile, libs: MutableSet<String>, setKotlin: (Boolean) -> Unit): ScanResult {
@@ -169,17 +167,7 @@ class StackDetector {
             else if (name.endsWith("capacitor.config.json") || name.contains("public/capacitor.js")) result.hasCapacitor = true
             else if (name.contains("www/cordova.js")) result.hasCordova = true
             else if (name.contains("libNativeScript.so") || name.contains("app/tns_modules")) result.hasNativeScript = true
-            else if (name.contains("libcorona.so") || name.endsWith("main.lua")) result.hasCorona = true
-            
-             if (!result.hasPwa && (
-                 name.startsWith("org/chromium/webapk") ||
-                 name.contains("androidx/browser/trusted") ||
-                 name.contains("com/google/androidbrowserhelper") ||
-                 name.endsWith("twa_manifest.json") ||
-                 name.endsWith("asset_digital_asset_links")
-             )) {
-                 result.hasPwa = true
-             }
+             else if (name.contains("libcorona.so") || name.endsWith("main.lua")) result.hasCorona = true
         }
         return result
     }

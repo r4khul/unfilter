@@ -98,6 +98,18 @@ class FrameworkInfoData {
           'Qt is a cross-platform application framework used for developing applications with native-like performance. It\'s widely used for embedded systems, desktop, and mobile applications.',
       docsUrl: 'https://www.qt.io',
     ),
+    'Capacitor': FrameworkInfo(
+      name: 'Capacitor',
+      description:
+          'Capacitor is a cross-platform native runtime that makes it easy to build web-native apps for iOS, Android, and the Web using JavaScript, HTML, and CSS.',
+      docsUrl: 'https://capacitorjs.com',
+    ),
+    'Godot': FrameworkInfo(
+      name: 'Godot Engine',
+      description:
+          'Godot provides a huge set of common tools, so you can just focus on making your game without reinventing the wheel. It exports to multiple platforms including Android.',
+      docsUrl: 'https://godotengine.org',
+    ),
   };
 
   static FrameworkInfo getInfo(String stack) {

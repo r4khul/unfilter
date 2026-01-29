@@ -24,8 +24,16 @@ class TechStackFilter extends ConsumerWidget {
       {'name': TechStacks.java, 'icon': 'assets/vectors/icon_java.svg'},
       {'name': TechStacks.ionic, 'icon': 'assets/vectors/icon_ionic.svg'},
       {'name': TechStacks.xamarin, 'icon': 'assets/vectors/icon_xamarin.svg'},
-      {'name': TechStacks.pwa, 'icon': 'assets/vectors/icon_pwa.svg'},
       {'name': TechStacks.unity, 'icon': 'assets/vectors/icon_unity.svg'},
+      {'name': TechStacks.godot, 'icon': 'assets/vectors/icon_godot.svg'},
+      {
+        'name': TechStacks.capacitor,
+        'icon': 'assets/vectors/icon_capacitorjs.svg',
+      },
+      {
+        'name': TechStacks.nativeScript,
+        'icon': 'assets/vectors/icon_nativescript.svg',
+      },
       {'name': TechStacks.cordova, 'icon': 'assets/vectors/icon_cordova.svg'},
     ];
 
@@ -33,108 +41,114 @@ class TechStackFilter extends ConsumerWidget {
       showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
+        isScrollControlled: true,
         builder: (context) => Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.dividerColor.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(2),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                "Filter by Tech Used",
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 16),
+                Text(
+                  "Filter by Tech Used",
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              GridView.builder(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.70,
-                ),
-                itemCount: stacks.length,
-                itemBuilder: (context, index) {
-                  final stack = stacks[index];
-                  final isSelected =
-                      selectedStack == stack['name'] ||
-                      (selectedStack == null &&
-                          stack['name'] == TechStacks.all);
+                const SizedBox(height: 24),
+                GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 0.70,
+                  ),
+                  itemCount: stacks.length,
+                  itemBuilder: (context, index) {
+                    final stack = stacks[index];
+                    final isSelected =
+                        selectedStack == stack['name'] ||
+                        (selectedStack == null &&
+                            stack['name'] == TechStacks.all);
 
-                  return GestureDetector(
-                    onTap: () {
-                      ref
-                          .read(techStackFilterProvider.notifier)
-                          .setStack(
-                            stack['name'] == TechStacks.all
-                                ? null
-                                : stack['name'],
-                          );
-                      Navigator.pop(context);
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? theme.colorScheme.primary.withOpacity(0.1)
-                                : theme.colorScheme.surfaceContainerHighest
-                                      .withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
+                    return GestureDetector(
+                      onTap: () {
+                        ref
+                            .read(techStackFilterProvider.notifier)
+                            .setStack(
+                              stack['name'] == TechStacks.all
+                                  ? null
+                                  : stack['name'],
+                            );
+                        Navigator.pop(context);
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
                               color: isSelected
-                                  ? theme.colorScheme.primary
-                                  : Colors.transparent,
-                              width: 2,
+                                  ? theme.colorScheme.primary.withOpacity(0.1)
+                                  : theme.colorScheme.surfaceContainerHighest
+                                        .withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? theme.colorScheme.primary
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: SvgPicture.asset(
+                              stack['icon']!,
+                              width: 24,
+                              height: 24,
                             ),
                           ),
-                          child: SvgPicture.asset(
-                            stack['icon']!,
-                            width: 24,
-                            height: 24,
+                          const SizedBox(height: 8),
+                          Text(
+                            stack['name']!,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurface,
+                              fontSize: 10,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          stack['name']!,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.w500,
-                            color: isSelected
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface,
-                            fontSize: 10,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       );

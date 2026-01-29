@@ -15,8 +15,8 @@ Color getStackColor(String stack, bool isDark) {
       return isDark ? const Color(0xFF42D08D) : const Color(0xFF00C853);
     case 'java':
       return isDark ? const Color(0xFFEF9A9A) : const Color(0xFFE53935);
-    case 'pwa':
-      return isDark ? const Color(0xFFB39DDB) : const Color(0xFF7E57C2);
+    case 'capacitor':
+      return isDark ? const Color(0xFF53C1F4) : const Color(0xFF119EFF);
     case 'ionic':
       return isDark ? const Color(0xFF90CAF9) : const Color(0xFF42A5F5);
     case 'cordova':
@@ -50,14 +50,19 @@ String getStackIconPath(String stack) {
       return 'assets/vectors/icon_jetpack.svg';
     case 'java':
       return 'assets/vectors/icon_java.svg';
-    case 'pwa':
-      return 'assets/vectors/icon_pwa.svg';
+
     case 'ionic':
       return 'assets/vectors/icon_ionic.svg';
     case 'cordova':
       return 'assets/vectors/icon_cordova.svg';
     case 'xamarin':
       return 'assets/vectors/icon_xamarin.svg';
+    case 'nativescript':
+      return 'assets/vectors/icon_nativescript.svg';
+    case 'godot':
+      return 'assets/vectors/icon_godot.svg';
+    case 'capacitor':
+      return 'assets/vectors/icon_capacitorjs.svg';
     case 'unity':
       return 'assets/vectors/icon_unity.svg';
     default:
