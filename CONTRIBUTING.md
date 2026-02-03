@@ -20,6 +20,14 @@ This section guides you through submitting an enhancement suggestion for UnFilte
 - Describe the current behavior and explain which behavior you expected to see instead.
 - Explain why this enhancement would be useful to most UnFilter users.
 
+### Improving Documentation
+
+Updating documentation is a fantastic way to contribute. If you notice anything outdated or unclear, please update it! We also highly value contributions that create specific documentation for features, explaining how the code works and documenting the implementation details.
+
+### Writing Tests
+
+Writing test cases is also a really great contribution. Whether adding unit tests, widget tests, or integration tests, helping us ensure robustness and stability is vastly appreciated.
+
 ### Your First Pull Request
 
 Unsure where to begin contributing to UnFilter? You can start by looking through these `good first issue` and `help wanted` issues:
