@@ -125,7 +125,7 @@ class _PrivacyPageState extends State<PrivacyPage> {
       "Privacy isn't a feature we tacked on—it's baked into how this app "
       'works. UnFilter runs offline because the only way to do this right.',
       style: theme.textTheme.bodyLarge?.copyWith(
-        color: theme.colorScheme.onSurface.withOpacity(0.8),
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
         height: 1.6,
         fontSize: 16,
       ),
@@ -165,10 +165,10 @@ class _PolicySection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.2),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
         ),
       ),
       child: Icon(icon, color: theme.colorScheme.primary, size: 24),

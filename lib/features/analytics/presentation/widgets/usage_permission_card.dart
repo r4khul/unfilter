@@ -22,12 +22,12 @@ class UsagePermissionCard extends ConsumerWidget {
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(32),
             border: Border.all(
-              color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 30,
                 offset: const Offset(0, 15),
               ),
@@ -61,14 +61,14 @@ class UsagePermissionCard extends ConsumerWidget {
       width: 100,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(0.05),
-        border: Border.all(color: color.withOpacity(0.1), width: 1.5),
+        color: color.withValues(alpha: 0.05),
+        border: Border.all(color: color.withValues(alpha: 0.1), width: 1.5),
       ),
       child: Center(
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -141,7 +141,7 @@ class UsagePermissionCard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 16),
             ).copyWith(
               overlayColor: WidgetStateProperty.resolveWith((states) {
-                return Colors.white.withOpacity(0.1);
+                return Colors.white.withValues(alpha: 0.1);
               }),
             ),
         child: Row(

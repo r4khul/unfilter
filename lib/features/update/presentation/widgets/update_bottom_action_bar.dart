@@ -1,7 +1,5 @@
 library;
 
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import 'constants.dart';
@@ -59,12 +57,14 @@ class UpdateBottomActionBar extends StatelessWidget {
 
   BoxDecoration _buildDecoration(ThemeData theme, bool isDark) {
     return BoxDecoration(
-      color: theme.colorScheme.surface.withOpacity(UpdateOpacity.veryHigh),
+      color: theme.colorScheme.surface.withValues(
+        alpha: UpdateOpacity.veryHigh,
+      ),
       borderRadius: BorderRadius.circular(UpdateBorderRadius.xl),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(
-            isDark ? UpdateOpacity.standard : UpdateOpacity.light,
+          color: Colors.black.withValues(
+            alpha: isDark ? UpdateOpacity.standard : UpdateOpacity.light,
           ),
           blurRadius: UpdateBlur.shadow,
           offset: const Offset(0, 8),
@@ -72,8 +72,8 @@ class UpdateBottomActionBar extends StatelessWidget {
       ],
       border: Border.all(
         color: isDark
-            ? Colors.white.withOpacity(UpdateOpacity.light)
-            : Colors.black.withOpacity(UpdateOpacity.subtle),
+            ? Colors.white.withValues(alpha: UpdateOpacity.light)
+            : Colors.black.withValues(alpha: UpdateOpacity.subtle),
       ),
     );
   }
@@ -83,8 +83,8 @@ class UpdateBottomActionBar extends StatelessWidget {
       onPressed: onPressed,
       style: FilledButton.styleFrom(
         backgroundColor: isSecondary
-            ? theme.colorScheme.surfaceContainerHighest.withOpacity(
-                UpdateOpacity.high,
+            ? theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: UpdateOpacity.high,
               )
             : theme.colorScheme.primary,
         foregroundColor: isSecondary
@@ -96,8 +96,8 @@ class UpdateBottomActionBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(UpdateBorderRadius.standard),
           side: isSecondary
               ? BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(
-                    UpdateOpacity.light,
+                  color: theme.colorScheme.outline.withValues(
+                    alpha: UpdateOpacity.light,
                   ),
                 )
               : BorderSide.none,

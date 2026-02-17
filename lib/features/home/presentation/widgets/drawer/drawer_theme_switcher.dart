@@ -23,10 +23,10 @@ class DrawerThemeSwitcher extends ConsumerWidget {
       height: 46,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.2),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
         ),
       ),
       child: Stack(
@@ -44,7 +44,7 @@ class DrawerThemeSwitcher extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -100,7 +100,7 @@ class _ThemeOption extends ConsumerWidget {
 
     final color = isSelected
         ? theme.colorScheme.primary
-        : theme.colorScheme.onSurfaceVariant.withOpacity(0.6);
+        : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6);
 
     return Expanded(
       child: GestureDetector(

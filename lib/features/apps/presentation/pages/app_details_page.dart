@@ -9,7 +9,6 @@ import '../../domain/entities/device_app.dart';
 import '../providers/app_detail_provider.dart';
 import '../providers/apps_provider.dart';
 import '../widgets/app_details/app_details_widgets.dart';
-import '../widgets/app_details/snackbar_utils.dart';
 import '../widgets/share_preview_dialog.dart';
 
 class AppDetailsPage extends ConsumerStatefulWidget {
@@ -226,13 +225,13 @@ class _AppDetailsPageState extends ConsumerState<AppDetailsPage> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer.withOpacity(
-                        0.95,
+                      color: theme.colorScheme.primaryContainer.withValues(
+                        alpha: 0.95,
                       ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),
@@ -279,7 +278,9 @@ class _AppDetailsPageState extends ConsumerState<AppDetailsPage> {
           child: Container(
             height: 80,
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.3,
+              ),
               borderRadius: BorderRadius.circular(16),
             ),
           ),

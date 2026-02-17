@@ -84,7 +84,7 @@ class _BatteryImpactCardState extends ConsumerState<BatteryImpactCard> {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.5),
+          color: theme.colorScheme.outline.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -101,8 +101,8 @@ class _BatteryImpactCardState extends ConsumerState<BatteryImpactCard> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      theme.colorScheme.error.withOpacity(0.2),
-                      theme.colorScheme.error.withOpacity(0.1),
+                      theme.colorScheme.error.withValues(alpha: 0.2),
+                      theme.colorScheme.error.withValues(alpha: 0.1),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -134,7 +134,7 @@ class _BatteryImpactCardState extends ConsumerState<BatteryImpactCard> {
                             ? "${state.apps.length} apps analyzed • ${state.totalTrackedDrain.toStringAsFixed(1)}% total"
                             : "Tap to view battery details",
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 
                             0.7,
                           ),
                           fontSize: 10,
@@ -143,13 +143,13 @@ class _BatteryImpactCardState extends ConsumerState<BatteryImpactCard> {
                       loading: () => Text(
                         "Loading battery data...",
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 
                             0.7,
                           ),
                           fontSize: 10,
                         ),
                       ),
-                      error: (_, __) => Text(
+                      error: (_, _) => Text(
                         "Unable to load data",
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.error,
@@ -190,7 +190,7 @@ class _BatteryImpactContent extends StatelessWidget {
               Icon(
                 Icons.battery_unknown_rounded,
                 size: 40,
-                color: theme.colorScheme.outline.withOpacity(0.5),
+                color: theme.colorScheme.outline.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 12),
               Text(
@@ -203,7 +203,7 @@ class _BatteryImpactContent extends StatelessWidget {
               Text(
                 "Use your device normally to collect data",
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -271,7 +271,7 @@ class _BatteryImpactContent extends StatelessWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.tertiary.withOpacity(0.1),
+                    color: theme.colorScheme.tertiary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -387,7 +387,7 @@ class _DrainMiniChips extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.6),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -417,13 +417,13 @@ class _DrainBadge extends StatelessWidget {
     Color bgColor;
     Color textColor;
     if (drain > 10) {
-      bgColor = theme.colorScheme.error.withOpacity(0.15);
+      bgColor = theme.colorScheme.error.withValues(alpha: 0.15);
       textColor = theme.colorScheme.error;
     } else if (drain > 5) {
-      bgColor = theme.colorScheme.tertiary.withOpacity(0.15);
+      bgColor = theme.colorScheme.tertiary.withValues(alpha: 0.15);
       textColor = theme.colorScheme.tertiary;
     } else {
-      bgColor = theme.colorScheme.primary.withOpacity(0.1);
+      bgColor = theme.colorScheme.primary.withValues(alpha: 0.1);
       textColor = theme.colorScheme.primary;
     }
 
@@ -460,10 +460,10 @@ class _VampireAppItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: theme.colorScheme.tertiary.withOpacity(0.05),
+          color: theme.colorScheme.tertiary.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: theme.colorScheme.tertiary.withOpacity(0.15),
+            color: theme.colorScheme.tertiary.withValues(alpha: 0.15),
           ),
         ),
         child: Row(
@@ -530,7 +530,7 @@ class _VampireAppItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
-                color: theme.colorScheme.outline.withOpacity(0.1),
+                color: theme.colorScheme.outline.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -567,7 +567,7 @@ class BatteryImpactSummary extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: theme.colorScheme.error.withOpacity(0.08),
+            color: theme.colorScheme.error.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -603,7 +603,7 @@ class BatteryImpactSummary extends ConsumerWidget {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }
@@ -657,7 +657,7 @@ class AppBatteryHistoryChart extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: isToday
                             ? theme.colorScheme.primary
-                            : theme.colorScheme.primary.withOpacity(0.4),
+                            : theme.colorScheme.primary.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -686,7 +686,7 @@ class AppBatteryHistoryChart extends ConsumerWidget {
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
-      error: (_, __) => Center(
+      error: (_, _) => Center(
         child: Text(
           "Failed to load history",
           style: theme.textTheme.bodySmall?.copyWith(

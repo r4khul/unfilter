@@ -31,7 +31,7 @@ class AppCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: theme.colorScheme.outline.withOpacity(0.5),
+          color: theme.colorScheme.outline.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -49,7 +49,7 @@ class AppCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
-                    backgroundColor: stackColor.withOpacity(0.1),
+                    backgroundColor: stackColor.withValues(alpha: 0.1),
                     backgroundImage: app.icon != null
                         ? MemoryImage(app.icon!)
                         : null,
@@ -84,7 +84,7 @@ class AppCard extends StatelessWidget {
                           app.packageName,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.textTheme.bodySmall?.color
-                                ?.withOpacity(0.7),
+                                ?.withValues(alpha: 0.7),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -98,10 +98,10 @@ class AppCard extends StatelessWidget {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: stackColor.withOpacity(0.05),
+                                color: stackColor.withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: stackColor.withOpacity(0.2),
+                                  color: stackColor.withValues(alpha: 0.2),
                                   width: 0.8,
                                 ),
                               ),
@@ -138,7 +138,7 @@ class AppCard extends StatelessWidget {
                               Icon(
                                 Icons.access_time_filled,
                                 size: 14,
-                                color: theme.colorScheme.primary.withOpacity(
+                                color: theme.colorScheme.primary.withValues(alpha: 
                                   0.5,
                                 ),
                               ),
@@ -158,15 +158,15 @@ class AppCard extends StatelessWidget {
                                 color: theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: theme.colorScheme.outline.withOpacity(
+                                  color: theme.colorScheme.outline.withValues(alpha: 
                                     0.1,
                                   ),
                                 ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: isDark
-                                        ? Colors.black.withOpacity(0.60)
-                                        : Colors.grey.withOpacity(0.2),
+                                        ? Colors.black.withValues(alpha: 0.60)
+                                        : Colors.grey.withValues(alpha: 0.2),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
@@ -177,7 +177,7 @@ class AppCard extends StatelessWidget {
                                   Icons.chevron_right_rounded,
                                   size: 20,
                                   color: theme.colorScheme.onSurface
-                                      .withOpacity(0.6),
+                                      .withValues(alpha: 0.6),
                                 ),
                               ),
                             ),

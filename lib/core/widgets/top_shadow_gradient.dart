@@ -27,18 +27,18 @@ class TopShadowGradient extends StatelessWidget {
               colors: isDark
                   ? [
                       // Dark mode: More aggressive deep black shadow
-                      Colors.black.withOpacity(0.85), // Increased from 0.6
-                      Colors.black.withOpacity(0.65), // Increased from 0.4
-                      Colors.black.withOpacity(0.4), // Increased from 0.2
-                      Colors.black.withOpacity(0.1), // Reduced from 0.15
+                      Colors.black.withValues(alpha: 0.85), // Increased from 0.6
+                      Colors.black.withValues(alpha: 0.65), // Increased from 0.4
+                      Colors.black.withValues(alpha: 0.4), // Increased from 0.2
+                      Colors.black.withValues(alpha: 0.1), // Reduced from 0.15
                       Colors.transparent,
                     ]
                   : [
                       // Light mode: More aggressive white shadow
-                      Colors.white.withOpacity(0.75), // Increased from 0.5
-                      Colors.white.withOpacity(0.55), // Increased from 0.35
-                      Colors.white.withOpacity(0.35), // Increased from 0.2
-                      Colors.white.withOpacity(0.1), // Reduced from 0.12
+                      Colors.white.withValues(alpha: 0.75), // Increased from 0.5
+                      Colors.white.withValues(alpha: 0.55), // Increased from 0.35
+                      Colors.white.withValues(alpha: 0.35), // Increased from 0.2
+                      Colors.white.withValues(alpha: 0.1), // Reduced from 0.12
                       Colors.transparent,
                     ],
               // Adjusted stops to ensure fully transparent well before the bottom edge

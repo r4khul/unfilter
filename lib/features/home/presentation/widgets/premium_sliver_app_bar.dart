@@ -130,16 +130,16 @@ class _PremiumSliverAppBarState extends State<PremiumSliverAppBar> {
           child: Container(
             decoration: BoxDecoration(
               color: isDark
-                  ? const Color(0xFF1A1A1A).withOpacity(0.92)
-                  : const Color(0xFFF0F0F0).withOpacity(0.92),
+                  ? const Color(0xFF1A1A1A).withValues(alpha: 0.92)
+                  : const Color(0xFFF0F0F0).withValues(alpha: 0.92),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: theme.colorScheme.onSurface.withOpacity(0.1),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -165,7 +165,7 @@ class _PremiumSliverAppBarState extends State<PremiumSliverAppBar> {
                       Divider(
                         height: 1,
                         thickness: 1,
-                        color: theme.colorScheme.onSurface.withOpacity(0.08),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
                       ),
                     if (hasShare)
                       _OverlayMenuItem(
@@ -241,16 +241,16 @@ class _PremiumSliverAppBarState extends State<PremiumSliverAppBar> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.grey[900]!.withOpacity(0.65)
-            : Colors.grey[100]!.withOpacity(0.65),
+            ? Colors.grey[900]!.withValues(alpha: 0.65)
+            : Colors.grey[100]!.withValues(alpha: 0.65),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: theme.colorScheme.onSurface.withOpacity(0.08),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -359,7 +359,7 @@ class _OverlayMenuItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 16, color: theme.colorScheme.primary),
@@ -371,7 +371,7 @@ class _OverlayMenuItem extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
-                  color: theme.colorScheme.onSurface.withOpacity(0.9),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
                 ),
               ),
             ),

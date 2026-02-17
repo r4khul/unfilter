@@ -31,14 +31,14 @@ class TaskManagerSearchBar extends StatelessWidget {
             : Colors.white,
         borderRadius: BorderRadius.circular(TaskManagerBorderRadius.lg),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(
+          color: theme.colorScheme.outline.withValues(alpha: 
             TaskManagerOpacity.mediumLight,
           ),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(TaskManagerOpacity.verySubtle),
+            color: Colors.black.withValues(alpha: TaskManagerOpacity.verySubtle),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
@@ -65,7 +65,7 @@ class TaskManagerSearchBar extends StatelessWidget {
                 disabledBorder: InputBorder.none,
                 fillColor: theme.colorScheme.surface,
                 hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                 ),
                 contentPadding: EdgeInsets.zero,
                 isDense: true,

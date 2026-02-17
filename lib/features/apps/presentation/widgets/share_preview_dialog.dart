@@ -21,7 +21,7 @@ class SharePreviewDialog extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       enableDrag: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       useSafeArea: true,
@@ -85,9 +85,12 @@ class _SharePreviewDialogState extends State<SharePreviewDialog>
     try {
       await Future.delayed(const Duration(milliseconds: 100));
       await _waitForFrame();
+      if (!mounted) return;
 
       final posterContext = _posterKey.currentContext;
-      if (posterContext == null) throw Exception("Poster not found");
+      if (posterContext == null || !posterContext.mounted) {
+        throw Exception("Poster not found");
+      }
 
       final boundary =
           posterContext.findRenderObject() as RenderRepaintBoundary?;
@@ -253,7 +256,7 @@ class _DialogHeader extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: theme.colorScheme.onSurface.withOpacity(0.2),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -266,13 +269,15 @@ class _DialogHeader extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurface.withOpacity(0.05),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.05,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       Icons.close_rounded,
                       size: 18,
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -324,13 +329,13 @@ class _ThemeToggle extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: Color.lerp(
-                      Colors.black.withOpacity(0.05),
-                      Colors.white.withOpacity(0.1),
+                      Colors.black.withValues(alpha: 0.05),
+                      Colors.white.withValues(alpha: 0.1),
                       value,
                     ),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: theme.colorScheme.onSurface.withOpacity(0.1),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                     ),
                   ),
                   child: child,
@@ -344,13 +349,13 @@ class _ThemeToggle extends StatelessWidget {
                         ? Icons.dark_mode_rounded
                         : Icons.light_mode_rounded,
                     size: 16,
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                   const SizedBox(width: 6),
                   Text(
                     config.posterDarkMode ? "Dark" : "Light",
                     style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -443,7 +448,7 @@ class _OptionsRow extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: options.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
               return _OptionChip(option: options[index]);
             },
@@ -474,13 +479,13 @@ class _OptionChip extends StatelessWidget {
           tween: Tween(begin: 0.0, end: option.isEnabled ? 1.0 : 0.0),
           builder: (context, value, child) {
             final bgColor = Color.lerp(
-              theme.colorScheme.onSurface.withOpacity(0.04),
-              theme.colorScheme.primary.withOpacity(isDark ? 0.2 : 0.1),
+              theme.colorScheme.onSurface.withValues(alpha: 0.04),
+              theme.colorScheme.primary.withValues(alpha: isDark ? 0.2 : 0.1),
               value,
             );
             final borderColor = Color.lerp(
-              theme.colorScheme.onSurface.withOpacity(0.08),
-              theme.colorScheme.primary.withOpacity(0.4),
+              theme.colorScheme.onSurface.withValues(alpha: 0.08),
+              theme.colorScheme.primary.withValues(alpha: 0.4),
               value,
             );
 
@@ -510,7 +515,7 @@ class _OptionChip extends StatelessWidget {
                 size: 14,
                 color: option.isEnabled
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurface.withOpacity(0.5),
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
               const SizedBox(width: 6),
               Text(
@@ -518,7 +523,7 @@ class _OptionChip extends StatelessWidget {
                 style: TextStyle(
                   color: option.isEnabled
                       ? theme.colorScheme.primary
-                      : theme.colorScheme.onSurface.withOpacity(0.6),
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   fontSize: 12,
                   fontWeight: option.isEnabled
                       ? FontWeight.w600
@@ -555,7 +560,7 @@ class _PreviewSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.4 : 0.15),
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -619,7 +624,7 @@ class _ShareButton extends StatelessWidget {
                               ],
                       ),
                 color: isSharing
-                    ? theme.colorScheme.onSurface.withOpacity(0.1)
+                    ? theme.colorScheme.onSurface.withValues(alpha: 0.1)
                     : null,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: isSharing
@@ -627,7 +632,7 @@ class _ShareButton extends StatelessWidget {
                     : [
                         BoxShadow(
                           color: (isDark ? Colors.white : Colors.black)
-                              .withOpacity(0.1),
+                              .withValues(alpha: 0.1),
                           blurRadius: 16,
                           offset: const Offset(0, 6),
                         ),

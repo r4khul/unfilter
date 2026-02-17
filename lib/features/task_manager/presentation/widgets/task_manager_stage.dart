@@ -97,11 +97,11 @@ class _RefreshingIndicator extends StatelessWidget {
         margin: const EdgeInsets.only(top: 100),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: theme.colorScheme.primaryContainer.withOpacity(0.9),
+          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -143,12 +143,12 @@ class _TaskManagerSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final skeletonColor = theme.brightness == Brightness.light
-        ? theme.colorScheme.surfaceVariant.withOpacity(0.4)
-        : theme.colorScheme.surfaceVariant.withOpacity(0.15);
+        ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4)
+        : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.15);
 
     final highlightColor = theme.brightness == Brightness.light
-        ? theme.colorScheme.surfaceVariant.withOpacity(0.2)
-        : theme.colorScheme.surfaceVariant.withOpacity(0.05);
+        ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2)
+        : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.05);
 
     return Skeletonizer(
       enabled: true,
@@ -168,7 +168,7 @@ class _TaskManagerSkeleton extends StatelessWidget {
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(32),
               border: Border.all(
-                color: theme.colorScheme.outlineVariant.withOpacity(0.1),
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -223,7 +223,7 @@ class _TaskManagerSkeleton extends StatelessWidget {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: theme.colorScheme.outlineVariant.withOpacity(0.1),
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.1),
           ),
         ),
         child: Row(

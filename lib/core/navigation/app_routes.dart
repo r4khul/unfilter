@@ -142,9 +142,9 @@ class AppRouteFactory {
   static Future<void> toHome(BuildContext context) {
     return Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const HomePage(),
+        pageBuilder: (_, _, _) => const HomePage(),
         transitionDuration: const Duration(milliseconds: 400),
-        transitionsBuilder: (_, a, __, child) =>
+        transitionsBuilder: (_, a, _, child) =>
             FadeTransition(opacity: a, child: child),
       ),
     );

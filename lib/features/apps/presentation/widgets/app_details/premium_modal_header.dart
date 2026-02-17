@@ -26,7 +26,7 @@ class PremiumModalHeader extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurface.withOpacity(0.2),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -40,7 +40,7 @@ class PremiumModalHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, size: 22, color: theme.colorScheme.primary),
@@ -68,16 +68,16 @@ class PremiumModalHeader extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.onSurface.withOpacity(0.05),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: theme.colorScheme.onSurface.withOpacity(0.05),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
                       ),
                     ),
                     child: Icon(
                       Icons.close_rounded,
                       size: 20,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ),
@@ -89,7 +89,7 @@ class PremiumModalHeader extends StatelessWidget {
         Divider(
           height: 1,
           thickness: 1,
-          color: theme.colorScheme.outline.withOpacity(0.1),
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
         ),
       ],
     );

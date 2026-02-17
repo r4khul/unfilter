@@ -145,7 +145,7 @@ class AppDrawer extends ConsumerWidget {
           return "You're up to date";
         },
         loading: () => 'Checking...',
-        error: (_, __) => 'Tap to retry',
+        error: (_, _) => 'Tap to retry',
       ),
       icon: Icons.system_update_rounded,
       onTap: () {
@@ -172,7 +172,7 @@ class AppDrawer extends ConsumerWidget {
       subtitle: versionAsync.when(
         data: (v) => 'v${v.toString()}${isUpdateAvailable ? ' • Update' : ''}',
         loading: () => 'Checking version...',
-        error: (_, __) => 'Version Unknown',
+        error: (_, _) => 'Version Unknown',
       ),
       icon: Icons.info_outline,
       onTap: () {
@@ -197,15 +197,15 @@ class AppDrawer extends ConsumerWidget {
         },
         borderRadius: BorderRadius.circular(16),
         overlayColor: WidgetStateProperty.all(
-          theme.colorScheme.primary.withOpacity(0.05),
+          theme.colorScheme.primary.withValues(alpha: 0.05),
         ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: theme.colorScheme.outlineVariant.withOpacity(0.3),
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -230,7 +230,7 @@ class AppDrawer extends ConsumerWidget {
               Icon(
                 Icons.open_in_new_rounded,
                 size: 14,
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
               ),
             ],
           ),

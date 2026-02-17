@@ -115,7 +115,7 @@ class _HomePageState extends ConsumerState<HomePage>
       barrierDismissible: false,
       barrierLabel: 'Permission',
       transitionDuration: HomeAnimationDurations.standard,
-      pageBuilder: (_, __, ___) => const SizedBox(),
+      pageBuilder: (_, _, _) => const SizedBox(),
       transitionBuilder: (context, anim1, anim2, child) {
         return Transform.scale(
           scale: CurvedAnimation(

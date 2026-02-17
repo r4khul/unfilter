@@ -25,7 +25,7 @@ class SettingsMenu extends ConsumerWidget {
       onPressed: () => Scaffold.of(context).openEndDrawer(),
       style: IconButton.styleFrom(
         padding: const EdgeInsets.only(left: 8),
-        highlightColor: theme.colorScheme.primary.withOpacity(0.1),
+        highlightColor: theme.colorScheme.primary.withValues(alpha: 0.1),
       ),
       icon: Stack(
         clipBehavior: Clip.none,
@@ -44,12 +44,12 @@ class SettingsMenu extends ConsumerWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.2),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -76,7 +76,7 @@ class SettingsMenu extends ConsumerWidget {
           border: Border.all(color: theme.colorScheme.surface, width: 2),
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.error.withOpacity(0.2),
+              color: theme.colorScheme.error.withValues(alpha: 0.2),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),

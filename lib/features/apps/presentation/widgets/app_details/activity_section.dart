@@ -44,7 +44,7 @@ class ActivitySection extends ConsumerWidget {
             child: Text(
               "Used for $totalUsageStr since installed on $installDateStr ($daysSinceInstall days ago)",
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(
+                color: theme.colorScheme.onSurface.withValues(alpha: 
                   AppDetailsOpacity.high,
                 ),
               ),
@@ -75,7 +75,7 @@ class ActivitySection extends ConsumerWidget {
               vertical: 6,
             ),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withOpacity(
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 
                 AppDetailsOpacity.light,
               ),
               borderRadius: BorderRadius.circular(AppDetailsBorderRadius.lg),
@@ -106,7 +106,7 @@ class ActivitySection extends ConsumerWidget {
     return historyAsync.when(
       data: (history) => _buildDataState(history, theme, isDark),
       loading: () => _buildLoadingState(isDark),
-      error: (_, __) => _buildErrorState(isDark, theme),
+      error: (_, _) => _buildErrorState(isDark, theme),
     );
   }
 
@@ -155,7 +155,7 @@ class ActivitySection extends ConsumerWidget {
           Icon(
             Icons.insights_rounded,
             size: AppDetailsSizes.iconLarge,
-            color: theme.colorScheme.onSurface.withOpacity(
+            color: theme.colorScheme.onSurface.withValues(alpha: 
               AppDetailsOpacity.standard,
             ),
           ),
@@ -163,7 +163,7 @@ class ActivitySection extends ConsumerWidget {
           Text(
             "Adequate data not found to plot chart",
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(
+              color: theme.colorScheme.onSurface.withValues(alpha: 
                 AppDetailsOpacity.half,
               ),
               fontWeight: FontWeight.w500,
@@ -183,7 +183,7 @@ class ActivitySection extends ConsumerWidget {
           Icon(
             Icons.bar_chart_rounded,
             size: AppDetailsSizes.iconXLarge,
-            color: theme.colorScheme.onSurface.withOpacity(
+            color: theme.colorScheme.onSurface.withValues(alpha: 
               AppDetailsOpacity.mediumLight,
             ),
           ),
@@ -193,7 +193,7 @@ class ActivitySection extends ConsumerWidget {
                 ? "No recent activity"
                 : "No usage recorded in last year",
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(
+              color: theme.colorScheme.onSurface.withValues(alpha: 
                 AppDetailsOpacity.half,
               ),
             ),

@@ -50,13 +50,13 @@ class SystemStatsCard extends ConsumerWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(TaskManagerBorderRadius.xl),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 
             TaskManagerOpacity.mediumLight,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(TaskManagerOpacity.subtle),
+            color: Colors.black.withValues(alpha: TaskManagerOpacity.subtle),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -80,7 +80,7 @@ class SystemStatsCard extends ConsumerWidget {
           ),
           Divider(
             height: TaskManagerSizes.dividerWidth,
-            color: theme.colorScheme.outlineVariant.withOpacity(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 
               TaskManagerOpacity.mediumLight,
             ),
           ),
@@ -126,7 +126,7 @@ class SystemStatsCard extends ConsumerWidget {
         Icon(
           Icons.developer_board,
           size: TaskManagerSizes.iconSizeLarge,
-          color: theme.colorScheme.primary.withOpacity(
+          color: theme.colorScheme.primary.withValues(alpha: 
             TaskManagerOpacity.nearlyOpaque,
           ),
         ),
@@ -293,7 +293,7 @@ class _MiniStat extends StatelessWidget {
           label,
           style: theme.textTheme.labelSmall?.copyWith(
             fontSize: TaskManagerFontSizes.xs,
-            color: theme.colorScheme.onSurfaceVariant.withOpacity(
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 
               TaskManagerOpacity.high,
             ),
             letterSpacing: 1.0,
@@ -324,7 +324,7 @@ class _StatDivider extends StatelessWidget {
     return Container(
       width: TaskManagerSizes.dividerWidth,
       height: TaskManagerSizes.dividerHeight,
-      color: theme.colorScheme.outlineVariant.withOpacity(
+      color: theme.colorScheme.outlineVariant.withValues(alpha: 
         TaskManagerOpacity.mediumLight,
       ),
     );

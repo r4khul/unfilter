@@ -35,7 +35,7 @@ class DrawerNavTile extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           overlayColor: WidgetStateProperty.all(
-            theme.colorScheme.primary.withOpacity(0.05),
+            theme.colorScheme.primary.withValues(alpha: 0.05),
           ),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -43,12 +43,12 @@ class DrawerNavTile extends StatelessWidget {
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.01),
+                  color: Colors.black.withValues(alpha: 0.01),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -63,7 +63,7 @@ class DrawerNavTile extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                 ),
               ],
             ),
@@ -80,7 +80,7 @@ class DrawerNavTile extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Icon(icon, color: theme.colorScheme.onSurface, size: 22),

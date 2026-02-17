@@ -34,7 +34,7 @@ class ProcessSectionHeader extends StatelessWidget {
             style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
               letterSpacing: 2.0,
-              color: theme.colorScheme.onSurface.withOpacity(
+              color: theme.colorScheme.onSurface.withValues(alpha: 
                 TaskManagerOpacity.headerLabel,
               ),
             ),
@@ -70,7 +70,7 @@ class UserSpaceSectionHeader extends StatelessWidget {
             style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
               letterSpacing: 2.0,
-              color: theme.colorScheme.onSurface.withOpacity(
+              color: theme.colorScheme.onSurface.withValues(alpha: 
                 TaskManagerOpacity.headerLabel,
               ),
             ),
@@ -82,7 +82,7 @@ class UserSpaceSectionHeader extends StatelessWidget {
               style: theme.textTheme.labelSmall?.copyWith(
                 fontSize: TaskManagerFontSizes.xs,
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 
                   TaskManagerOpacity.half,
                 ),
               ),
@@ -113,7 +113,7 @@ class ShellProcessItem extends StatelessWidget {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(TaskManagerBorderRadius.standard),
           border: Border.all(
-            color: theme.colorScheme.outlineVariant.withOpacity(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 
               TaskManagerOpacity.light,
             ),
           ),
@@ -139,8 +139,8 @@ class ShellProcessItem extends StatelessWidget {
           padding: const EdgeInsets.all(TaskManagerSizes.pidContainerPadding),
           decoration: BoxDecoration(
             color: process.isRootProcess
-                ? theme.colorScheme.error.withOpacity(TaskManagerOpacity.light)
-                : theme.colorScheme.surfaceContainerHighest.withOpacity(
+                ? theme.colorScheme.error.withValues(alpha: TaskManagerOpacity.light)
+                : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 
                     TaskManagerOpacity.standard,
                   ),
             borderRadius: BorderRadius.circular(TaskManagerBorderRadius.md),
@@ -199,7 +199,7 @@ class ShellProcessItem extends StatelessWidget {
                 margin: const EdgeInsets.only(left: 6),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.15),
+                  color: Colors.green.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -277,7 +277,7 @@ class ShellProcessItem extends StatelessWidget {
           "CPU",
           style: theme.textTheme.labelSmall?.copyWith(
             fontSize: TaskManagerFontSizes.tiny,
-            color: theme.colorScheme.onSurfaceVariant.withOpacity(
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 
               TaskManagerOpacity.half,
             ),
           ),
@@ -291,8 +291,8 @@ class ShellProcessItem extends StatelessWidget {
                 fontSize: TaskManagerFontSizes.tiny,
                 fontFamily: 'monospace',
                 color: process.nice! < 0
-                    ? theme.colorScheme.error.withOpacity(0.8)
-                    : theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+                    ? theme.colorScheme.error.withValues(alpha: 0.8)
+                    : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -330,8 +330,8 @@ class EnhancedProcessItem extends StatelessWidget {
             ),
             border: Border.all(
               color: shouldGlow
-                  ? _getIntensityColor(intensity).withOpacity(0.5)
-                  : theme.colorScheme.outlineVariant.withOpacity(
+                  ? _getIntensityColor(intensity).withValues(alpha: 0.5)
+                  : theme.colorScheme.outlineVariant.withValues(alpha: 
                       TaskManagerOpacity.light,
                     ),
               width: shouldGlow ? 1.5 : 1,
@@ -339,7 +339,7 @@ class EnhancedProcessItem extends StatelessWidget {
             boxShadow: shouldGlow
                 ? [
                     BoxShadow(
-                      color: _getIntensityColor(intensity).withOpacity(0.15),
+                      color: _getIntensityColor(intensity).withValues(alpha: 0.15),
                       blurRadius: 4,
                       spreadRadius: 0,
                     ),
@@ -389,9 +389,9 @@ class EnhancedProcessItem extends StatelessWidget {
         vertical: TaskManagerSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(TaskManagerBorderRadius.sm),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         process.pid,
@@ -426,7 +426,7 @@ class EnhancedProcessItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: process.isRunning
                     ? const Color(0xFF4CAF50)
-                    : theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                    : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
             ),
@@ -443,7 +443,7 @@ class EnhancedProcessItem extends StatelessWidget {
               Text(
                 '${process.threads} threads',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                   fontSize: TaskManagerFontSizes.xs,
                 ),
               ),
@@ -484,7 +484,7 @@ class EnhancedProcessItem extends StatelessWidget {
           'CPU',
           style: theme.textTheme.labelSmall?.copyWith(
             fontSize: TaskManagerFontSizes.tiny,
-            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -519,7 +519,7 @@ class UserAppItem extends StatelessWidget {
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(TaskManagerBorderRadius.lg),
               border: Border.all(
-                color: theme.colorScheme.outlineVariant.withOpacity(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 
                   TaskManagerOpacity.mediumLight,
                 ),
               ),
@@ -645,7 +645,7 @@ class _AppIcon extends StatelessWidget {
                 app.icon!,
                 fit: BoxFit.cover,
                 gaplessPlayback: true,
-                errorBuilder: (_, __, ___) => const Icon(Icons.android),
+                errorBuilder: (_, _, _) => const Icon(Icons.android),
               )
             : const Icon(Icons.android),
       ),

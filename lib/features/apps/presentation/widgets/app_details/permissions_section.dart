@@ -31,7 +31,7 @@ class PermissionsSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(
+              color: theme.colorScheme.outline.withValues(alpha: 
                 AppDetailsOpacity.mediumLight,
               ),
             ),
@@ -57,7 +57,7 @@ class PermissionsSection extends StatelessWidget {
                         ),
                       ),
                       side: BorderSide(
-                        color: theme.colorScheme.primary.withOpacity(
+                        color: theme.colorScheme.primary.withValues(alpha: 
                           AppDetailsOpacity.half,
                         ),
                       ),
@@ -125,7 +125,7 @@ class PermissionsSection extends StatelessWidget {
             permission,
             style: theme.textTheme.bodySmall?.copyWith(
               fontSize: AppDetailsFontSizes.sm,
-              color: theme.colorScheme.onSurface.withOpacity(
+              color: theme.colorScheme.onSurface.withValues(alpha: 
                 AppDetailsOpacity.half,
               ),
             ),

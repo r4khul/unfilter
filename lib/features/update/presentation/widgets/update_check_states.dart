@@ -27,11 +27,11 @@ class UpdateCheckLoadingState extends StatelessWidget {
                 height: UpdateSizes.pulseCircleSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: theme.colorScheme.primary.withOpacity(
+                  color: theme.colorScheme.primary.withValues(alpha: 
                     0.05 + (pulseController.value * 0.05),
                   ),
                   border: Border.all(
-                    color: theme.colorScheme.primary.withOpacity(
+                    color: theme.colorScheme.primary.withValues(alpha: 
                       UpdateOpacity.medium,
                     ),
                     width: 2,
@@ -115,7 +115,7 @@ class UpdateCheckErrorState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(UpdateSpacing.xxl),
       decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer.withOpacity(
+        color: theme.colorScheme.errorContainer.withValues(alpha: 
           UpdateOpacity.medium,
         ),
         shape: BoxShape.circle,
@@ -123,7 +123,7 @@ class UpdateCheckErrorState extends StatelessWidget {
       child: Icon(
         isNetworkError ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
         size: UpdateSizes.iconSizeLarge,
-        color: theme.colorScheme.error.withOpacity(UpdateOpacity.veryHigh),
+        color: theme.colorScheme.error.withValues(alpha: UpdateOpacity.veryHigh),
       ),
     );
   }
@@ -155,11 +155,11 @@ class UpdateCheckErrorState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(UpdateSpacing.standard),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 
           UpdateOpacity.standard,
         ),
         borderRadius: BorderRadius.circular(UpdateBorderRadius.standard),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.08)),
+        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.08)),
       ),
       child: Column(
         children: [
@@ -197,7 +197,7 @@ class _NetworkTipRow extends StatelessWidget {
         Icon(
           icon,
           size: UpdateSizes.iconSizeSmall,
-          color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
         ),
         const SizedBox(width: UpdateSpacing.md),
         Text(
@@ -247,19 +247,19 @@ class UpdateCheckOfflineState extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(UpdateSpacing.xxl),
           decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(
+            color: Colors.orange.withValues(alpha: 
               0.08 + (pulseController.value * 0.04),
             ),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.orange.withOpacity(UpdateOpacity.medium),
+              color: Colors.orange.withValues(alpha: UpdateOpacity.medium),
               width: 2,
             ),
           ),
           child: Icon(
             Icons.wifi_off_rounded,
             size: UpdateSizes.iconSizeLarge,
-            color: Colors.orange.withOpacity(UpdateOpacity.nearlyOpaque),
+            color: Colors.orange.withValues(alpha: UpdateOpacity.nearlyOpaque),
           ),
         );
       },
@@ -291,12 +291,12 @@ class UpdateCheckOfflineState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(UpdateSpacing.lg),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 
           UpdateOpacity.standard,
         ),
         borderRadius: BorderRadius.circular(UpdateBorderRadius.lg),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(UpdateOpacity.light),
+          color: theme.colorScheme.outline.withValues(alpha: UpdateOpacity.light),
         ),
       ),
       child: Column(
@@ -308,7 +308,7 @@ class UpdateCheckOfflineState extends StatelessWidget {
           ),
           Divider(
             height: UpdateSpacing.xl,
-            color: theme.colorScheme.outline.withOpacity(UpdateOpacity.light),
+            color: theme.colorScheme.outline.withValues(alpha: UpdateOpacity.light),
           ),
           _NetworkOptionItem(
             icon: Icons.signal_cellular_alt_rounded,
@@ -340,7 +340,7 @@ class _NetworkOptionItem extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(UpdateOpacity.light),
+            color: theme.colorScheme.primary.withValues(alpha: UpdateOpacity.light),
             borderRadius: BorderRadius.circular(UpdateBorderRadius.md),
           ),
           child: Icon(icon, size: 22, color: theme.colorScheme.primary),
@@ -421,14 +421,14 @@ class UpdateCheckResultState extends StatelessWidget {
             padding: const EdgeInsets.all(UpdateSpacing.hero),
             decoration: BoxDecoration(
               color: isUpdateAvailable
-                  ? theme.colorScheme.primary.withOpacity(UpdateOpacity.light)
-                  : theme.colorScheme.surfaceContainerHighest.withOpacity(
+                  ? theme.colorScheme.primary.withValues(alpha: UpdateOpacity.light)
+                  : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 
                       UpdateOpacity.high,
                     ),
               shape: BoxShape.circle,
               border: Border.all(
                 color: isUpdateAvailable
-                    ? theme.colorScheme.primary.withOpacity(
+                    ? theme.colorScheme.primary.withValues(alpha: 
                         UpdateOpacity.medium,
                       )
                     : Colors.transparent,
@@ -437,7 +437,7 @@ class UpdateCheckResultState extends StatelessWidget {
               boxShadow: isUpdateAvailable
                   ? [
                       BoxShadow(
-                        color: theme.colorScheme.primary.withOpacity(
+                        color: theme.colorScheme.primary.withValues(alpha: 
                           UpdateOpacity.medium,
                         ),
                         blurRadius: UpdateBlur.shadowLarge,
@@ -515,11 +515,11 @@ class _VersionComparisonCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(UpdateBorderRadius.xl),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(UpdateOpacity.light),
+          color: theme.colorScheme.outline.withValues(alpha: UpdateOpacity.light),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(UpdateOpacity.verySubtle),
+            color: Colors.black.withValues(alpha: UpdateOpacity.verySubtle),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -537,7 +537,7 @@ class _VersionComparisonCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(UpdateSpacing.sm),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withOpacity(
+              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 
                 UpdateOpacity.high,
               ),
               shape: BoxShape.circle,
@@ -583,7 +583,7 @@ class _VersionColumn extends StatelessWidget {
           style: theme.textTheme.labelSmall?.copyWith(
             color: isNew
                 ? theme.colorScheme.primary
-                : theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
             fontSize: 10,
@@ -597,12 +597,12 @@ class _VersionColumn extends StatelessWidget {
                   vertical: UpdateSpacing.sm - 2,
                 ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(
+                  color: theme.colorScheme.primary.withValues(alpha: 
                     UpdateOpacity.light,
                   ),
                   borderRadius: BorderRadius.circular(UpdateBorderRadius.md),
                   border: Border.all(
-                    color: theme.colorScheme.primary.withOpacity(
+                    color: theme.colorScheme.primary.withValues(alpha: 
                       UpdateOpacity.medium,
                     ),
                   ),
@@ -647,11 +647,11 @@ class _ChangelogCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(UpdateBorderRadius.xl),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(UpdateOpacity.light),
+          color: theme.colorScheme.outline.withValues(alpha: UpdateOpacity.light),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(UpdateOpacity.verySubtle),
+            color: Colors.black.withValues(alpha: UpdateOpacity.verySubtle),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -699,7 +699,7 @@ class _ChangelogCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(UpdateOpacity.light),
+            color: theme.colorScheme.primary.withValues(alpha: UpdateOpacity.light),
             borderRadius: BorderRadius.circular(UpdateBorderRadius.md),
           ),
           child: Icon(
@@ -793,7 +793,7 @@ class _ChangelogItem extends StatelessWidget {
             padding: const EdgeInsets.all(2),
             margin: const EdgeInsets.only(top: 2),
             decoration: BoxDecoration(
-              color: color.withOpacity(UpdateOpacity.light),
+              color: color.withValues(alpha: UpdateOpacity.light),
               borderRadius: BorderRadius.circular(UpdateBorderRadius.sm),
             ),
             child: Icon(

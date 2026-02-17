@@ -21,8 +21,8 @@ class AppStatsRow extends StatelessWidget {
       padding: const EdgeInsets.all(AppDetailsSpacing.lg),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(AppDetailsOpacity.subtle)
-            : Colors.black.withOpacity(AppDetailsOpacity.verySubtle),
+            ? Colors.white.withValues(alpha: AppDetailsOpacity.subtle)
+            : Colors.black.withValues(alpha: AppDetailsOpacity.verySubtle),
         borderRadius: BorderRadius.circular(AppDetailsBorderRadius.lg),
       ),
       child: Row(
@@ -61,7 +61,7 @@ class _StatItem extends StatelessWidget {
           Text(
             label.toUpperCase(),
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(
+              color: theme.colorScheme.onSurface.withValues(alpha: 
                 AppDetailsOpacity.half,
               ),
               fontWeight: FontWeight.bold,

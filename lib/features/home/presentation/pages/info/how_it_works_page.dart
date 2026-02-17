@@ -116,7 +116,7 @@ class _HowItWorksPageState extends State<HowItWorksPage> {
       'No decompiling. No uploads. Just smart static analysis that reads '
       "what's already there and tells you exactly what an app is built with.",
       style: theme.textTheme.bodyLarge?.copyWith(
-        color: theme.colorScheme.onSurface.withOpacity(0.7),
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
         height: 1.5,
         fontSize: 16,
       ),
@@ -195,7 +195,7 @@ class _StepCard extends StatelessWidget {
         width: 2,
         margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: theme.colorScheme.onSurface.withOpacity(0.2),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(2),
         ),
       ),
@@ -211,11 +211,11 @@ class _StepCard extends StatelessWidget {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: theme.colorScheme.outlineVariant.withOpacity(0.3),
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.03),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

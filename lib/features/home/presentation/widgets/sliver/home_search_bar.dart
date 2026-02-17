@@ -22,12 +22,12 @@ class HomeSearchBar extends StatelessWidget {
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: theme.colorScheme.outline.withOpacity(0.2),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withValues(alpha: 0.03),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -45,7 +45,7 @@ class HomeSearchBar extends StatelessWidget {
                     child: Text(
                       'Search installed apps...',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 
                           0.8,
                         ),
                       ),

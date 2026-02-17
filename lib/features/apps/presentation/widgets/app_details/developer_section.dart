@@ -71,7 +71,7 @@ class DeveloperSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(
+              color: theme.colorScheme.outline.withValues(alpha: 
                 AppDetailsOpacity.mediumLight,
               ),
             ),
@@ -100,7 +100,7 @@ class DeveloperSection extends StatelessWidget {
                       ),
                     ),
                     side: BorderSide(
-                      color: theme.colorScheme.primary.withOpacity(
+                      color: theme.colorScheme.primary.withValues(alpha: 
                         AppDetailsOpacity.half,
                       ),
                     ),
@@ -130,7 +130,7 @@ class DeveloperSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(
+              color: theme.colorScheme.outline.withValues(alpha: 
                 AppDetailsOpacity.mediumLight,
               ),
             ),

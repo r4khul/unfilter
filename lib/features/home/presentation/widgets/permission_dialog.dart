@@ -73,7 +73,7 @@ class _PermissionDialogState extends State<PermissionDialog>
   Widget _buildBackdrop(ThemeData theme) {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-      child: Container(color: theme.colorScheme.scrim.withOpacity(0.4)),
+      child: Container(color: theme.colorScheme.scrim.withValues(alpha: 0.4)),
     );
   }
 
@@ -86,11 +86,11 @@ class _PermissionDialogState extends State<PermissionDialog>
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -117,7 +117,7 @@ class _PermissionDialogState extends State<PermissionDialog>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
         shape: BoxShape.circle,
       ),
       child: Icon(

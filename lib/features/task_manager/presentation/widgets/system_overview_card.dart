@@ -49,17 +49,17 @@ class SystemOverviewCard extends ConsumerWidget {
           end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.surface,
-            theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
           ],
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.5),
+          color: theme.colorScheme.outline.withValues(alpha: 0.5),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -162,7 +162,7 @@ class _CompactHeader extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
@@ -190,7 +190,7 @@ class _CompactHeader extends StatelessWidget {
               Text(
                 "$androidVersion • ${cpuCores}cores • K${kernelVersion.split('-').first}",
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                   fontSize: 10,
                 ),
                 maxLines: 1,
@@ -204,7 +204,7 @@ class _CompactHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -257,7 +257,7 @@ class _CompactCpuGauge extends StatelessWidget {
                 size: const Size(size, size),
                 painter: _RingPainter(
                   percentage: 100,
-                  color: theme.colorScheme.outline.withOpacity(0.12),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.12),
                   strokeWidth: 5,
                 ),
               ),
@@ -380,7 +380,7 @@ class _CompactRamBar extends StatelessWidget {
                     width: 3,
                     height: 3,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.outline.withOpacity(0.4),
+                      color: theme.colorScheme.outline.withValues(alpha: 0.4),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -388,7 +388,7 @@ class _CompactRamBar extends StatelessWidget {
                   Text(
                     '${_formatMem(cachedMb)} cached',
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 
                         0.5,
                       ),
                       fontSize: 9,
@@ -414,7 +414,7 @@ class _CompactRamBar extends StatelessWidget {
           child: Container(
             height: 5,
             decoration: BoxDecoration(
-              color: theme.colorScheme.outline.withOpacity(0.12),
+              color: theme.colorScheme.outline.withValues(alpha: 0.12),
             ),
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: percentage),
@@ -471,7 +471,7 @@ class _MiniMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(

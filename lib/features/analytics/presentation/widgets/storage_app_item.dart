@@ -146,10 +146,10 @@ class StorageAppItem extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withOpacity(0.5),
+            color: theme.colorScheme.surface.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: theme.colorScheme.outlineVariant.withOpacity(0.1),
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.1),
             ),
           ),
           child: Row(
@@ -159,7 +159,7 @@ class StorageAppItem extends StatelessWidget {
               Container(
                 width: 1,
                 height: 20,
-                color: theme.colorScheme.outlineVariant.withOpacity(0.2),
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
               ),
               _buildSmallMicroStat(
                 theme,

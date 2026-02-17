@@ -85,7 +85,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
       'UnFilter cracks them open so you can see the frameworks, engines, '
       'and tech stacks under the hood.',
       style: theme.textTheme.bodyLarge?.copyWith(
-        color: theme.colorScheme.onSurface.withOpacity(0.8),
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
         height: 1.6,
         fontSize: 16,
         fontWeight: FontWeight.w400,
@@ -98,7 +98,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
       child: Text(
         '© 2026 UNFILTER',
         style: theme.textTheme.labelSmall?.copyWith(
-          color: theme.colorScheme.onSurface.withOpacity(0.3),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
           letterSpacing: 2,
           fontWeight: FontWeight.bold,
           fontSize: 10,
@@ -137,11 +137,11 @@ class _HeroSection extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -178,10 +178,10 @@ class _HeroSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
         ),
       ),
       child: Row(
@@ -190,7 +190,7 @@ class _HeroSection extends StatelessWidget {
           Icon(
             Icons.verified_rounded,
             size: 14,
-            color: theme.colorScheme.primary.withOpacity(0.7),
+            color: theme.colorScheme.primary.withValues(alpha: 0.7),
           ),
           const SizedBox(width: 6),
           versionAsync.when(
@@ -210,7 +210,7 @@ class _HeroSection extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            error: (_, __) => Text('v?.?.?', style: theme.textTheme.labelSmall),
+            error: (_, _) => Text('v?.?.?', style: theme.textTheme.labelSmall),
           ),
         ],
       ),
@@ -231,11 +231,11 @@ class _HowItWorksCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -255,7 +255,7 @@ class _HowItWorksCard extends StatelessWidget {
                 Expanded(child: _buildContent(theme)),
                 Icon(
                   Icons.arrow_forward_rounded,
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                   size: 20,
                 ),
               ],
@@ -270,7 +270,7 @@ class _HowItWorksCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.1),
+        color: theme.colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Icon(
@@ -361,7 +361,7 @@ class _SectionHeader extends StatelessWidget {
         fontWeight: FontWeight.w800,
         letterSpacing: 1.5,
         fontSize: 11,
-        color: theme.colorScheme.primary.withOpacity(0.6),
+        color: theme.colorScheme.primary.withValues(alpha: 0.6),
       ),
     );
   }
@@ -385,7 +385,7 @@ class _InfoRow extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               fontWeight: FontWeight.w500,
             ),
           ),

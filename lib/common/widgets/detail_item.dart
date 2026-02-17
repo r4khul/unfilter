@@ -44,7 +44,7 @@ class DetailItem extends StatelessWidget {
                   child: Text(
                     label,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 
                         AppOpacity.high,
                       ),
                       fontWeight: FontWeight.w500,
@@ -71,7 +71,7 @@ class DetailItem extends StatelessWidget {
           if (showDivider)
             Divider(
               height: 1,
-              color: theme.colorScheme.outline.withOpacity(AppOpacity.light),
+              color: theme.colorScheme.outline.withValues(alpha: AppOpacity.light),
             ),
         ],
       ),
@@ -89,7 +89,7 @@ class StatDivider extends StatelessWidget {
     return Container(
       height: 30,
       width: 1,
-      color: theme.colorScheme.outline.withOpacity(AppOpacity.medium),
+      color: theme.colorScheme.outline.withValues(alpha: AppOpacity.medium),
     );
   }
 }

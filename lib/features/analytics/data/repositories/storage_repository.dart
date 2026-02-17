@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../domain/entities/storage_breakdown.dart';
 
@@ -11,9 +12,9 @@ class StorageRepository {
     Duration timeout = const Duration(seconds: 10),
   }) async {
     try {
-      print('🔍 StorageRepository.getStorageBreakdown:');
-      print('   📦 Package: $packageName');
-      print(
+      debugPrint('🔍 StorageRepository.getStorageBreakdown:');
+      debugPrint('   📦 Package: $packageName');
+      debugPrint(
         '   🎯 Detailed: $detailed ${detailed ? "(DEEP SCAN)" : "(QUICK SCAN)"}',
       );
 
@@ -24,7 +25,7 @@ class StorageRepository {
           })
           .timeout(timeout);
 
-      print('✅ Platform returned result for $packageName');
+      debugPrint('✅ Platform returned result for $packageName');
 
       if (result == null) {
         throw PlatformException(
@@ -36,16 +37,16 @@ class StorageRepository {
       final breakdown = StorageBreakdown.fromMap(
         result as Map<Object?, Object?>,
       );
-      print(
+      debugPrint(
         '📊 Total: ${breakdown.totalCombined} bytes, Confidence: ${(breakdown.confidenceLevel * 100).toInt()}%',
       );
-      print(
+      debugPrint(
         '   ${breakdown.limitations.isEmpty ? "No limitations" : "Limitations: ${breakdown.limitations.length}"}',
       );
 
       return breakdown;
     } on TimeoutException {
-      print('⏱️ TIMEOUT for $packageName after $timeout');
+      debugPrint('⏱️ TIMEOUT for $packageName after $timeout');
       try {
         await cancelAnalysis(packageName);
       } catch (_) {}
@@ -57,7 +58,7 @@ class StorageRepository {
     } on PlatformException {
       rethrow;
     } catch (e) {
-      print('❌ ERROR in getStorageBreakdown: $e');
+      debugPrint('❌ ERROR in getStorageBreakdown: $e');
       throw PlatformException(
         code: 'UNKNOWN_ERROR',
         message: 'Storage analysis failed: $e',
@@ -81,6 +82,7 @@ class StorageRepository {
         );
         results[packageName] = breakdown;
       } catch (e) {
+        // Error for one app shouldn't stop the whole batch
       }
 
       current++;
@@ -96,6 +98,7 @@ class StorageRepository {
         'packageName': packageName,
       });
     } catch (e) {
+      // Ignore repository error
     }
   }
 
@@ -103,6 +106,7 @@ class StorageRepository {
     try {
       await _channel.invokeMethod('cancelStorageAnalysis');
     } catch (e) {
+      // Ignore repository error
     }
   }
 
@@ -110,6 +114,7 @@ class StorageRepository {
     try {
       await _channel.invokeMethod('clearStorageCache');
     } catch (e) {
+      // Ignore repository error
     }
   }
 }

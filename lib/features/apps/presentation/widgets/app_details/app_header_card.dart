@@ -48,7 +48,7 @@ class AppHeaderCard extends StatelessWidget {
           color: theme.colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(AppDetailsOpacity.light),
+              color: Colors.black.withValues(alpha: AppDetailsOpacity.light),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -99,7 +99,7 @@ class AppHeaderCard extends StatelessWidget {
         app.packageName,
         textAlign: TextAlign.center,
         style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurface.withOpacity(
+          color: theme.colorScheme.onSurface.withValues(alpha: 
             AppDetailsOpacity.high,
           ),
         ),
@@ -123,10 +123,10 @@ class AppHeaderCard extends StatelessWidget {
               vertical: 10,
             ),
             decoration: BoxDecoration(
-              color: stackColor.withOpacity(AppDetailsOpacity.subtle),
+              color: stackColor.withValues(alpha: AppDetailsOpacity.subtle),
               borderRadius: BorderRadius.circular(AppDetailsBorderRadius.xl),
               border: Border.all(
-                color: stackColor.withOpacity(AppDetailsOpacity.mediumLight),
+                color: stackColor.withValues(alpha: AppDetailsOpacity.mediumLight),
                 width: 0.8,
               ),
             ),
@@ -188,7 +188,7 @@ class AppHeaderCard extends StatelessWidget {
                       height: 4,
                       margin: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withOpacity(0.2),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -201,7 +201,7 @@ class AppHeaderCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: stackColor.withOpacity(0.1),
+                            color: stackColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: SvgPicture.asset(
@@ -235,19 +235,19 @@ class AppHeaderCard extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.onSurface.withOpacity(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 
                                   0.05,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: theme.colorScheme.onSurface
-                                      .withOpacity(0.05),
+                                      .withValues(alpha: 0.05),
                                 ),
                               ),
                               child: Icon(
                                 Icons.close_rounded,
                                 size: 20,
-                                color: theme.colorScheme.onSurface.withOpacity(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 
                                   0.7,
                                 ),
                               ),
@@ -260,7 +260,7 @@ class AppHeaderCard extends StatelessWidget {
                   Divider(
                     height: 1,
                     thickness: 1,
-                    color: theme.colorScheme.outline.withOpacity(0.1),
+                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
                   ),
                 ],
               ),
@@ -281,7 +281,7 @@ class AppHeaderCard extends StatelessWidget {
                       Text(
                         frameworkInfo.description,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 
                             AppDetailsOpacity.nearlyOpaque,
                           ),
                           height: 1.5,
@@ -312,7 +312,7 @@ class AppHeaderCard extends StatelessWidget {
                                 ),
                               ),
                               side: BorderSide(
-                                color: theme.colorScheme.primary.withOpacity(
+                                color: theme.colorScheme.primary.withValues(alpha: 
                                   AppDetailsOpacity.half,
                                 ),
                               ),
@@ -351,10 +351,10 @@ class AppHeaderCard extends StatelessWidget {
           vertical: AppDetailsSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: theme.colorScheme.primaryContainer.withOpacity(0.15),
+          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(AppDetailsBorderRadius.xl),
           border: Border.all(
-            color: theme.colorScheme.primary.withOpacity(
+            color: theme.colorScheme.primary.withValues(alpha: 
               AppDetailsOpacity.mediumLight,
             ),
           ),

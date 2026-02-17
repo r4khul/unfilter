@@ -104,7 +104,7 @@ class _UsageChartState extends State<UsageChart> {
       DateTime? firstDate;
 
       while (i < points.length && count < groupSize) {
-        if (firstDate == null) firstDate = points[i].date;
+        firstDate ??= points[i].date;
         sumMinutes += points[i].usage.inMinutes;
         count++;
         i++;
@@ -210,7 +210,7 @@ class _UsageChartState extends State<UsageChart> {
               Text(
                 dateStr,
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -224,8 +224,8 @@ class _UsageChartState extends State<UsageChart> {
     final theme = widget.theme;
 
     final gradientColors = [
-      theme.colorScheme.primary.withOpacity(0.4),
-      theme.colorScheme.primary.withOpacity(0.0),
+      theme.colorScheme.primary.withValues(alpha: 0.4),
+      theme.colorScheme.primary.withValues(alpha: 0.0),
     ];
 
     final lineGradient = LinearGradient(
@@ -268,7 +268,7 @@ class _UsageChartState extends State<UsageChart> {
             return spotIndexes.map((index) {
               return TouchedSpotIndicatorData(
                 FlLine(
-                  color: theme.colorScheme.outline.withOpacity(0.2),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
                   strokeWidth: 1,
                 ),
                 FlDotData(
@@ -339,12 +339,12 @@ class _UsageChartState extends State<UsageChart> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected
-                  ? theme.colorScheme.primary.withOpacity(0.1)
+                  ? theme.colorScheme.primary.withValues(alpha: 0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
               border: isSelected
                   ? Border.all(
-                      color: theme.colorScheme.primary.withOpacity(0.2),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
                       width: 1,
                     )
                   : Border.all(color: Colors.transparent),
@@ -355,7 +355,7 @@ class _UsageChartState extends State<UsageChart> {
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 color: isSelected
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurface.withOpacity(0.5),
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ),

@@ -20,7 +20,7 @@ void showConnectivityDialog({
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Dismiss',
-    barrierColor: Colors.black.withOpacity(UpdateOpacity.high),
+    barrierColor: Colors.black.withValues(alpha: UpdateOpacity.high),
     transitionDuration: UpdateAnimationDurations.standard,
     pageBuilder: (context, animation, secondaryAnimation) {
       return Center(
@@ -75,11 +75,11 @@ class _ConnectivityDialogContent extends StatelessWidget {
             : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(UpdateBorderRadius.dialog),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(UpdateOpacity.light),
+          color: theme.colorScheme.outline.withValues(alpha: UpdateOpacity.light),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.4 : 0.15),
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.15),
             blurRadius: UpdateBlur.shadowXL,
             offset: const Offset(0, 20),
           ),
@@ -106,13 +106,13 @@ class _ConnectivityDialogContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(UpdateSpacing.lg),
       decoration: BoxDecoration(
-        color: theme.colorScheme.error.withOpacity(UpdateOpacity.light),
+        color: theme.colorScheme.error.withValues(alpha: UpdateOpacity.light),
         shape: BoxShape.circle,
       ),
       child: Icon(
         icon,
         size: 40,
-        color: theme.colorScheme.error.withOpacity(UpdateOpacity.veryHigh),
+        color: theme.colorScheme.error.withValues(alpha: UpdateOpacity.veryHigh),
       ),
     );
   }
@@ -155,11 +155,11 @@ class _ConnectivityDialogContent extends StatelessWidget {
       margin: const EdgeInsets.only(top: UpdateSpacing.standard),
       padding: const EdgeInsets.all(UpdateSpacing.standard),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 
           UpdateOpacity.standard,
         ),
         borderRadius: BorderRadius.circular(UpdateBorderRadius.standard),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.08)),
+        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -26,7 +26,7 @@ class PermissionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+        border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
@@ -54,7 +54,7 @@ class PermissionCard extends StatelessWidget {
                       Text(
                         description,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -85,7 +85,7 @@ class PermissionCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(100),
                       border: isGranted
                           ? Border.all(
-                              color: theme.colorScheme.onSurface.withOpacity(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 
                                 0.1,
                               ),
                             )
@@ -96,7 +96,7 @@ class PermissionCard extends StatelessWidget {
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: isGranted
-                            ? theme.colorScheme.onSurface.withOpacity(0.6)
+                            ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
                             : theme.colorScheme.onPrimary,
                       ),
                     ),

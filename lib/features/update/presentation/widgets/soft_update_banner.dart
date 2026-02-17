@@ -1,7 +1,5 @@
 library;
 
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -110,14 +108,14 @@ class _SoftUpdateBannerState extends ConsumerState<SoftUpdateBanner>
 
   BoxDecoration _buildDecoration(ThemeData theme) {
     return BoxDecoration(
-      color: theme.cardColor.withOpacity(UpdateOpacity.nearlyOpaque),
+      color: theme.cardColor.withValues(alpha: UpdateOpacity.nearlyOpaque),
       borderRadius: BorderRadius.circular(UpdateBorderRadius.xl),
       border: Border.all(
-        color: theme.colorScheme.outline.withOpacity(UpdateOpacity.light),
+        color: theme.colorScheme.outline.withValues(alpha: UpdateOpacity.light),
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(UpdateOpacity.light),
+          color: Colors.black.withValues(alpha: UpdateOpacity.light),
           blurRadius: UpdateBlur.shadowLarge,
           offset: const Offset(0, 10),
         ),
@@ -140,7 +138,7 @@ class _SoftUpdateBannerState extends ConsumerState<SoftUpdateBanner>
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(UpdateOpacity.light),
+        color: theme.colorScheme.primary.withValues(alpha: UpdateOpacity.light),
         borderRadius: BorderRadius.circular(UpdateBorderRadius.md),
       ),
       child: Icon(

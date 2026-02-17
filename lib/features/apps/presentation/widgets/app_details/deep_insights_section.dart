@@ -27,7 +27,7 @@ class DeepInsightsSection extends StatelessWidget {
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(AppDetailsBorderRadius.xl),
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(
+              color: theme.colorScheme.outline.withValues(alpha: 
                 AppDetailsOpacity.mediumLight,
               ),
             ),
@@ -173,7 +173,7 @@ class _ComponentCount extends StatelessWidget {
           horizontal: AppDetailsSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(
+          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 
             AppDetailsOpacity.standard,
           ),
           borderRadius: BorderRadius.circular(AppDetailsBorderRadius.md),

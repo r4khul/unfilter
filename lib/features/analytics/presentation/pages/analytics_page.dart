@@ -417,7 +417,7 @@ class _AnalyticsPageState extends ConsumerState<AnalyticsPage>
       await WidgetsBinding.instance.endOfFrame;
 
       final posterContext = _sharePosterKey.currentContext;
-      if (posterContext == null) {
+      if (posterContext == null || !posterContext.mounted) {
         throw Exception('Share poster widget not found.');
       }
 

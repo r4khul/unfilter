@@ -33,11 +33,11 @@ void showPremiumSnackbar({
             ),
             decoration: BoxDecoration(
               color: isDark
-                  ? const Color(0xFF1A1A1A).withOpacity(0.92)
-                  : const Color(0xFFF0F0F0).withOpacity(0.92),
+                  ? const Color(0xFF1A1A1A).withValues(alpha: 0.92)
+                  : const Color(0xFFF0F0F0).withValues(alpha: 0.92),
               borderRadius: BorderRadius.circular(AppBorderRadius.md),
               border: Border.all(
-                color: theme.colorScheme.onSurface.withOpacity(
+                color: theme.colorScheme.onSurface.withValues(alpha: 
                   AppOpacity.light,
                 ),
                 width: 1,
@@ -49,7 +49,7 @@ void showPremiumSnackbar({
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.12),
+                    color: iconColor.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, size: 18, color: iconColor),
@@ -61,7 +61,7 @@ void showPremiumSnackbar({
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      color: theme.colorScheme.onSurface.withOpacity(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 
                         AppOpacity.nearlyOpaque,
                       ),
                       letterSpacing: -0.2,

@@ -26,6 +26,8 @@ class PremiumNavigation {
         overrideColor ??
         (isDark ? const Color(0xFF000000) : theme.scaffoldBackgroundColor);
 
+    final overlayState = Overlay.of(context, rootOverlay: true);
+
     debugPrint("[PremiumNavigation] 🔵 Start Push: $page");
 
     final capturedImage = await _captureScreenshot(pixelRatio);
@@ -36,18 +38,14 @@ class PremiumNavigation {
       debugPrint("[PremiumNavigation] ⚠️ Screenshot failed. Fallback.");
       navigator.push(
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => page,
+          pageBuilder: (_, _, _) => page,
           transitionDuration: Duration.zero,
         ),
       );
       return;
     }
-
-    final overlayState = Overlay.of(context, rootOverlay: true);
     final animationCompleter = Completer<void>();
-    final fadeNotifier = ValueNotifier<bool>(
-      false,
-    );
+    final fadeNotifier = ValueNotifier<bool>(false);
     late OverlayEntry entry;
     bool overlayInserted = false;
 
@@ -75,7 +73,7 @@ class PremiumNavigation {
 
       navigator.push(
         PageRouteBuilder(
-          pageBuilder: (context, _, __) => page,
+          pageBuilder: (context, _, _) => page,
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
         ),
@@ -200,7 +198,7 @@ class _LiquidTransitionOverlayState extends State<_LiquidTransitionOverlay>
         children: [
           Positioned.fill(
             child: Container(
-              color: widget.color.withOpacity(1.0),
+              color: widget.color.withValues(alpha: 1.0),
               child: RawImage(image: widget.image, fit: BoxFit.cover),
             ),
           ),

@@ -63,7 +63,7 @@ class _ScanPageState extends ConsumerState<ScanPage>
         barrierDismissible: false,
         barrierLabel: "Permission",
         transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (_, __, ___) => const SizedBox(),
+        pageBuilder: (_, _, _) => const SizedBox(),
         transitionBuilder: (context, anim1, anim2, child) {
           return Transform.scale(
             scale: CurvedAnimation(
@@ -117,7 +117,7 @@ class _ScanPageState extends ConsumerState<ScanPage>
             } else {
               if (_retryCount < _maxRetries) {
                 _retryCount++;
-                print(
+                debugPrint(
                   "[Unfilter] ScanPage: Auto-retry attempt $_retryCount/$_maxRetries",
                 );
                 setState(() => _hasStartedScan = false);
@@ -149,7 +149,7 @@ class _ScanPageState extends ConsumerState<ScanPage>
         })
         .catchError((error) {
           if (!mounted) return;
-          print("[Unfilter] ScanPage: Scan error: $error");
+          debugPrint("[Unfilter] ScanPage: Scan error: $error");
 
           if (_retryCount < _maxRetries) {
             _retryCount++;

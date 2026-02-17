@@ -6,13 +6,10 @@ enum TransitionType { slideRight, slideUp, fade, scale }
 class PremiumPageRoute<T> extends PageRoute<T> {
   final Widget page;
   final TransitionType transitionType;
-  @override
-  final bool fullscreenDialog;
-
   PremiumPageRoute({
     required this.page,
     this.transitionType = TransitionType.slideRight,
-    this.fullscreenDialog = false,
+    super.fullscreenDialog,
     super.settings,
   });
 
@@ -117,9 +114,8 @@ class _SlideRightTransition extends StatelessWidget {
           final radius = MotionTokens.cardBorderRadius * secondaryValue;
 
           return Transform(
-            transform: Matrix4.identity()
-              ..translate(slideX, 0.0)
-              ..scale(scale),
+            transform: Matrix4.diagonal3Values(scale, scale, 1.0)
+              ..setTranslationRaw(slideX, 0.0, 0.0),
             alignment: Alignment.center,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(radius),
@@ -172,9 +168,8 @@ class _SlideRightTransition extends StatelessWidget {
           return Opacity(
             opacity: opacity,
             child: Transform(
-              transform: Matrix4.identity()
-                ..translate(slideX, slideY)
-                ..scale(scale),
+              transform: Matrix4.diagonal3Values(scale, scale, 1.0)
+                ..setTranslationRaw(slideX, slideY, 0.0),
               alignment: Alignment.centerLeft,
               child: PhysicalModel(
                 elevation: elevation,
@@ -255,9 +250,8 @@ class _SlideUpTransition extends StatelessWidget {
         return Opacity(
           opacity: opacity,
           child: Transform(
-            transform: Matrix4.identity()
-              ..translate(0.0, slideY)
-              ..scale(scale),
+            transform: Matrix4.diagonal3Values(scale, scale, 1.0)
+              ..setTranslationRaw(0.0, slideY, 0.0),
             alignment: Alignment.topCenter,
             child: staticChild,
           ),

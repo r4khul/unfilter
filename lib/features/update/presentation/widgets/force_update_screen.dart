@@ -1,7 +1,5 @@
 library;
 
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -88,9 +86,9 @@ class ForceUpdateScreen extends ConsumerWidget {
         vertical: UpdateSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.1),
+        color: Colors.orange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(UpdateBorderRadius.md),
-        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -167,7 +165,7 @@ class ForceUpdateScreen extends ConsumerWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: theme.colorScheme.primary,
           side: BorderSide(
-            color: theme.colorScheme.primary.withOpacity(0.5),
+            color: theme.colorScheme.primary.withValues(alpha: 0.5),
             width: 1.5,
           ),
           shape: RoundedRectangleBorder(
@@ -203,7 +201,9 @@ class ForceUpdateScreen extends ConsumerWidget {
         height: 300,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: theme.colorScheme.primary.withOpacity(UpdateOpacity.subtle),
+          color: theme.colorScheme.primary.withValues(
+            alpha: UpdateOpacity.subtle,
+          ),
         ),
         child: BackdropFilter(filter: largeBlurFilter, child: const SizedBox()),
       ),
@@ -214,18 +214,20 @@ class ForceUpdateScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(UpdateSpacing.hero),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(
-          UpdateOpacity.standard,
+        color: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: UpdateOpacity.standard,
         ),
         shape: BoxShape.circle,
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(UpdateOpacity.light),
+          color: theme.colorScheme.outline.withValues(
+            alpha: UpdateOpacity.light,
+          ),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              isDark ? UpdateOpacity.standard : UpdateOpacity.subtle,
+            color: Colors.black.withValues(
+              alpha: isDark ? UpdateOpacity.standard : UpdateOpacity.subtle,
             ),
             blurRadius: UpdateBlur.shadow,
             offset: const Offset(0, 10),
@@ -266,12 +268,14 @@ class ForceUpdateScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(UpdateSpacing.lg),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(
-          UpdateOpacity.standard,
+        color: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: UpdateOpacity.standard,
         ),
         borderRadius: BorderRadius.circular(UpdateBorderRadius.lg),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(UpdateOpacity.light),
+          color: theme.colorScheme.outline.withValues(
+            alpha: UpdateOpacity.light,
+          ),
         ),
       ),
       child: Row(
@@ -369,7 +373,7 @@ class _VersionColumn extends StatelessWidget {
             fontFamily: 'monospace',
             color: isHighlight
                 ? theme.colorScheme.primary
-                : theme.colorScheme.onSurface.withOpacity(0.6),
+                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],

@@ -42,11 +42,11 @@ class BackToTopFab extends StatelessWidget {
               width: _size,
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(AppOpacity.light)
-                    : Colors.black.withOpacity(AppOpacity.subtle),
+                    ? Colors.white.withValues(alpha: AppOpacity.light)
+                    : Colors.black.withValues(alpha: AppOpacity.subtle),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: theme.colorScheme.outline.withOpacity(
+                  color: theme.colorScheme.outline.withValues(alpha: 
                     AppOpacity.light,
                   ),
                 ),

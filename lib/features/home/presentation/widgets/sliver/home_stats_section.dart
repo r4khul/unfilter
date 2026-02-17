@@ -38,7 +38,7 @@ class HomeStatsSection extends StatelessWidget {
           Text(
             'Your Device has',
             style: theme.textTheme.labelLarge?.copyWith(
-              color: theme.colorScheme.primary.withOpacity(0.6),
+              color: theme.colorScheme.primary.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 4),

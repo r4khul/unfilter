@@ -37,7 +37,7 @@ class AppDrawerHeader extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             style: IconButton.styleFrom(
               backgroundColor: theme.colorScheme.surfaceContainerHighest
-                  .withOpacity(0.3),
+                  .withValues(alpha: 0.3),
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(8),
             ),

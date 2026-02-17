@@ -43,7 +43,7 @@ class NativeLibsSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(
+              color: theme.colorScheme.outline.withValues(alpha: 
                 AppDetailsOpacity.mediumLight,
               ),
             ),
@@ -68,7 +68,7 @@ class NativeLibsSection extends StatelessWidget {
                       ),
                     ),
                     side: BorderSide(
-                      color: theme.colorScheme.primary.withOpacity(
+                      color: theme.colorScheme.primary.withValues(alpha: 
                         AppDetailsOpacity.half,
                       ),
                     ),
@@ -170,7 +170,7 @@ class _NativeLibRow extends StatelessWidget {
           Icon(
             Icons.settings_system_daydream_rounded,
             size: AppDetailsSizes.iconMedium,
-            color: theme.colorScheme.primary.withOpacity(
+            color: theme.colorScheme.primary.withValues(alpha: 
               AppDetailsOpacity.nearlyOpaque,
             ),
           ),
@@ -208,7 +208,7 @@ class _NativeLibChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2C2C2E) : Colors.grey[100],
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(AppDetailsOpacity.light),
+          color: theme.colorScheme.outline.withValues(alpha: AppDetailsOpacity.light),
         ),
         borderRadius: BorderRadius.circular(AppDetailsBorderRadius.md),
       ),
@@ -218,7 +218,7 @@ class _NativeLibChip extends StatelessWidget {
           Icon(
             Icons.settings_system_daydream_rounded,
             size: AppDetailsSizes.iconSmall,
-            color: theme.colorScheme.onSurface.withOpacity(
+            color: theme.colorScheme.onSurface.withValues(alpha: 
               AppDetailsOpacity.high,
             ),
           ),
@@ -228,7 +228,7 @@ class _NativeLibChip extends StatelessWidget {
               library,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(
+                color: theme.colorScheme.onSurface.withValues(alpha: 
                   AppDetailsOpacity.nearlyOpaque,
                 ),
               ),

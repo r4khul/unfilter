@@ -35,7 +35,7 @@ class SparklineChart extends StatelessWidget {
       width: width,
       height: height,
       lineColor: color,
-      fillColor: color.withOpacity(0.2),
+      fillColor: color.withValues(alpha: 0.2),
     );
   }
 
@@ -139,7 +139,7 @@ class _SparklinePainter extends CustomPainter {
 
       final gradient = ui.Gradient.linear(Offset.zero, Offset(0, size.height), [
         fillColor!,
-        fillColor!.withOpacity(0),
+        fillColor!.withValues(alpha: 0),
       ]);
 
       canvas.drawPath(

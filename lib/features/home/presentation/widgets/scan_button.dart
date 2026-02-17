@@ -18,7 +18,7 @@ class _ScanButtonState extends ConsumerState<ScanButton> {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Scan Options',
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, anim1, anim2) {
         return _ScanOptionsDialog(
@@ -55,9 +55,9 @@ class _ScanButtonState extends ConsumerState<ScanButton> {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.35),
+      barrierColor: Colors.black.withValues(alpha: 0.35),
       transitionDuration: const Duration(milliseconds: 250),
-      pageBuilder: (_, __, ___) => const _RevalidateLoadingDialog(),
+      pageBuilder: (_, _, _) => const _RevalidateLoadingDialog(),
       transitionBuilder: (context, anim1, anim2, child) {
         return ScaleTransition(
           scale: CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
@@ -90,16 +90,16 @@ class _ScanButtonState extends ConsumerState<ScanButton> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isDark
-              ? Colors.grey[800]!.withOpacity(0.8)
-              : Colors.grey[200]!.withOpacity(0.8),
+              ? Colors.grey[800]!.withValues(alpha: 0.8)
+              : Colors.grey[200]!.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: theme.colorScheme.primary.withOpacity(0.3),
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -152,11 +152,11 @@ class _ScanOptionsDialog extends StatelessWidget {
             color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.1),
+              color: theme.colorScheme.outline.withValues(alpha: 0.1),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: 0.25),
                 blurRadius: 32,
                 offset: const Offset(0, 16),
               ),
@@ -202,7 +202,7 @@ class _ScanOptionsDialog extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -260,11 +260,11 @@ class _ScanOptionTile extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.grey.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.grey.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.05),
+            color: theme.colorScheme.outline.withValues(alpha: 0.05),
           ),
         ),
         child: Row(
@@ -272,7 +272,7 @@ class _ScanOptionTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: color, size: 24),
@@ -303,7 +303,7 @@ class _ScanOptionTile extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios_rounded,
               size: 14,
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
           ],
         ),
@@ -327,15 +327,15 @@ class _RevalidateLoadingDialog extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xFF1E1E1E).withOpacity(0.98)
-                : const Color(0xFFFFFFFF).withOpacity(0.98),
+                ? const Color(0xFF1E1E1E).withValues(alpha: 0.98)
+                : const Color(0xFFFFFFFF).withValues(alpha: 0.98),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.08),
+              color: theme.colorScheme.outline.withValues(alpha: 0.08),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 30,
                 offset: const Offset(0, 10),
               ),
@@ -349,7 +349,7 @@ class _RevalidateLoadingDialog extends StatelessWidget {
                 height: 24,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                   valueColor: AlwaysStoppedAnimation<Color>(
                     theme.colorScheme.primary,
                   ),
@@ -360,7 +360,7 @@ class _RevalidateLoadingDialog extends StatelessWidget {
                 'Checking updates',
                 style: theme.textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface.withOpacity(0.9),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
                   letterSpacing: 0.2,
                 ),
               ),

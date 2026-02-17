@@ -42,7 +42,7 @@ class SearchPage extends ConsumerWidget {
                   : Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.2),
+                color: theme.colorScheme.outline.withValues(alpha: 0.2),
                 width: 1.5,
               ),
             ),
@@ -60,7 +60,7 @@ class SearchPage extends ConsumerWidget {
                       errorBorder: InputBorder.none,
                       disabledBorder: InputBorder.none,
                       hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 
                           0.8,
                         ),
                       ),

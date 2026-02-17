@@ -40,7 +40,7 @@ class SectionHeader extends StatelessWidget {
             fontWeight: FontWeight.w800,
             letterSpacing: 1.5,
             fontSize: 11,
-            color: theme.colorScheme.onSurface.withOpacity(AppOpacity.high),
+            color: theme.colorScheme.onSurface.withValues(alpha: AppOpacity.high),
           ),
         );
       case SectionHeaderStyle.drawer:
@@ -52,7 +52,7 @@ class SectionHeader extends StatelessWidget {
               fontWeight: FontWeight.w800,
               letterSpacing: 1.5,
               fontSize: 11,
-              color: theme.colorScheme.primary.withOpacity(AppOpacity.high),
+              color: theme.colorScheme.primary.withValues(alpha: AppOpacity.high),
             ),
           ),
         );

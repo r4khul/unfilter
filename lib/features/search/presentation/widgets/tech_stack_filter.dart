@@ -100,9 +100,9 @@ class TechStackFilter extends ConsumerWidget {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? theme.colorScheme.primary.withOpacity(0.1)
+                                  ? theme.colorScheme.primary.withValues(alpha: 0.1)
                                   : theme.colorScheme.surfaceContainerHighest
-                                        .withOpacity(0.5),
+                                        .withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isSelected
@@ -157,7 +157,7 @@ class TechStackFilter extends ConsumerWidget {
         width: 50,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.8),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.darkTextSecondary, width: 1),
         ),

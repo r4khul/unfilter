@@ -33,7 +33,7 @@ class AnalyticsSearchBar extends StatelessWidget {
             : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
           width: 1.5,
         ),
         boxShadow: [
@@ -65,7 +65,7 @@ class AnalyticsSearchBar extends StatelessWidget {
                 disabledBorder: InputBorder.none,
                 fillColor: theme.colorScheme.surface,
                 hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                 ),
                 contentPadding: EdgeInsets.zero,
                 isDense: true,

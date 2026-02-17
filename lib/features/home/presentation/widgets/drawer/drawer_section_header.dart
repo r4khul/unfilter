@@ -17,7 +17,7 @@ class DrawerSectionHeader extends StatelessWidget {
           fontWeight: FontWeight.w800,
           letterSpacing: 1.5,
           fontSize: 11,
-          color: theme.colorScheme.primary.withOpacity(0.6),
+          color: theme.colorScheme.primary.withValues(alpha: 0.6),
         ),
       ),
     );

@@ -34,7 +34,7 @@ class CpuGauge extends StatelessWidget {
                 size: Size(size, size),
                 painter: _GaugePainter(
                   percentage: 100,
-                  color: theme.colorScheme.outline.withOpacity(0.15),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.15),
                   strokeWidth: strokeWidth,
                 ),
               ),
@@ -178,7 +178,7 @@ class MemoryBar extends StatelessWidget {
           child: Container(
             height: height,
             decoration: BoxDecoration(
-              color: theme.colorScheme.outline.withOpacity(0.15),
+              color: theme.colorScheme.outline.withValues(alpha: 0.15),
             ),
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: percentage),
@@ -218,9 +218,9 @@ class TemperatureBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: displayColor.withOpacity(0.1),
+        color: displayColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: displayColor.withOpacity(0.2)),
+        border: Border.all(color: displayColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

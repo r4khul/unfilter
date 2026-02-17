@@ -92,7 +92,7 @@ class CategorySlider extends ConsumerWidget {
               border: Border.all(
                 color: isSelected
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.outline.withOpacity(0.1),
+                    : theme.colorScheme.outline.withValues(alpha: 0.1),
                 width: 1,
               ),
             ),
@@ -104,7 +104,7 @@ class CategorySlider extends ConsumerWidget {
                   size: iconSize,
                   color: isSelected
                       ? theme.colorScheme.onPrimary
-                      : theme.colorScheme.onSurface.withOpacity(0.7),
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 SizedBox(width: gap),
                 Text(

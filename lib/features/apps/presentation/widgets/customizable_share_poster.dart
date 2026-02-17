@@ -21,20 +21,20 @@ class CustomizableSharePoster extends StatelessWidget {
   Color get _textPrimary =>
       config.posterDarkMode ? Colors.white : const Color(0xFF1A1A1A);
   Color get _textSecondary => config.posterDarkMode
-      ? Colors.white.withOpacity(0.5)
-      : const Color(0xFF1A1A1A).withOpacity(0.5);
+      ? Colors.white.withValues(alpha: 0.5)
+      : const Color(0xFF1A1A1A).withValues(alpha: 0.5);
   Color get _textTertiary => config.posterDarkMode
-      ? Colors.white.withOpacity(0.6)
-      : const Color(0xFF1A1A1A).withOpacity(0.6);
+      ? Colors.white.withValues(alpha: 0.6)
+      : const Color(0xFF1A1A1A).withValues(alpha: 0.6);
   Color get _cardBg => config.posterDarkMode
-      ? Colors.white.withOpacity(0.05)
-      : Colors.black.withOpacity(0.03);
+      ? Colors.white.withValues(alpha: 0.05)
+      : Colors.black.withValues(alpha: 0.03);
   Color get _cardBorder => config.posterDarkMode
-      ? Colors.white.withOpacity(0.1)
-      : Colors.black.withOpacity(0.08);
+      ? Colors.white.withValues(alpha: 0.1)
+      : Colors.black.withValues(alpha: 0.08);
   Color get _insightBg => config.posterDarkMode
-      ? Colors.white.withOpacity(0.03)
-      : Colors.black.withOpacity(0.02);
+      ? Colors.white.withValues(alpha: 0.03)
+      : Colors.black.withValues(alpha: 0.02);
 
   @override
   Widget build(BuildContext context) {
@@ -158,10 +158,10 @@ class CustomizableSharePoster extends StatelessWidget {
             shape: BoxShape.circle,
             gradient: LinearGradient(
               colors: config.posterDarkMode
-                  ? [Colors.white, Colors.white.withOpacity(0.5)]
+                  ? [Colors.white, Colors.white.withValues(alpha: 0.5)]
                   : [
                       const Color(0xFF1A1A1A),
-                      const Color(0xFF1A1A1A).withOpacity(0.7),
+                      const Color(0xFF1A1A1A).withValues(alpha: 0.7),
                     ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -234,10 +234,10 @@ class CustomizableSharePoster extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: stackColor.withOpacity(0.05),
+                    color: stackColor.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
-                      color: stackColor.withOpacity(0.2),
+                      color: stackColor.withValues(alpha: 0.2),
                       width: 0.8,
                     ),
                   ),
@@ -415,7 +415,7 @@ class CustomizableSharePoster extends StatelessWidget {
           "Detection based on primary libraries · Apps may use hybrid frameworks",
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: _textSecondary.withOpacity(0.6),
+            color: _textSecondary.withValues(alpha: 0.6),
             fontSize: 9,
             letterSpacing: 0.2,
           ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../domain/entities/device_app.dart';
 import '../../../scan/domain/entities/scan_progress.dart';
@@ -42,7 +43,9 @@ class DeviceAppsRepository {
     if (_scanInProgress != null && _lastScanIncludedDetails == includeDetails) {
       try {
         return await _scanInProgress!.future;
-      } catch (e) {}
+      } catch (e) {
+        // Ignore errors from previous scan
+      }
     }
 
     final completer = Completer<List<DeviceApp>>();
@@ -67,7 +70,7 @@ class DeviceAppsRepository {
       return apps;
     } on PlatformException catch (e) {
       if (e.code == 'ABORTED') {
-        print("Scan was superseded, will retry once...");
+        debugPrint("Scan was superseded, will retry once...");
         _scanInProgress = null;
         await Future.delayed(const Duration(milliseconds: 200));
         return getInstalledApps(
@@ -75,11 +78,11 @@ class DeviceAppsRepository {
           includeDetails: includeDetails,
         );
       }
-      print("Failed to get apps: '${e.message}'");
+      debugPrint("Failed to get apps: '${e.message}'");
       completer.completeError(e);
       return [];
     } catch (e) {
-      print("Failed to get apps: '$e'");
+      debugPrint("Failed to get apps: '$e'");
       completer.completeError(e);
       return [];
     } finally {
@@ -113,7 +116,7 @@ class DeviceAppsRepository {
           ),
         );
       } on PlatformException catch (e) {
-        print("Failed to get app details chunk: '${e.message}'");
+        debugPrint("Failed to get app details chunk: '${e.message}'");
       }
     }
     return allApps;
@@ -124,7 +127,7 @@ class DeviceAppsRepository {
       final bool result = await platform.invokeMethod('checkUsagePermission');
       return result;
     } on PlatformException catch (e) {
-      print("Failed to check permission: '${e.message}'");
+      debugPrint("Failed to check permission: '${e.message}'");
       return false;
     }
   }
@@ -133,7 +136,7 @@ class DeviceAppsRepository {
     try {
       await platform.invokeMethod('requestUsagePermission');
     } on PlatformException catch (e) {
-      print("Failed to request permission: '${e.message}'");
+      debugPrint("Failed to request permission: '${e.message}'");
     }
   }
 
@@ -142,7 +145,7 @@ class DeviceAppsRepository {
       final bool result = await platform.invokeMethod('checkInstallPermission');
       return result;
     } on PlatformException catch (e) {
-      print("Failed to check install permission: '${e.message}'");
+      debugPrint("Failed to check install permission: '${e.message}'");
       return false;
     }
   }
@@ -151,7 +154,7 @@ class DeviceAppsRepository {
     try {
       await platform.invokeMethod('requestInstallPermission');
     } on PlatformException catch (e) {
-      print("Failed to request install permission: '${e.message}'");
+      debugPrint("Failed to request install permission: '${e.message}'");
     }
   }
 
@@ -170,7 +173,7 @@ class DeviceAppsRepository {
           .map((e) => AppUsagePoint.fromMap(e))
           .toList();
     } on PlatformException catch (e) {
-      print("Failed to get usage history: '${e.message}'");
+      debugPrint("Failed to get usage history: '${e.message}'");
       return [];
     }
   }
@@ -184,6 +187,7 @@ class DeviceAppsRepository {
     try {
       await platform.invokeMethod('clearScanCache');
     } catch (_) {
+      // Ignore error during cache clearing
     }
   }
 }

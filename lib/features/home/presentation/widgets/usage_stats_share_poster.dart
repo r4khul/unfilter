@@ -72,7 +72,7 @@ class _PosterHeader extends StatelessWidget {
             Text(
               'UNFILTERED',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 12,
                 letterSpacing: 4,
                 fontWeight: FontWeight.bold,
@@ -97,7 +97,7 @@ class _PosterHeader extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: [Colors.white, Colors.white.withOpacity(0.5)],
+              colors: [Colors.white, Colors.white.withValues(alpha: 0.5)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -123,16 +123,16 @@ class _HeroStatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
           Text(
             'TOTAL SCREEN TIME',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 12,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.5,
@@ -152,7 +152,7 @@ class _HeroStatCard extends StatelessWidget {
           Text(
             date,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               fontSize: 12,
             ),
           ),
@@ -184,9 +184,9 @@ class _RoastCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _roastColor.withOpacity(0.1),
+        color: _roastColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _roastColor.withOpacity(0.2)),
+        border: Border.all(color: _roastColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -204,7 +204,7 @@ class _RoastCard extends StatelessWidget {
             content,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 14,
               fontStyle: FontStyle.italic,
               height: 1.4,
@@ -230,7 +230,7 @@ class _TopAppsSection extends StatelessWidget {
         Text(
           'TOP DISTRACTIONS',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             fontSize: 12,
             letterSpacing: 2,
             fontWeight: FontWeight.bold,
@@ -283,7 +283,7 @@ class _AppUsageRow extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: ClipRRect(
@@ -315,7 +315,7 @@ class _AppUsageRow extends StatelessWidget {
         Text(
           timeString,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
@@ -339,7 +339,7 @@ class _AppUsageRow extends StatelessWidget {
       child: LinearProgressIndicator(
         value: percent,
         minHeight: 4,
-        backgroundColor: Colors.white.withOpacity(0.1),
+        backgroundColor: Colors.white.withValues(alpha: 0.1),
         valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
       ),
     );
@@ -366,14 +366,14 @@ class _PosterFooter extends StatelessWidget {
         children: [
           Icon(
             Icons.auto_awesome,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             size: 16,
           ),
           const SizedBox(width: 8),
           Text(
             'Analyzed by Unfilter',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),

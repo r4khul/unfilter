@@ -206,7 +206,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                               decoration: BoxDecoration(
                                 color: _currentPage == index
                                     ? theme.colorScheme.primary
-                                    : theme.colorScheme.onSurface.withOpacity(
+                                    : theme.colorScheme.onSurface.withValues(alpha: 
                                         0.2,
                                       ),
                                 shape: BoxShape.circle,
@@ -254,12 +254,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
                           child: Text(
                             "Privacy Policy",
                             style: theme.textTheme.labelMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withOpacity(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 
                                 0.5,
                               ),
                               decoration: TextDecoration.underline,
                               decorationColor: theme.colorScheme.onSurface
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                             ),
                           ),
                         ),
@@ -292,7 +292,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
     return SizedBox(
       width: 100,
       height: 100,
-      child: Center(child: Icon(icon, size: 64, color: color.withOpacity(0.9))),
+      child: Center(child: Icon(icon, size: 64, color: color.withValues(alpha: 0.9))),
     );
   }
 
@@ -315,7 +315,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(100),
         border: Border.all(
-          color: theme.colorScheme.onSurface.withOpacity(0.1),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
           width: 1,
         ),
       ),

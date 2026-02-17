@@ -44,7 +44,7 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
         color: theme.scaffoldBackgroundColor,
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(
+            color: theme.colorScheme.outline.withValues(alpha: 
               percent > 0.95 ? 0.1 : 0.0,
             ),
           ),
@@ -117,7 +117,7 @@ class HomeSliverDelegate extends SliverPersistentHeaderDelegate {
       left: 0,
       right: 0,
       child: Container(
-        color: theme.scaffoldBackgroundColor.withOpacity(backgroundOpacity),
+        color: theme.scaffoldBackgroundColor.withValues(alpha: backgroundOpacity),
         child: HomeTopAppBar(
           appCount: appCount,
           transitionProgress: transitionProgress,

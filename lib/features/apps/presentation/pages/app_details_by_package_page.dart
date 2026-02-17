@@ -90,7 +90,7 @@ class _AppDetailsByPackagePageState
               Icon(
                 Icons.error_outline_rounded,
                 size: 64,
-                color: theme.colorScheme.error.withOpacity(0.7),
+                color: theme.colorScheme.error.withValues(alpha: 0.7),
               ),
               const SizedBox(height: 16),
               Text(

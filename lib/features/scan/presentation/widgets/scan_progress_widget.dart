@@ -32,7 +32,7 @@ class ScanProgressWidget extends StatelessWidget {
                       child: CircularProgressIndicator(
                         value: 1,
                         strokeWidth: 6,
-                        color: theme.colorScheme.surfaceVariant.withOpacity(
+                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 
                           0.2,
                         ),
                       ),
@@ -111,7 +111,7 @@ class ScanProgressWidget extends StatelessWidget {
                   : const Color(0xFFF5F5F5),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.2),
+                color: theme.colorScheme.outline.withValues(alpha: 0.2),
               ),
             ),
             child: Row(
@@ -119,7 +119,7 @@ class ScanProgressWidget extends StatelessWidget {
                 Icon(
                   Icons.terminal,
                   size: 16,
-                  color: theme.colorScheme.primary.withOpacity(0.7),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -147,7 +147,7 @@ class ScanProgressWidget extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontFamily: 'Courier',
-                        color: theme.colorScheme.onSurface.withOpacity(0.8),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                         fontSize: 13,
                         height: 1.0,
                       ),

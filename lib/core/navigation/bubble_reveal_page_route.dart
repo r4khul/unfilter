@@ -72,7 +72,7 @@ class _BubbleRevealTransition extends AnimatedWidget {
             child,
             Positioned.fill(
               child: IgnorePointer(
-                child: Container(color: Colors.black.withOpacity(dim)),
+                child: Container(color: Colors.black.withValues(alpha: dim)),
               ),
             ),
           ],
@@ -162,7 +162,7 @@ class _BubbleRingPainter extends CustomPainter {
     if (opacity <= 0.01) return;
 
     final paint = Paint()
-      ..color = color.withOpacity(opacity * 0.4)
+      ..color = color.withValues(alpha: opacity * 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 8.0);
@@ -170,7 +170,7 @@ class _BubbleRingPainter extends CustomPainter {
     canvas.drawCircle(center, radius, paint);
 
     final sharpPaint = Paint()
-      ..color = color.withOpacity(opacity * 0.6)
+      ..color = color.withValues(alpha: opacity * 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 

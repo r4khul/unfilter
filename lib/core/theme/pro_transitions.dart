@@ -64,9 +64,8 @@ class _ProPageTransition extends StatelessWidget {
           final radius = MotionTokens.cardBorderRadius * value;
 
           return Transform(
-            transform: Matrix4.identity()
-              ..translate(slideX, 0.0)
-              ..scale(scale),
+            transform: Matrix4.diagonal3Values(scale, scale, 1.0)
+              ..setTranslationRaw(slideX, 0.0, 0.0),
             alignment: Alignment.center,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(radius),
@@ -120,9 +119,8 @@ class _ProPageTransition extends StatelessWidget {
           return Opacity(
             opacity: opacity,
             child: Transform(
-              transform: Matrix4.identity()
-                ..translate(slideX, slideY)
-                ..scale(scale),
+              transform: Matrix4.diagonal3Values(scale, scale, 1.0)
+                ..setTranslationRaw(slideX, slideY, 0.0),
               alignment: isVertical
                   ? Alignment.topCenter
                   : Alignment.centerLeft,

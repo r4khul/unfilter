@@ -167,7 +167,7 @@ class _UpdateCheckPageState extends ConsumerState<UpdateCheckPage>
   Widget _buildBottomBar(AsyncValue<UpdateCheckResult> updateAsync) {
     return updateAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => UpdateBottomActionBar(
+      error: (_, _) => UpdateBottomActionBar(
         label: "Try Again",
         icon: Icons.refresh_rounded,
         onPressed: _isManuallyChecking ? null : _handleCheckAgain,

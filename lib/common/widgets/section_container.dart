@@ -25,12 +25,12 @@ class SectionContainer extends StatelessWidget {
         color: useAltBackground
             ? theme.colorScheme.surface
             : (isDark
-                  ? Colors.white.withOpacity(AppOpacity.subtle)
-                  : Colors.black.withOpacity(AppOpacity.verySubtle)),
+                  ? Colors.white.withValues(alpha: AppOpacity.subtle)
+                  : Colors.black.withValues(alpha: AppOpacity.verySubtle)),
         borderRadius: BorderRadius.circular(AppBorderRadius.xl),
         border: useAltBackground
             ? Border.all(
-                color: theme.colorScheme.outline.withOpacity(AppOpacity.low),
+                color: theme.colorScheme.outline.withValues(alpha: AppOpacity.low),
               )
             : null,
       ),

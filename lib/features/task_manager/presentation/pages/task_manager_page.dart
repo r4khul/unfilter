@@ -167,7 +167,7 @@ class _TaskManagerPageState extends ConsumerState<TaskManagerPage> {
               Icon(
                 Icons.error_outline_rounded,
                 size: 56,
-                color: theme.colorScheme.error.withOpacity(0.8),
+                color: theme.colorScheme.error.withValues(alpha: 0.8),
               ),
               const SizedBox(height: 16),
               Text(
@@ -321,9 +321,11 @@ class _ProcessErrorBanner extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: theme.colorScheme.errorContainer.withOpacity(0.3),
+          color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.colorScheme.error.withOpacity(0.3)),
+          border: Border.all(
+            color: theme.colorScheme.error.withValues(alpha: 0.3),
+          ),
         ),
         child: Row(
           children: [
@@ -369,7 +371,6 @@ class _SystemMonitorHeaderState extends State<_SystemMonitorHeader>
   BatteryState _batteryState = BatteryState.unknown;
   String _deviceModel = "Device";
   String _androidVersion = "";
-  bool _initialized = false;
 
   @override
   void initState() {
@@ -415,7 +416,6 @@ class _SystemMonitorHeaderState extends State<_SystemMonitorHeader>
 
   Future<void> _initStats() async {
     await Future.wait([_refreshDynamicStats(), _getDeviceInfo()]);
-    if (mounted) setState(() => _initialized = true);
   }
 
   Future<void> _refreshDynamicStats() async {

@@ -44,7 +44,7 @@ class ExternalLinkTile extends StatelessWidget {
     return Text(
       label,
       style: theme.textTheme.bodyMedium?.copyWith(
-        color: theme.colorScheme.onSurface.withOpacity(AppOpacity.high),
+        color: theme.colorScheme.onSurface.withValues(alpha: AppOpacity.high),
         fontWeight: FontWeight.w500,
       ),
     );
@@ -64,7 +64,7 @@ class ExternalLinkTile extends StatelessWidget {
         Icon(
           Icons.arrow_outward_rounded,
           size: 14,
-          color: theme.colorScheme.primary.withOpacity(0.7),
+          color: theme.colorScheme.primary.withValues(alpha: 0.7),
         ),
       ],
     );

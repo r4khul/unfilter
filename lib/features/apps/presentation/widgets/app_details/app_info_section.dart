@@ -30,7 +30,7 @@ class AppInfoSection extends StatelessWidget {
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(AppDetailsBorderRadius.xl),
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(
+              color: theme.colorScheme.outline.withValues(alpha: 
                 AppDetailsOpacity.mediumLight,
               ),
             ),

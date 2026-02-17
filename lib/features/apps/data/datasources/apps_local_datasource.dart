@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+
 import 'package:path_provider/path_provider.dart';
 import '../../domain/entities/device_app.dart';
 
@@ -35,7 +35,7 @@ class AppsLocalDataSource {
 
       return await compute(_decodeApps, content);
     } catch (e) {
-      print('Error reading cache: $e');
+      debugPrint('Error reading cache: $e');
       return [];
     }
   }
@@ -66,7 +66,7 @@ class AppsLocalDataSource {
         await file.delete();
       }
     } catch (e) {
-      print('Error clearing cache: $e');
+      debugPrint('Error clearing cache: $e');
     }
   }
 }

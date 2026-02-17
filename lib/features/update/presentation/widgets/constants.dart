@@ -2,8 +2,6 @@ library;
 
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
-
 abstract class UpdateAnimationDurations {
   static const Duration standard = Duration(milliseconds: 300);
 
